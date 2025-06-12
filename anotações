@@ -1,0 +1,19 @@
+cargos :
+- analista :
+  * ecaminha ocorrencia pro setor
+- chefe de setores :
+  * cada chefe verá o dashboard do seu setor
+  *  geram as ordem de serviço DO SEU SETOR 
+  * relatório do setor 
+- diretor :
+  * dashboard geral
+  * ordem de serviço DE TODOS OS SETORES 
+  * diretor ver todos os relatórios
+- pilotos (aéreo/terrestre)
+- fiscais : 
+  * ordem de serviço
+
+
+flr com pedro :
+  - pedir pra aceitar o setor em updateLandOccurrence
+  - retornar o setor do usuario, caso exista
