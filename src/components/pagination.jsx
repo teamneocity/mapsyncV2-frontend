@@ -2,7 +2,7 @@ import { Button } from "./ui/button";
 
 export function Pagination({ currentPage, totalPages, onPageChange }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between ">
       <span className="text-sm text-gray-500">
         Página {currentPage} de {totalPages}
       </span>

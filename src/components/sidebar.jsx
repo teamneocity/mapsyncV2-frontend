@@ -29,9 +29,9 @@ export function Sidebar() {
   const userInitials = getInicials(user.name);
 
   return (
-    <div className="flex w-full flex-col bg-[#F7F7F7] font-inter">
-      <aside className="fixed inset-y-0 left-0 z-10 hidden w-[250px] border-r sm:flex bg-[#F7F7F7]  text-[#787891] flex-col">
-        <div className="px-4 py-5 border-b">
+    <div className="flex w-full flex-col bg-[#EBEBEB] font-inter">
+      <aside className="fixed inset-y-0 left-0 z-10 hidden w-[250px]  sm:flex bg-[#EBEBEB]  text-[#787891] flex-col">
+        <div className="px-4 py-5 ">
           <Link to="/">
             <img src={biglogo || "/placeholder.svg"} alt="" />
           </Link>
