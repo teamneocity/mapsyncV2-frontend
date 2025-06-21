@@ -3,11 +3,11 @@
 import { useState } from "react"
 import { Trash2 } from "lucide-react"
 
-
 export function ImageCarousel({ occurrence, onDeleteImage }) {
+  const images = occurrence?.photo_land_occurrences || []
   const [currentIndex, setCurrentIndex] = useState(0)
   const [inputValue, setInputValue] = useState("1")
-  const totalImages = occurrence.photo_land_occurrences.length
+  const totalImages = images.length
 
   const handlePrevious = () => {
     const newIndex = currentIndex === 0 ? totalImages - 1 : currentIndex - 1
@@ -21,9 +21,7 @@ export function ImageCarousel({ occurrence, onDeleteImage }) {
     setInputValue((newIndex + 1).toString())
   }
 
-  const handleInputChange = (e) => {
-    setInputValue(e.target.value)
-  }
+  const handleInputChange = (e) => setInputValue(e.target.value)
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -37,14 +35,21 @@ export function ImageCarousel({ occurrence, onDeleteImage }) {
 
   const handleDelete = () => {
     if (totalImages === 0) return
-    const currentImage = occurrence.photo_land_occurrences[currentIndex]
+    const currentImage = images[currentIndex]
     if (onDeleteImage) {
       onDeleteImage(currentImage, occurrence.id)
     }
   }
 
-  const currentImagePath =
-    occurrence.photo_land_occurrences[currentIndex]?.path || occurrence.photo_start
+  const currentImagePath = images[currentIndex]?.path || occurrence?.photo_start
+
+  if (totalImages === 0) {
+    return (
+      <div className="flex justify-center items-center w-full h-full text-sm text-gray-500">
+        Nenhuma imagem disponível
+      </div>
+    )
+  }
 
   return (
     <div className="relative w-full h-full max-h-[350px] rounded-lg overflow-hidden">

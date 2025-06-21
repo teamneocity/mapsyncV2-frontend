@@ -71,7 +71,7 @@ export function MockMap() {
     // Carrega a API do Google Maps
     const loadGoogleMapsAPI = () => {
       const script = document.createElement("script")
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCDmsBgRuI3pL4w4EJiclPD7kK4Ff9_OzQ&libraries=places&callback=initMap`
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBXrFDOX3QgRHeisAfz1v77UFhipej7yOM&libraries=places&callback=initMap`
       script.async = true
       script.defer = true
       window.initMap = initializeMap

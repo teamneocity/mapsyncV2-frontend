@@ -16,10 +16,21 @@ export function OccurrenceList({ occurrences, renderExpandedRow }) {
     });
   };
 
+  const getStatusClasses = (status) => {
+    const map = {
+      em_analise: "bg-[#E8F7FF] text-[#33CFFF]",
+      emergencial: "bg-[#FFE8E8] text-[#FF2222]",
+      aprovada: "bg-[#FFF4D6] text-[#FFC118]",
+      os_gerada: "bg-[#f0ddee] text-[#733B73]",
+    };
+
+    return map[status] || "bg-gray-100 text-gray-600";
+  };
+
   return (
-    <div className="overflow-x-auto max-w-full mx-auto px-2">
+    <div className="overflow-x-auto w-full mx-auto px-2">
       {/* Header apenas para desktop */}
-      <div className="hidden sm:grid grid-cols-12 gap-2 bg-[#F2F3F5] text-gray-800 font-semibold rounded-xl px-4 py-5 border border-gray-200 mb-2">
+      <div className="hidden xl-custom:grid grid-cols-12 gap-2 bg-[#F2F3F5] text-gray-800 font-semibold rounded-xl px-4 py-5 border border-gray-200 mb-2">
         <div></div>
         <div>Data</div>
         <div>Origem</div>
@@ -38,7 +49,7 @@ export function OccurrenceList({ occurrences, renderExpandedRow }) {
             <React.Fragment key={occ.id}>
               <tr onClick={() => toggleRow(occ.id)}>
                 <td colSpan={11} className="px-2">
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 px-4 py-5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition cursor-pointer">
+                  <div className="flex flex-wrap xl-custom:grid xl-custom:grid-cols-12 gap-4 px-4 py-5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition cursor-pointer">
                     {/* Ícone */}
                     <div className="flex items-center sm:block col-span-1">
                       {expandedRows.has(occ.id) ? (
@@ -48,14 +59,17 @@ export function OccurrenceList({ occurrences, renderExpandedRow }) {
                       )}
                     </div>
 
-                    {/* Cada campo no mobile vem com label */}
-                    <div className="sm:col-span-1">
+                    {/* Data */}
+                    <div className="sm:col-span-1 whitespace-nowrap overflow-hidden text-ellipsis">
                       <span className="block sm:hidden text-xs font-semibold text-gray-400">
                         Data
                       </span>
-                      {format(new Date(occ.date_time), "dd/MM/yy")}
+                      {occ.createdAt
+                        ? format(new Date(occ.createdAt), "dd/MM/yy")
+                        : "—"}
                     </div>
 
+                    {/* Origem */}
                     <div className="sm:col-span-1">
                       <span className="block sm:hidden text-xs font-semibold text-gray-400">
                         Origem
@@ -63,13 +77,15 @@ export function OccurrenceList({ occurrences, renderExpandedRow }) {
                       {occ.origin || "Plataforma"}
                     </div>
 
+                    {/* Zona */}
                     <div className="sm:col-span-1">
                       <span className="block sm:hidden text-xs font-semibold text-gray-400">
                         Zona
                       </span>
-                      {occ.zone}
+                      {occ.zone || "—"}
                     </div>
 
+                    {/* Protocolo */}
                     <div className="sm:col-span-1">
                       <span className="block sm:hidden text-xs font-semibold text-gray-400">
                         Protocolo
@@ -77,49 +93,60 @@ export function OccurrenceList({ occurrences, renderExpandedRow }) {
                       {occ.protocol || "254525"}
                     </div>
 
+                    {/* Enviado por */}
                     <div className="sm:col-span-2 flex items-center gap-2">
                       <span className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
-                        {getInicials(occ.data[0]?.pilot?.name || "NA")}
+                        {getInicials(occ?.pilot?.name || "NA")}
                       </span>
-                      {occ.pilot?.name || "—"}
+                      {occ?.author?.name || "—"}
                     </div>
 
-                    <div className="sm:col-span-1 text-gray-400">...</div>
+                    {/* Revisado por */}
+                    <div className="sm:col-span-1">
+                      <span className="block sm:hidden text-xs font-semibold text-gray-400">
+                        Revisado por
+                      </span>
+                      {occ?.approvedBy?.name || "—"}
+                    </div>
 
+                    {/* Bairro */}
                     <div className="sm:col-span-1">
                       <span className="block sm:hidden text-xs font-semibold text-gray-400">
                         Bairro
                       </span>
-                      {occ.neighborhood}
+                      {occ?.address?.neighborhoodName || "—"}
                     </div>
 
+                    {/* Endereço */}
                     <div className="sm:col-span-2 truncate">
                       <span className="block sm:hidden text-xs font-semibold text-gray-400">
                         Endereço
                       </span>
-                      {occ.address}
+                      {`${occ.address?.street || ""}, ${
+                        occ.address?.number || ""
+                      } - ${occ.address?.city || ""}`}
                     </div>
 
-                    <div className="sm:col-span-1">
+                    {/* Status */}
+                    <div className="sm:col-span-1 w-full break-words">
                       <span className="block sm:hidden text-xs font-semibold text-gray-400">
                         Status
                       </span>
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          occ.status === "Em análise"
-                            ? "bg-blue-100 text-blue-600"
-                            : occ.status === "Emergencial"
-                            ? "bg-red-100 text-red-600"
-                            : "bg-gray-100 text-gray-600"
-                        }`}
+                        className={`flex flex-col items-center justify-center text-center px-3 py-1 rounded-full text-xs font-semibold leading-tight ${getStatusClasses(
+                          occ.status
+                        )}`}
                       >
-                        {occ.status}
+                        {occ.status
+                          .replace("_", " ")
+                          .replace(/^\w/, (c) => c.toUpperCase())}
                       </span>
                     </div>
                   </div>
                 </td>
               </tr>
 
+              {/* Linha expandida */}
               {expandedRows.has(occ.id) && (
                 <tr>
                   <td

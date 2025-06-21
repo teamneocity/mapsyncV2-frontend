@@ -4,7 +4,7 @@ export function GoogleMapsBig() {
 
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
-        googleMapsApiKey: 'AIzaSyCDmsBgRuI3pL4w4EJiclPD7kK4Ff9_OzQ',
+        googleMapsApiKey: 'AIzaSyBXrFDOX3QgRHeisAfz1v77UFhipej7yOM',
     })
 
     

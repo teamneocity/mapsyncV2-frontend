@@ -3,17 +3,15 @@ import { useAuth } from "@/hooks/auth";
 export const usePermissions = () => {
   const { user } = useAuth();
 
-  const isManager = user.role === "gestor";
-  const isAnalyst = user.role === "analista";
-  const isOperator = user.role === "operador";
-  const isSupervisor = user.role === "supervisor";
-  const isAdmin = user.role === "admin"
+  const isAdmin = user?.role === "ADMIN";
+  const isAnalyst = user?.role === "ANALYST";
+  const isOperator = user?.role === "FIELD_AGENT";
+  const isSupervisor = user?.role === "SECTOR_CHIEF";
 
   return {
-    isManager,
+    isAdmin,
     isAnalyst,
     isOperator,
     isSupervisor,
-    isAdmin,
   };
 };

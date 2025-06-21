@@ -15,11 +15,13 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import biglogo from "../assets/biglogo.png";
 import { useAuth } from "@/hooks/auth";
 import { useState } from "react";
 import { getInicials } from "@/lib/utils";
 import { api } from "@/services/api";
+import { usePermissions } from "@/hooks/usePermissions";
+import logoAju1 from "../assets/logoAju1.png"
+
 
 export function Sidebar() {
   const { user } = useAuth();
@@ -28,12 +30,15 @@ export function Sidebar() {
   const [avatar, setAvatar] = useState(null);
   const userInitials = getInicials(user.name);
 
+const { isAdmin, isSupervisor, isAnalyst, isOperator } = usePermissions();
+
+
   return (
     <div className="flex w-full flex-col bg-[#EBEBEB] font-inter">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-[250px]  sm:flex bg-[#EBEBEB]  text-[#787891] flex-col">
         <div className="px-4 py-5 ">
           <Link to="/">
-            <img src={biglogo || "/placeholder.svg"} alt="" />
+            <img src={logoAju1 || "/placeholder.svg"} alt="" />
           </Link>
         </div>
 
@@ -44,7 +49,7 @@ export function Sidebar() {
             </p>
 
             <div className="flex flex-col gap-1 text-[#787891] border-b pb-3">
-              {["gestor", "admin", "supervisor"].includes(user.role) && (
+              {(isAdmin || isSupervisor) && (
                 <Link
                   to="/"
                   className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
@@ -53,34 +58,30 @@ export function Sidebar() {
                   Dashboard
                 </Link>
               )}
-              {user.role === "analista" && (
-              <Link
-                to="/analysis"
-                className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
-              >
-                <ChartColumn />
-                Análises
-              </Link>
+              {isAnalyst && (
+                <Link
+                  to="/analysis"
+                  className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                >
+                  <ChartColumn />
+                  Análises
+                </Link>
               )}
 
-              {user.role !== "pilotet" && (
-                <>
-                  <Link
-                    to="/occurrencest"
-                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
-                  >
-                    <Building2 />
-                    Mapeamento Terrestre
-                  </Link>
-                  <Link
-                    to="/occurrencesa"
-                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDED] hover:text-gray-900"
-                  >
-                    <Send />
-                    Mapeamento Aéreo
-                  </Link>
-                </>
-              )}
+              <Link
+                to="/occurrencest"
+                className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+              >
+                <Building2 />
+                Mapeamento Terrestre
+              </Link>
+              <Link
+                to="/occurrencesa"
+                className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDED] hover:text-gray-900"
+              >
+                <Send />
+                Mapeamento Aéreo
+              </Link>
 
               <Link
                 to="/routemap"
@@ -96,10 +97,6 @@ export function Sidebar() {
                 <Database />
                 O.S.
               </Link>
-              {/* <Link to="/activities" className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
-                                <Users/>
-                                Atividades
-                            </Link> */}
               <Link
                 to="/reports"
                 className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
@@ -123,10 +120,6 @@ export function Sidebar() {
                 <Settings />
                 Configurações
               </Link>
-              {/* <div className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
-                                <Workflow/>
-                                Integrações
-                            </div> */}
               <Link
                 to="/notifications"
                 className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900 pointer-events-none"
@@ -138,7 +131,7 @@ export function Sidebar() {
           </div>
 
           <div className="mt-3 w-full ">
-            {user.role === "admin" || user.role === "gestor" ? (
+            {(isAdmin || isSupervisor) && (
               <div>
                 <p className="text-base font-normal mb-2 text-[#4B4B62] ">
                   Colaboradores
@@ -164,7 +157,7 @@ export function Sidebar() {
                   </Link>
                 </div>
               </div>
-            ) : null}
+            )}
           </div>
         </nav>
 
@@ -189,6 +182,8 @@ export function Sidebar() {
         </div>
       </aside>
 
+            {/*celular*/}
+
       <div className="sm:hidden flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
         <header className="sticky top-0 z-30 flex h-14 items-center px-4 border-b bg-background gap-4 sm:static sm:h-auto  sm:border-0 sm:bg-transparent sm:px-6 ">
           <Sheet>
@@ -203,8 +198,6 @@ export function Sidebar() {
               </Button>
             </SheetTrigger>
 
-            <div className="ml-auto"></div>
-
             <SheetContent
               side="left"
               className="sm:max-w-xs flex flex-col max-w-80"
@@ -216,7 +209,7 @@ export function Sidebar() {
                   </p>
 
                   <div className="flex flex-col gap-1 text-[#787891] border-b pb-5">
-                    {["gestor", "admin", "supervisor"].includes(user.role) && (
+                    {(isAdmin || isSupervisor) && (
                       <Link
                         to="/"
                         className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
@@ -225,7 +218,15 @@ export function Sidebar() {
                         Dashboard
                       </Link>
                     )}
-
+                    {isAnalyst && (
+                      <Link
+                        to="/analysis"
+                        className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                      >
+                        <ChartColumn />
+                        Análises
+                      </Link>
+                    )}
                     <Link
                       to="/occurrencest"
                       className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
@@ -283,7 +284,7 @@ export function Sidebar() {
                     </Link>
                   </div>
 
-                  {user.role === "admin" || user.role === "gestor" ? (
+                  {(isAdmin || isSupervisor) && (
                     <div>
                       <p className="text-base font-normal mb-3 text-[#4B4B62] ">
                         Colaboradores
@@ -309,7 +310,7 @@ export function Sidebar() {
                         </Link>
                       </div>
                     </div>
-                  ) : null}
+                  )}
                 </div>
               </nav>
               <div className="mt-auto flex items-center justify-between px-4 py-6 gap-3">

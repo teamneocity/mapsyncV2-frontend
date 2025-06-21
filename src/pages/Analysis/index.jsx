@@ -59,9 +59,9 @@ export function Analysis() {
     if (!isAnalyst) navigate("/");
   }, [isAnalyst, navigate]);
 
-  useEffect(() => {
-    api.get("/sectors").then((res) => setAllSectors(res.data.data));
-  }, []);
+  // useEffect(() => {
+  //   api.get("/sectors").then((res) => setAllSectors(res.data.data));
+  // }, []);
 
   useEffect(() => {
     fetchOccurrences(currentPage);
@@ -82,14 +82,16 @@ export function Analysis() {
           : null,
         page,
         limit: 6,
-        status: "EmAnalise",
       };
 
-      const res = await api.get("/land-occurrences", { params });
-      setOccurrences(res.data.data);
-      setCurrentPage(res.data.currentPage);
-      setTotalPages(res.data.totalPages);
+      const res = await api.get("/occurrences/in-analysis", { params });
+      const allOccurrences = res.data.occurrences || [];
+
+      setOccurrences(allOccurrences);
+      setCurrentPage(res.data.currentPage || 1);
+      setTotalPages(res.data.totalPages || 1);
     } catch (error) {
+      console.error("❌ Erro ao buscar ocorrências:", error);
       toast({
         variant: "destructive",
         title: "Erro ao buscar ocorrências",
@@ -100,11 +102,19 @@ export function Analysis() {
 
   const handleForwardOccurrence = async (occurrenceId) => {
     try {
-      await api.put(`/land-occurrences/kelvin/${occurrenceId}`, {
-        sector_id: editableSectorId,
-        description: editableDescription,
+      if (!editableSectorId) {
+        toast({
+          variant: "destructive",
+          title: "Setor não selecionado",
+          description: "Por favor, selecione um setor para encaminhar.",
+        });
+        return;
+      }
+
+      await api.post("/occurrences/approve", {
+        occurrenceId,
+        sectorId: editableSectorId,
       });
-      await api.put(`/land-occurrences/accept/${occurrenceId}`);
 
       toast({ title: "Ocorrência encaminhada com sucesso!" });
       fetchOccurrences(currentPage);
@@ -195,8 +205,7 @@ export function Analysis() {
       </div>
 
       <OccurrenceList
-        occurrences={occurrences}
-        filterStatus="EmAnalise"
+        occurrences={occurrences || []}
         renderExpandedRow={(occurrence) => (
           <ExpandedRowAnalysis
             occurrence={occurrence}

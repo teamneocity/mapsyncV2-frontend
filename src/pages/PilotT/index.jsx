@@ -55,7 +55,7 @@ const neighborhoods = [
 ]
 
 // Google Maps API Key
-const GOOGLE_MAPS_API_KEY = "AIzaSyCDmsBgRuI3pL4w4EJiclPD7kK4Ff9_OzQ"
+const GOOGLE_MAPS_API_KEY = "AIzaSyBXrFDOX3QgRHeisAfz1v77UFhipej7yOM"
 
 // Improved function to ensure consistent date format
 const getCurrentDateTime = () => {

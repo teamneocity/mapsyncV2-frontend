@@ -21,6 +21,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 
 import { OccurrenceList } from "@/components/OccurrenceList";
 import { ExpandedRowT } from "./ExpandedRowT";
+import { ExpandedRowWithLoad } from "./ExpandedRowWithLoad";
 
 export function OccurrencesT() {
   const { user } = useAuth();
@@ -48,8 +49,19 @@ export function OccurrencesT() {
   const { isAdmin, isSupervisor } = usePermissions();
   const [selectedValues, setSelectedValues] = useState({});
 
+  const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
+  const [returnReason, setReturnReason] = useState("");
+  const [selectedOccurrenceId, setSelectedOccurrenceId] = useState(null);
+
+  useEffect(() => {
+    if (!isAdmin && !isSupervisor) {
+      // Redireciona para página de erro ou dashboard
+      window.location.href = "/";
+    }
+  }, [isAdmin]);
+
   const handleApplyFilters = () => {
-    fetchOccurrences(1); // força a página 1 com os filtros atuais
+    fetchOccurrences(1);
   };
 
   useEffect(() => {
@@ -61,7 +73,7 @@ export function OccurrencesT() {
       const params = {
         search: searchTerm,
         recent: filterRecent,
-        type: isSupervisor && !isAdmin ? setor?.name : null,
+        type: null,
         neighborhood: filterNeighborhood,
         startDate: filterDateRange.startDate
           ? format(filterDateRange.startDate, "yyyy-MM-dd")
@@ -73,10 +85,15 @@ export function OccurrencesT() {
         limit: 6,
       };
 
-      const res = await api.get("/land-occurrences", { params });
+      const res = await api.get("/occurrences", { params });
+      const allOccurrences = res.data.occurrences || [];
 
-      // salva todas e deixa o filtro pro front
-      setOccurrences(res.data.data);
+      // filtro direto do front
+      const filteredOccurrences = allOccurrences.filter(
+        (occ) => occ.status !== "em_analise"
+      );
+
+      setOccurrences(filteredOccurrences);
       setCurrentPage(res.data.currentPage);
       setTotalPages(res.data.totalPages);
     } catch (error) {
@@ -89,16 +106,27 @@ export function OccurrencesT() {
   };
 
   //devolve a ocorrencia
-  const handleIgnoreOccurrence = async (id, status) => {
-    try {
-      await api.delete("/land-occurrences/refuse", {
-        data: { id, status },
-      });
-
+  const handleReturnOccurrence = async () => {
+    if (!returnReason.trim()) {
       toast({
-        title: "Ocorrência devolvida com sucesso",
+        variant: "destructive",
+        title: "Motivo obrigatório",
+        description: "Informe o motivo da devolução.",
+      });
+      return;
+    }
+
+    try {
+      await api.post("/occurrences/return", {
+        occurrenceId: selectedOccurrenceId,
+        reason: returnReason,
       });
 
+      toast({ title: "Ocorrência devolvida com sucesso." });
+
+      setIsReturnModalOpen(false);
+      setReturnReason("");
+      setSelectedOccurrenceId(null);
       fetchOccurrences(currentPage);
     } catch (error) {
       toast({
@@ -110,29 +138,54 @@ export function OccurrencesT() {
   };
 
   //aceita a ocorrencia
-  const handleGenerateOS = async (id, status) => {
-    if (status === "Pendente") {
+  const handleGenerateOS = async (occurrenceId) => {
+    const values = selectedValues[occurrenceId];
+    const occurrence = occurrences.find((o) => o.id === occurrenceId);
+
+    if (!values || !occurrence) {
       toast({
-        title: "O.S. já foi gerada para essa ocorrência.",
+        variant: "destructive",
+        title: "Dados incompletos",
+        description: "Preencha os campos obrigatórios antes de gerar a O.S.",
       });
       return;
     }
 
-    try {
-      // Envia o novo status no body
-      await api.put(`/land-occurrences/accept/${id}`, {
-        status: "Pendente",
-      });
+    const { serviceNatureId, inspectorId, foremanId, teamId, scheduledDate } =
+      values;
 
+    if (!foremanId || !teamId || !scheduledDate) {
       toast({
-        title: "Status alterado para Pendente com sucesso.",
+        variant: "destructive",
+        title: "Campos obrigatórios",
+        description: "Preencha encarregado, equipe e data agendada.",
       });
+      return;
+    }
 
-      fetchOccurrences(currentPage); // Atualiza a lista
+    const payload = {
+      occurrenceId,
+      sectorId: occurrence.sector.id,
+      foremanId,
+      teamId,
+      scheduledDate: new Date(scheduledDate).toISOString(),
+    };
+
+    if (serviceNatureId) payload.serviceNatureId = serviceNatureId;
+    if (inspectorId) payload.inspectorId = inspectorId;
+
+    try {
+      console.log("Payload enviado:", payload);
+      await api.post("/service-orders", payload);
+
+      toast({ title: "Ordem de Serviço gerada com sucesso!" });
+
+      // Apenas atualiza os dados da tela, sem PUT
+      fetchOccurrences(currentPage);
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Erro ao atualizar status",
+        title: "Erro ao gerar O.S.",
         description: error.message,
       });
     }
@@ -141,7 +194,7 @@ export function OccurrencesT() {
   //deleta a imagem do carrosel
   const handleDeleteImage = async (imageId) => {
     try {
-      await api.delete("/land-occurrences/deletepicture", {
+      await api.post("/occurrences/deletepicture", {
         data: { id: imageId },
       });
 
@@ -161,27 +214,25 @@ export function OccurrencesT() {
 
   //busca informações do back
   const loadOptionsForOccurrence = async (occurrence) => {
-    if (!occurrence || !occurrence.sector?.name) return;
+    if (!occurrence || !occurrence.sector?.id) return;
 
     try {
-      const [naturesRes, techsRes, teamsRes, supersRes] = await Promise.all([
-        api.get(`/natures?sector=${occurrence.sector.name}`),
-        api.get(`/technicians?sector=${occurrence.sector.name}`),
-        api.get(`/teams?sector=${occurrence.sector.name}`),
-        api.get(`/supervisors?sector=${occurrence.sector.name}`),
-      ]);
+      const res = await api.get(`/sectors/${occurrence.sector.id}/details`);
+      const sectorData = res.data.sector;
 
       setSelectOptions((prev) => ({
         ...prev,
         [occurrence.id]: {
-          natures: naturesRes.data.data || [],
-          technicians: techsRes.data.data || [],
-          teams: teamsRes.data.data || [],
-          supervisors: supersRes.data.data || [],
+          natures:
+            sectorData.teams?.flatMap((team) => team.serviceNatures) || [],
+          technicians: sectorData.inspectors || [],
+          teams: sectorData.teams || [],
+          supervisors: sectorData.foremen || [],
+          inspectors: sectorData.inspectors || [],
         },
       }));
     } catch (error) {
-      console.error("Erro ao carregar opções:", error);
+      console.error("Erro ao carregar dados do setor:", error);
     }
   };
 
@@ -221,15 +272,18 @@ export function OccurrencesT() {
 
       <OccurrenceList
         occurrences={occurrences}
-        filterStatus="EmFila"
         renderExpandedRow={(occurrence) => (
-          <ExpandedRowT
+          <ExpandedRowWithLoad
             occurrence={occurrence}
+            loadOptionsForOccurrence={loadOptionsForOccurrence}
             selectedValues={selectedValues}
             setSelectedValues={setSelectedValues}
             selectOptions={selectOptions}
             onGenerateOS={handleGenerateOS}
-            onIgnore={handleIgnoreOccurrence}
+            onOpenReturnModal={(id) => {
+              setSelectedOccurrenceId(id);
+              setIsReturnModalOpen(true);
+            }}
             onDeleteImage={handleDeleteImage}
           />
         )}
@@ -244,6 +298,44 @@ export function OccurrencesT() {
           />
         </div>
       </footer>
+      {isReturnModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
+          <div className="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-lg space-y-5 text-center">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Motivo da devolução
+            </h2>
+
+            <textarea
+              value={returnReason}
+              onChange={(e) => setReturnReason(e.target.value)}
+              placeholder="Descreva aqui..."
+              className="w-full rounded-xl border border-gray-300 p-3 text-sm text-gray-800 resize-none outline-none"
+              rows={4}
+            />
+
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleReturnOccurrence}
+                className="flex items-center justify-center gap-2 w-full rounded-2xl bg-black text-white py-3 font-medium text-sm hover:bg-gray-900 transition"
+              >
+                <span className="text-lg">↩</span>
+                Confirmar devolução
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsReturnModalOpen(false);
+                  setReturnReason("");
+                  setSelectedOccurrenceId(null);
+                }}
+                className="text-sm text-gray-500 underline hover:text-gray-700 transition"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
