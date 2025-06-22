@@ -16,6 +16,7 @@ import { TeamManagement } from "@/pages/TeamManagement"
 import { AuditLogs } from "@/pages/AuditLogs"
 import { CreateOccurrencePage } from "@/pages/Pilot"
 import { CreateOccurrenceTPage } from "@/pages/PilotT"
+import { Inspection } from "@/pages/Inspection"
 import NeighborhoodOccurrences from "@/pages/LiveAction"
 
 export function AppRoutes() {
@@ -64,6 +65,7 @@ export function AppRoutes() {
       <Route path="/userprofile" element={<UserProfile />} />
       <Route path="/notifications" element={<Notifications />} />
       <Route path="/analysis" element={<Analysis />} />
+      <Route path="/inspection" element={<Inspection />} />
 
       {/* 🚫 REMOVIDO: Rota /sector-dashboard (não existe mais)
       {user.role === "supervisor" ? (

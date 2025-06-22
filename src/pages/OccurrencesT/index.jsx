@@ -46,7 +46,7 @@ export function OccurrencesT() {
   const [selectOptions, setSelectOptions] = useState({});
 
   const { setor } = useUserSector();
-  const { isAdmin, isSupervisor } = usePermissions();
+  const { isAdmin, isSupervisor, isInspector } = usePermissions();
   const [selectedValues, setSelectedValues] = useState({});
 
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
@@ -54,8 +54,8 @@ export function OccurrencesT() {
   const [selectedOccurrenceId, setSelectedOccurrenceId] = useState(null);
 
   useEffect(() => {
-    if (!isAdmin && !isSupervisor) {
-      // Redireciona para página de erro ou dashboard
+    if (!isAdmin && !isSupervisor && !isInspector) {
+      // Redireciona para página de erro ou dashboardl/
       window.location.href = "/";
     }
   }, [isAdmin]);

@@ -7,11 +7,13 @@ export const usePermissions = () => {
   const isAnalyst = user?.role === "ANALYST";
   const isOperator = user?.role === "FIELD_AGENT";
   const isSupervisor = user?.role === "SECTOR_CHIEF";
+  const isInspector = user?.role == "INSPECTOR";
 
   return {
     isAdmin,
     isAnalyst,
     isOperator,
     isSupervisor,
+    isInspector
   };
 };
