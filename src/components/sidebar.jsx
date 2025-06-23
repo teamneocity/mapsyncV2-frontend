@@ -45,40 +45,74 @@ export function Sidebar() {
 
         <nav className="flex flex-col px-1 py-1">
           <div>
-            <p className="text-base font-normal mb-2 text-[#4B4B62]">Workspace</p>
+            <p className="text-base font-normal mb-2 text-[#4B4B62]">
+              Workspace
+            </p>
             <div className="flex flex-col gap-1 text-[#787891] border-b pb-3">
               {canSeeAll && (
-                <Link to="/" className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                <Link
+                  to="/"
+                  className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                >
                   <HomeIcon /> Dashboard
                 </Link>
               )}
+              {isSupervisor && (
+                <Link
+                  to="/sectorAdmin"
+                  className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                >
+                  <ChartColumn /> Setor
+                </Link>
+              )}
               {isAnalyst && (
-                <Link to="/analysis" className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                <Link
+                  to="/analysis"
+                  className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                >
                   <ChartColumn /> Análises
                 </Link>
               )}
               {(canSeeAll || isInspector) && (
                 <>
-                  <Link to="/occurrencest" className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                  <Link
+                    to="/occurrencest"
+                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                  >
                     <Building2 /> Mapeamento Terrestre
                   </Link>
-                  <Link to="/occurrencesa" className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                  <Link
+                    to="/occurrencesa"
+                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                  >
                     <Send /> Mapeamento Aéreo
                   </Link>
                 </>
               )}
               {canSeeAll && (
                 <>
-                  <Link to="/routemap" className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                  <Link
+                    to="/routemap"
+                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                  >
                     <Map /> Mapa de Percurso
                   </Link>
-                  <Link to="/serviceorder" className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                  <Link
+                    to="/serviceorder"
+                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                  >
                     <Database /> O.S.
                   </Link>
-                  <Link to="/reports" className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                  <Link
+                    to="/reports"
+                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                  >
                     <ChartColumn /> Relatórios
                   </Link>
-                  <Link to="/inspection" className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                  <Link
+                    to="/inspection"
+                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                  >
                     <ShieldCheck /> Fiscalização
                   </Link>
                 </>
@@ -89,10 +123,16 @@ export function Sidebar() {
           <div className="w-full border-b pb-3">
             <p className="text-base font-normal mb-2 text-[#4B4B62]">Ajustes</p>
             <div className="flex flex-col gap-1 text-[#787891]">
-              <Link to="/dashboard" className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+              <Link
+                to="/dashboard"
+                className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+              >
                 <Settings /> Configurações
               </Link>
-              <Link to="/notifications" className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+              <Link
+                to="/notifications"
+                className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+              >
                 <MailOpen /> Notificações
               </Link>
             </div>
@@ -100,15 +140,23 @@ export function Sidebar() {
 
           {canSeeAll && (
             <div className="mt-3 w-full">
-              <p className="text-base font-normal mb-2 text-[#4B4B62]">Suporte</p>
-              <div className="flex flex-col gap-1 text-[#787891]">
-                <Link to="/teammanagement" className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+              <p className="text-base font-normal mb-2 text-[#4B4B62]">
+                Suporte
+              </p>
+              {/* <div className="flex flex-col gap-1 text-[#787891]">
+                <Link
+                  to="/teammanagement"
+                  className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                >
                   <MailOpen /> Gestão de Equipes
                 </Link>
-                <Link to="/logs" className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                <Link
+                  to="/logs"
+                  className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                >
                   <Logs /> Auditoria
                 </Link>
-              </div>
+              </div> */}
             </div>
           )}
         </nav>
@@ -116,7 +164,9 @@ export function Sidebar() {
         <div className="mt-auto flex items-center px-4 py-3 justify-between">
           <div className="flex gap-4 items-center">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={`${api.defaults.baseURL}/avatar/${user.avatar}`} />
+              <AvatarImage
+                src={`${api.defaults.baseURL}/avatar/${user.avatar}`}
+              />
               <AvatarFallback>{userInitials}</AvatarFallback>
             </Avatar>
             <div>
@@ -131,65 +181,104 @@ export function Sidebar() {
       </aside>
 
       {/* Sidebar Mobile */}
-      <div className="sm:hidden">
-        <header className="sticky top-0 z-30 flex h-14 items-center px-4 border-b bg-background gap-4">
+      <div className="sm:hidden ">
+        <header className="sticky top-0 z-30 flex h-14 items-center px-4  bg-[#EBEBEB] gap-4">
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="icon" variant="outline" className="border-0">
+              <Button size="icon" variant="ghost" className="border-0">
                 <PanelLeftClose size={24} />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="sm:max-w-xs flex flex-col max-w-80">
+            <SheetContent
+              side="left"
+              className="sm:max-w-xs flex flex-col max-w-80"
+            >
               <nav className="grid text-sm font-small">
                 <div className="flex flex-col gap-1 text-[#787891] border-b pb-5">
                   {canSeeAll && (
-                    <Link to="/" className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                    <Link
+                      to="/"
+                      className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                    >
                       <HomeIcon /> Dashboard
                     </Link>
                   )}
                   {isAnalyst && (
-                    <Link to="/analysis" className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                    <Link
+                      to="/analysis"
+                      className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                    >
                       <ChartColumn /> Análises
                     </Link>
                   )}
                   {(canSeeAll || isInspector) && (
                     <>
-                      <Link to="/occurrencest" className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                      <Link
+                        to="/occurrencest"
+                        className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                      >
                         <Building2 /> Mapeamento Terrestre
                       </Link>
-                      <Link to="/occurrencesa" className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                      <Link
+                        to="/occurrencesa"
+                        className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                      >
                         <Send /> Mapeamento Aéreo
                       </Link>
                     </>
                   )}
                   {canSeeAll && (
                     <>
-                      <Link to="/routemap" className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                      <Link
+                        to="/routemap"
+                        className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                      >
                         <Map /> Mapa de Percurso
                       </Link>
-                      <Link to="/serviceorder" className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                      <Link
+                        to="/serviceorder"
+                        className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                      >
                         <Database /> O.S.
                       </Link>
-                      <Link to="/reports" className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                      <Link
+                        to="/reports"
+                        className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                      >
                         <ChartColumn /> Relatórios
                       </Link>
-                      <Link to="/inspection" className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                      <Link
+                        to="/inspection"
+                        className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                      >
                         <ShieldCheck /> Fiscalização
                       </Link>
                     </>
                   )}
-                  <Link to="/dashboard" className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                  <Link
+                    to="/dashboard"
+                    className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                  >
                     <Settings /> Configurações
                   </Link>
-                  <Link to="/notifications" className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                  <Link
+                    to="/notifications"
+                    className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                  >
                     <MailOpen /> Notificações
                   </Link>
                   {canSeeAll && (
                     <>
-                      <Link to="/teammanagement" className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                      <Link
+                        to="/teammanagement"
+                        className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                      >
                         <MailOpen /> Gestão de Equipes
                       </Link>
-                      <Link to="/logs" className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900">
+                      <Link
+                        to="/logs"
+                        className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                      >
                         <Logs /> Auditoria
                       </Link>
                     </>
@@ -199,7 +288,9 @@ export function Sidebar() {
 
               <div className="mt-auto flex items-center justify-between px-4 py-6 gap-3">
                 <Avatar>
-                  <AvatarImage src={`${api.defaults.baseURL}/avatar/${user.avatar}`} />
+                  <AvatarImage
+                    src={`${api.defaults.baseURL}/avatar/${user.avatar}`}
+                  />
                   <AvatarFallback>{userInitials}</AvatarFallback>
                 </Avatar>
                 <div>

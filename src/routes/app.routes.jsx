@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom"
 
-import { Dashboard } from "@/pages/Dashboard" // continua sendo a página unificada
+import { Dashboard } from "@/pages/Dashboard" 
 import { SignIn } from "@/pages/SignIn"
 import { OccurrencesT } from "@/pages/OccurrencesT"
 import { OccurrencesA } from "@/pages/OccurrencesA"
@@ -17,6 +17,7 @@ import { AuditLogs } from "@/pages/AuditLogs"
 import { CreateOccurrencePage } from "@/pages/Pilot"
 import { CreateOccurrenceTPage } from "@/pages/PilotT"
 import { Inspection } from "@/pages/Inspection"
+import { SectorAdmin } from "@/pages/SectorAdmin"
 import NeighborhoodOccurrences from "@/pages/LiveAction"
 
 export function AppRoutes() {
@@ -66,13 +67,8 @@ export function AppRoutes() {
       <Route path="/notifications" element={<Notifications />} />
       <Route path="/analysis" element={<Analysis />} />
       <Route path="/inspection" element={<Inspection />} />
+      <Route path="/sectorAdmin" element={<SectorAdmin/>}/>
 
-      {/* 🚫 REMOVIDO: Rota /sector-dashboard (não existe mais)
-      {user.role === "supervisor" ? (
-        <Route path="/sector-dashboard" element={<SectorDashboardPage />} />
-      ) : (
-        <Route path="/sector-dashboard" element={<Navigate to="/" />} />
-      )} */}
 
       {/* Admin/Gestor */}
       {["admin", "gestor"].includes(user.role) ? (

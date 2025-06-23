@@ -22,6 +22,7 @@ export function OccurrenceList({ occurrences, renderExpandedRow }) {
       emergencial: "bg-[#FFE8E8] text-[#FF2222]",
       aprovada: "bg-[#FFF4D6] text-[#FFC118]",
       os_gerada: "bg-[#f0ddee] text-[#733B73]",
+      aguardando_execucao : "bg-[#FFE4B5] text-[#CD853F]"
     };
 
     return map[status] || "bg-gray-100 text-gray-600";

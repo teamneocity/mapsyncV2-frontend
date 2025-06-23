@@ -77,7 +77,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
           <h3 className="text-base font-semibold mb-2 border-b pb-1">
             Anotações da ocorrência
           </h3>
-          <div className="bg-[#F8F8F8] rounded-xl px-4 py-2 min-h-[76px] text-gray-700">
+          <div className="bg-[#F8F8F8] rounded-xl px-4 py-2 min-h-[96px] text-gray-700">
             {occurrence?.occurrence?.description || "Sem anotações."}
           </div>
         </div>
@@ -115,7 +115,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
 
         <Timeline timeline={timeline} />
 
-        <Button className="w-full h-14 bg-green-100 hover:bg-green-200 text-green-700 mt-6">
+        <Button className="w-full h-[72px] bg-green-100 hover:bg-green-200 text-green-700 mt-6">
           Finalizar
         </Button>
       </div>

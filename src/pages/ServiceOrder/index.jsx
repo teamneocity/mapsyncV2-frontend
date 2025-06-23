@@ -12,7 +12,7 @@ import { LiveActionButton } from "@/components/live-action-button";
 import { Pagination } from "@/components/pagination";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
-import logoEmurb from "../../assets/logoEmurb.png";
+import emurb from "../../assets/emurb.svg";
 
 export function ServiceOrder() {
   const { toast } = useToast();
@@ -64,7 +64,7 @@ export function ServiceOrder() {
 
       const flattened = (result.serviceorders || []).map((order) => ({
         id: order.id,
-        status: order.occurrence?.status || order.status,
+        status: order?.status || order.status,
         createdAt: order.occurrence?.createdAt || order.createdAt,
         author: order.occurrence?.author || null,
         approvedBy: order.occurrence?.approvedBy || null,
@@ -72,7 +72,7 @@ export function ServiceOrder() {
         protocol: order.protocolNumber || "-",
         zone: order.occurrence?.zone || "—",
         origin: "Plataforma",
-        raw: order, // mantemos o original para passar para o expandido
+        raw: order, 
       }));
 
       setOccurrences(flattened);
@@ -131,7 +131,7 @@ export function ServiceOrder() {
         <div className="px-2 py-2">
           <Link to="/">
             <img
-              src={logoEmurb}
+              src={emurb}
               alt="Logo EMURB"
               className="h-16 w-auto rounded-md"
             />

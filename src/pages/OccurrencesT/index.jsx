@@ -22,6 +22,10 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { OccurrenceList } from "@/components/OccurrenceList";
 import { ExpandedRowT } from "./ExpandedRowT";
 import { ExpandedRowWithLoad } from "./ExpandedRowWithLoad";
+import { Link } from "react-router-dom";
+import { TopHeader } from "@/components/topHeader";
+
+import emurb from "../../assets/emurb.svg";
 
 export function OccurrencesT() {
   const { user } = useAuth();
@@ -240,17 +244,7 @@ export function OccurrencesT() {
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
 
-      <header className="flex justify-between items-center  py-4 px-4 sm:px-8 bg-[#EBEBEB] sticky top-0 z-10">
-        <div className="flex items-center bg-[#EBEBEB]">
-          <h1 className="text-xl font-bold text-gray-800 hidden sm:block">
-            Ocorrências Terrestres
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <LiveActionButton />
-        </div>
-      </header>
+      <TopHeader />
 
       <div className="px-4 py-4 sm:py-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:hidden">
