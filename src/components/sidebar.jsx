@@ -1,20 +1,19 @@
 // ... imports mantidos iguais
 import { Sheet, SheetTrigger, SheetContent } from "./ui/sheet";
 import { Button } from "./ui/button";
-import {
-  LogInIcon as Logs,
-  HomeIcon,
-  Settings,
-  Building2,
-  Send,
-  Map,
-  Database,
-  BarChartIcon as ChartColumn,
-  PanelLeftClose,
-  MailOpen,
-  ChevronRight,
-  ShieldCheck,
-} from "lucide-react";
+import AssessmentIcon from "@/assets/icons/assessment.svg?react";
+import CalendarIcon from "@/assets/icons/calendar.svg?react";
+import AlertIcon from "@/assets/icons/diamond-exclamation.svg?react";
+import DroneIcon from "@/assets/icons/drone.svg?react";
+import HouseCheckIcon from "@/assets/icons/house-circle-check.svg?react";
+import NewsIcon from "@/assets/icons/newspaper.svg?react";
+import RoadmapIcon from "@/assets/icons/roadmap.svg?react";
+import TrackIcon from "@/assets/icons/track.svg?react";
+import AngleSmallRight from "@/assets/icons/angleSmallRight.svg?react";
+import PeopleLine from "@/assets/icons/peopleLine.svg?react";
+import SettingsWindow from "@/assets/icons/settingsWindow.svg?react";
+import { PanelLeftClose } from "lucide-react";
+
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/auth";
@@ -54,7 +53,7 @@ export function Sidebar() {
                   to="/"
                   className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                 >
-                  <HomeIcon /> Dashboard
+                  <HouseCheckIcon className="w-5 h-5 shrink-0" /> Dashboard
                 </Link>
               )}
               {isSupervisor && (
@@ -62,7 +61,7 @@ export function Sidebar() {
                   to="/sectorAdmin"
                   className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                 >
-                  <ChartColumn /> Setor
+                  <PeopleLine className="w-5 h-5 shrink-0" /> Setor
                 </Link>
               )}
               {isAnalyst && (
@@ -70,50 +69,53 @@ export function Sidebar() {
                   to="/analysis"
                   className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                 >
-                  <ChartColumn /> Análises
+                  <AlertIcon className="w-5 h-5 shrink-0" /> Análises
                 </Link>
               )}
               {(canSeeAll || isInspector) && (
                 <>
                   <Link
-                    to="/occurrencest"
-                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
-                  >
-                    <Building2 /> Mapeamento Terrestre
-                  </Link>
-                  <Link
                     to="/occurrencesa"
                     className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                   >
-                    <Send /> Mapeamento Aéreo
+                    <DroneIcon className="w-5 h-5 shrink-0" /> Mapeamento Aéreo
+                  </Link>
+                  <Link
+                    to="/occurrencest"
+                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                  >
+                    <TrackIcon className="w-5 h-5 shrink-0" /> Mapeamento
+                    Terrestre
                   </Link>
                 </>
               )}
               {canSeeAll && (
                 <>
                   <Link
-                    to="/routemap"
-                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
-                  >
-                    <Map /> Mapa de Percurso
-                  </Link>
-                  <Link
                     to="/serviceorder"
                     className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                   >
-                    <Database /> O.S.
-                  </Link>
-                  <Link
-                    to="/reports"
-                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
-                  >
-                    <ChartColumn /> Relatórios
+                    <CalendarIcon className="w-5 h-5 shrink-0" /> O.S.
                   </Link>
                   <Link
                     to="/inspection"
                     className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                   >
-                    <ShieldCheck /> Fiscalização
+                    <AssessmentIcon className="w-5 h-5 shrink-0" /> Fiscalização
+                  </Link>
+                  <Link
+                    to="/routemap"
+                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                  >
+                    <RoadmapIcon className="w-5 h-5 shrink-0" /> Mapa de
+                    Percurso
+                  </Link>
+
+                  <Link
+                    to="/reports"
+                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                  >
+                    <NewsIcon className="w-5 h-5 shrink-0" /> Relatórios
                   </Link>
                 </>
               )}
@@ -127,13 +129,13 @@ export function Sidebar() {
                 to="/dashboard"
                 className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
               >
-                <Settings /> Configurações
+                <SettingsWindow className="w-5 h-5 shrink-0" /> Configurações
               </Link>
               <Link
                 to="/notifications"
                 className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
               >
-                <MailOpen /> Notificações
+                <NewsIcon className="w-5 h-5 shrink-0" /> Notificações
               </Link>
             </div>
           </div>
@@ -143,20 +145,6 @@ export function Sidebar() {
               <p className="text-base font-normal mb-2 text-[#4B4B62]">
                 Suporte
               </p>
-              {/* <div className="flex flex-col gap-1 text-[#787891]">
-                <Link
-                  to="/teammanagement"
-                  className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
-                >
-                  <MailOpen /> Gestão de Equipes
-                </Link>
-                <Link
-                  to="/logs"
-                  className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
-                >
-                  <Logs /> Auditoria
-                </Link>
-              </div> */}
             </div>
           )}
         </nav>
@@ -175,7 +163,7 @@ export function Sidebar() {
             </div>
           </div>
           <Link to="/userprofile">
-            <ChevronRight />
+            <AngleSmallRight className="w-5 h-5 shrink-0" />
           </Link>
         </div>
       </aside>
@@ -200,7 +188,15 @@ export function Sidebar() {
                       to="/"
                       className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                     >
-                      <HomeIcon /> Dashboard
+                      <HouseCheckIcon className="w-5 h-5 shrink-0" /> Dashboard
+                    </Link>
+                  )}
+                  {isSupervisor && (
+                    <Link
+                      to="/sectorAdmin"
+                      className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                    >
+                      <PeopleLine className="w-5 h-5 shrink-0" /> Setor
                     </Link>
                   )}
                   {isAnalyst && (
@@ -208,81 +204,71 @@ export function Sidebar() {
                       to="/analysis"
                       className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                     >
-                      <ChartColumn /> Análises
+                      <AlertIcon className="w-5 h-5 shrink-0" /> Análises
                     </Link>
                   )}
                   {(canSeeAll || isInspector) && (
                     <>
                       <Link
-                        to="/occurrencest"
-                        className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
-                      >
-                        <Building2 /> Mapeamento Terrestre
-                      </Link>
-                      <Link
                         to="/occurrencesa"
                         className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                       >
-                        <Send /> Mapeamento Aéreo
+                        <DroneIcon className="w-5 h-5 shrink-0" /> Mapeamento
+                        Aéreo
+                      </Link>
+                      <Link
+                        to="/occurrencest"
+                        className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                      >
+                        <TrackIcon className="w-5 h-5 shrink-0" /> Mapeamento
+                        Terrestre
                       </Link>
                     </>
                   )}
                   {canSeeAll && (
                     <>
                       <Link
-                        to="/routemap"
-                        className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
-                      >
-                        <Map /> Mapa de Percurso
-                      </Link>
-                      <Link
                         to="/serviceorder"
                         className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                       >
-                        <Database /> O.S.
-                      </Link>
-                      <Link
-                        to="/reports"
-                        className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
-                      >
-                        <ChartColumn /> Relatórios
+                        <CalendarIcon className="w-5 h-5 shrink-0" /> O.S.
                       </Link>
                       <Link
                         to="/inspection"
                         className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                       >
-                        <ShieldCheck /> Fiscalização
+                        <AssessmentIcon className="w-5 h-5 shrink-0" />{" "}
+                        Fiscalização
+                      </Link>
+                      <Link
+                        to="/routemap"
+                        className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                      >
+                        <RoadmapIcon className="w-5 h-5 shrink-0" /> Mapa de
+                        Percurso
+                      </Link>
+                      <Link
+                        to="/reports"
+                        className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                      >
+                        <NewsIcon className="w-5 h-5 shrink-0" /> Relatórios
                       </Link>
                     </>
                   )}
+                  {/* Ajustes */}
                   <Link
                     to="/dashboard"
                     className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                   >
-                    <Settings /> Configurações
+                    <SettingsWindow className="w-5 h-5 shrink-0" />{" "}
+                    Configurações
                   </Link>
                   <Link
                     to="/notifications"
                     className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                   >
-                    <MailOpen /> Notificações
+                    <NewsIcon className="w-5 h-5 shrink-0" /> Notificações
                   </Link>
-                  {canSeeAll && (
-                    <>
-                      <Link
-                        to="/teammanagement"
-                        className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
-                      >
-                        <MailOpen /> Gestão de Equipes
-                      </Link>
-                      <Link
-                        to="/logs"
-                        className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
-                      >
-                        <Logs /> Auditoria
-                      </Link>
-                    </>
-                  )}
                 </div>
               </nav>
 
@@ -298,7 +284,7 @@ export function Sidebar() {
                   <p className="text-[8px] text-gray-600">{email}</p>
                 </div>
                 <Link to="/userprofile">
-                  <ChevronRight />
+                  <AngleSmallRight className="w-5 h-5 shrink-0" />
                 </Link>
               </div>
             </SheetContent>

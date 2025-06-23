@@ -23,6 +23,7 @@ import { OccurrenceList } from "@/components/OccurrenceList";
 import { ExpandedRowAnalysis } from "./ExpandedRowAnalysis";
 import { IgnoreOccurrenceModal } from "@/components/ignoreOccurrenceModal";
 import { Link } from "react-router-dom";
+import { TopHeader } from "@/components/topHeader";
 
 import emurb from "../../assets/emurb.svg";
 
@@ -168,21 +169,7 @@ export function Analysis() {
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
 
-      <header className="flex justify-between items-center py-4 px-4 sm:px-8 bg-[#EBEBEB] sticky top-0 z-10">
-              <div className="px-2 py-2">
-                <Link to="/">
-                  <img
-                    src={emurb}
-                    alt="Logo EMURB"
-                    className="h-16 w-auto rounded-md"
-                  />
-                </Link>
-              </div>
-      
-              <div className="flex items-center gap-2">
-                <LiveActionButton />
-              </div>
-            </header>
+      <TopHeader/>
 
       <div className="px-4 py-4 sm:py-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:hidden">

@@ -43,7 +43,7 @@ import {
 import { Sidebar } from "@/components/sidebar";
 import { Link } from "react-router-dom";
 import { LiveActionButton } from "@/components/live-action-button";
-
+import { TopHeader } from "@/components/topHeader";
 import emurb from "../../assets/emurb.svg";
 
 // Mock data baseado no JSON fornecido
@@ -104,21 +104,7 @@ export function SectorAdmin() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="flex justify-between items-center py-4 px-4 sm:px-8 bg-[#EBEBEB] sticky top-0 z-10">
-                <div className="px-2 py-2">
-                  <Link to="/">
-                    <img
-                      src={emurb}
-                      alt="Logo EMURB"
-                      className="h-16 w-auto rounded-md"
-                    />
-                  </Link>
-                </div>
-        
-                <div className="flex items-center gap-2">
-                  <LiveActionButton />
-                </div>
-              </header>
+        <TopHeader/>
 
         {/* Content */}
         <main className="flex-1 overflow-auto p-6">

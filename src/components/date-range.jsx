@@ -23,7 +23,7 @@ export function DateRange({ selectedRange, onDateRangeChange }) {
                     <Button
                         id="date"
                         variant="outline"
-                        className={`w-[250px] justify-start text-left font-normal text-gray-900 ${!date?.from && "text-muted-foreground"} h-12`}
+                        className={`w-[250px] justify-start text-left font-normal  ${!date?.from && "text-muted-foreground"} h-12`}
                     >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {date?.from ? (
@@ -35,7 +35,7 @@ export function DateRange({ selectedRange, onDateRangeChange }) {
                                 format(date.from, "dd/MM/yyyy")
                             )
                         ) : (
-                            <span className="text-gray-900 font-inter">Selecione a Data</span>
+                            <span className="text-[#4B4B62]font-inter">Selecione a Data</span>
                         )}
                     </Button>
                 </PopoverTrigger>

@@ -12,7 +12,7 @@ export function Timeline({ timeline }) {
             <li key={index} className="relative flex items-start gap-3">
               {/* Bolinha e linha condicional */}
               <div className="absolute -left-6 top-1 flex flex-col items-center z-10">
-                <div className="w-4 h-4 bg-green-300 rounded-full border border-white" />
+                <div className="w-4 h-4 bg-[#33C083] rounded-full border border-white" />
                 {hasNextDate && (
                   <div className="h-8 border-l-2 border-dotted border-green-300" />
                 )}

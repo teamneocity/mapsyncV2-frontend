@@ -4,7 +4,7 @@ export function LiveActionButton() {
   return (
     <Link
       to="/liveaction"
-      className="flex items-center  justify-center gap-3 w-full max-w-64 py-3 px-8 bg-[#7069fe] text-white rounded-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
+      className="flex items-center  justify-center gap-3 w-full max-w-64 py-3 px-8 bg-[#4A4A4A] text-white rounded-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
     >
       <div className="flex items-center justify-center w-8 h-8">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

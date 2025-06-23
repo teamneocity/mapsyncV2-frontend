@@ -65,6 +65,7 @@ export default {
         },
       },
       fontFamily: {
+        sans: ["Manrope", "sans-serif"], // <- isso define o padrão
         manrope: ["Manrope", "sans-serif"],
         inter: ["Inter", "sans-serif"],
       },

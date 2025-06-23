@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Select,
   SelectContent,
@@ -7,13 +6,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export function SelectField({ label, options, value, onChange }) {
+
+export function SelectField({ label, options, value, onChange, placeholder = "Selecione..." }) {
   return (
     <div className="space-y-1">
       <p className="text-sm font-medium text-gray-600">{label}</p>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="w-full h-10 bg-white border border-gray-300">
-          <SelectValue placeholder="Selecione..." />
+        <SelectTrigger className="w-full text-[#787891] h-10 bg-white border-none">
+          <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
           {options.map((option) => (

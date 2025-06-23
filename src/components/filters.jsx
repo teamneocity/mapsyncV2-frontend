@@ -6,10 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  ChevronDown,
-  SlidersHorizontal,
-} from "lucide-react";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import { DateRange } from "./date-range";
 import { Button } from "@/components/ui/button";
@@ -104,12 +101,14 @@ export function Filters({
   };
 
   return (
-    <header className="bg-[#EBEBEB] px-4 py-3">
+    <header className="bg-[#EBEBEB] px-1 py-1">
       <div className="flex flex-wrap items-center gap-2 md:gap-3">
         {/* Título dinâmico */}
         <div className="flex flex-col mr-2 min-w-[160px]">
-          <span className="text-xs text-gray-700 leading-tight">{title}</span>
-          <span className="text-sm font-semibold text-gray-900 leading-tight">
+          <span className="text-[18px] text-gray-700 leading-tight">
+            {title}
+          </span>
+          <span className="text-[18px] font-semibold text-gray-900 leading-tight">
             {subtitle}
           </span>
         </div>
@@ -119,7 +118,7 @@ export function Filters({
           <Input
             placeholder="Pesquise pelo bairro / nome da rua ou avenida"
             onChange={(e) => onSearch(e.target.value)}
-            className="text-sm h-12 gap-2 justify-between rounded-xl border-none shadow-sm"
+            className="text-sm h-12 gap-2 justify-between rounded-xl border-none shadow-sm placeholder:text-[#4B4B62]"
           />
         </div>
 
@@ -128,7 +127,7 @@ export function Filters({
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm"
+              className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm text-[#4B4B62]"
             >
               {selectedRecent || "Recentes"}
               <ChevronDown className="ml-1 h-4 w-4" />
@@ -153,7 +152,7 @@ export function Filters({
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm"
+              className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm text-[#4B4B62]"
             >
               Filtrar por tipo de ocorrências
               <SlidersHorizontal className="ml-1 h-4 w-4" />
@@ -183,7 +182,7 @@ export function Filters({
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm"
+              className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm text-[#4B4B62]"
             >
               Filtrar por bairro
               <SlidersHorizontal className="ml-1 h-4 w-4" />
@@ -215,7 +214,7 @@ export function Filters({
 
         {/* Botão aplicar */}
         <Button
-          className="bg-[#83C9F4] w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm"
+          className="bg-[#83C9F4] text-[#00679D] hover:bg-[#ADD8E6]  w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm"
           onClick={handleApplyFilters}
         >
           Aplicar

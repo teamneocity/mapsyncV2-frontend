@@ -14,11 +14,15 @@ export function DatePicker({ date, onChange }) {
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
-          className="w-full justify-start text-left font-normal"
+          variant="ghost"
+          className="w-full justify-start text-left font-normal bg-white hover:bg-gray-200"
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "dd/MM/yyyy") : <span>Escolha uma data</span>}
+          {date ? (
+            format(date, "dd/MM/yyyy")
+          ) : (
+            <span className="text-[#787891]">Escolha uma data</span>
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">

@@ -27,7 +27,7 @@ export function InspectionCard({ occurrence }) {
         <img
           src={occurrence.imageUrl}
           alt="Imagem da ocorrência"
-          className="h-[200px] w-full object-cover"
+          className="h-[270px] w-full object-cover"
         />
         <div className="absolute bottom-2 left-2 bg-white text-xs px-2 py-1 rounded shadow">
           Imagem 1/1
@@ -83,7 +83,7 @@ export function InspectionCard({ occurrence }) {
           {Object.entries(occurrence.timeline).map(([key, date], i, arr) => (
             <div className="flex items-start gap-2 mb-3" key={i}>
               <div className="flex flex-col items-center">
-                <div className="h-4 w-4 bg-green-300 rounded-full border border-white" />
+                <div className="h-4 w-4 bg-[#33C083] rounded-full border border-white" />
                 {arr[i + 1]?.[1] && (
                   <div className="h-8 border-l-2 border-dotted border-green-300" />
                 )}

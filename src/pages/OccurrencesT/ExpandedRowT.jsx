@@ -18,11 +18,11 @@ export function ExpandedRowT({
   const values = selectedValues[occurrence.id] || {};
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 bg-white p-4 rounded-lg shadow-sm text-sm">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 bg-[#F7F7F7] p-4 rounded-lg  text-sm">
       {/* Coluna 1 - Info */}
-      <div className="flex flex-col justify-between space-y-4 h-full">
-        <div className="space-y-1">
-          <h3 className="font-semibold text-base mb-2 border-b pb-1">
+      <div className="flex flex-col bg-[#F7F7F7] justify-between space-y-4 h-full">
+        <div className="space-y-1 bg-[#F7F7F7]">
+          <h3 className="font-semibold text-[#787891] text-base mb-2  pb-1">
             Informações sobre a ocorrência
           </h3>
           <p>
@@ -78,12 +78,12 @@ export function ExpandedRowT({
       {/* Coluna 2 - Encaminhamento */}
       <div className="flex flex-col justify-between space-y-4 h-full">
         <div className="space-y-2">
-          <h3 className="font-semibold text-base mb-2 border-b pb-1">
-            Encaminhamento para O.S.
+          <h3 className="font-semibold text-[#787891] text-base mb-2 pb-1">
+            Programar e gerar O.S
           </h3>
 
           <SelectField
-            label="Natureza do serviço"
+            placeholder="Natureza do serviço"
             value={values.serviceNatureId || ""}
             options={selectOptions[occurrence.id]?.natures || []}
             onChange={(value) =>
@@ -97,7 +97,7 @@ export function ExpandedRowT({
             }
           />
           <SelectField
-            label="Inspetor responsável"
+            placeholder="Inspetor responsável"
             value={values.inspectorId || ""}
             options={selectOptions[occurrence.id]?.inspectors || []}
             onChange={(value) =>
@@ -111,7 +111,7 @@ export function ExpandedRowT({
             }
           />
           <SelectField
-            label="Encarregado"
+            placeholder="Encarregado"
             value={values.foremanId || ""}
             options={selectOptions[occurrence.id]?.supervisors || []}
             onChange={(value) =>
@@ -125,7 +125,7 @@ export function ExpandedRowT({
             }
           />
           <SelectField
-            label="Equipe"
+            placeholder="Equipe"
             value={values.teamId || ""}
             options={selectOptions[occurrence.id]?.teams || []}
             onChange={(value) =>
@@ -168,6 +168,7 @@ export function ExpandedRowT({
             lat: parseFloat(occurrence.address?.latitude || 0),
             lng: parseFloat(occurrence.address?.longitude || 0),
           }}
+          label="ocorrencia"
         />
       </div>
     </div>

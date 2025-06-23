@@ -23,7 +23,7 @@ export function TopHeader() {
           <img
             src={emurb}
             alt="Logo EMURB"
-            className="h-16 w-auto rounded-md"
+            className="h-[55px] w-auto rounded-md"
           />
         </Link>
       </div>
@@ -34,7 +34,7 @@ export function TopHeader() {
         <Button
           variant="ghost"
           onClick={handleSignOut}
-          className="rounded-full bg-white p-2 hover:bg-zinc-100"
+          className="rounded-full h- bg-white p-2 hover:bg-zinc-100"
         >
           <LogOut className="w-5 h-5 text-zinc-600" />
         </Button>
