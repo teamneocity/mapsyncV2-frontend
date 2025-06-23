@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { GoogleMaps } from "@/components/googleMaps";
 import { ImageCarousel } from "../OccurrencesT/imagecarousel";
 import { FileText, FileDown, Share2, FileCheck2 } from "lucide-react";
-import { Timeline } from "./Timeline";
+import { Timeline } from "./TimeLine";
 
 export function ExpandedRowServiceOrder({ occurrence }) {
   const timeline = [
@@ -96,7 +96,8 @@ export function ExpandedRowServiceOrder({ occurrence }) {
               variant="outline"
               className="flex flex-col border-none items-center gap-1 py-8 bg-[#ECECEC]"
             >
-              <FileCheck2 size={18} /> <span className="text-xs">Gerar PDF</span>
+              <FileCheck2 size={18} />{" "}
+              <span className="text-xs">Gerar PDF</span>
             </Button>
             <Button
               variant="outline"

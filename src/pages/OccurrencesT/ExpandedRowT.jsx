@@ -1,8 +1,8 @@
 // src/pages/OccurrencesT/ExpandedRowT.jsx
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { SelectField } from "./SelectField";
-import { DatePicker } from "./DatePicker";
+import { SelectField } from "./selectField";
+import { DatePicker } from "./datePicker";
 import { GoogleMaps } from "@/components/googleMaps";
 import { ImageCarousel } from "./imagecarousel";
 

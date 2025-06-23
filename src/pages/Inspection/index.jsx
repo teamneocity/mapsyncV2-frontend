@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/sidebar";
 import { Filters } from "@/components/filters";
 import { LiveActionButton } from "@/components/live-action-button";
 import { Pagination } from "@/components/pagination";
-import { InspectionCard } from "./InspectionCard";
+import { InspectionCard } from "./inspectionCard";
 import { Link } from "react-router-dom";
 import emurb from "../../assets/emurb.svg";
 
