@@ -5,7 +5,7 @@ import { GoogleMaps } from "@/components/googleMaps";
 import { ImageCarousel } from "../OccurrencesT/imagecarousel";
 import { FileText, FileDown, Share2, FileCheck2 } from "lucide-react";
 
-import { Timeline } from "./Timeline";
+import { Timeline } from "./TimeLine";
 
 export function ExpandedRowServiceOrder({ occurrence }) {
   const timeline = [
