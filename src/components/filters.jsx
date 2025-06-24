@@ -214,7 +214,7 @@ export function Filters({
 
         {/* Botão aplicar */}
         <Button
-          className="bg-[#83C9F4] text-[#00679D] hover:bg-[#ADD8E6]  w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm"
+          className="bg-[#A6E0FF] text-[#00679D] hover:bg-[#ADD8E6]  w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm"
           onClick={handleApplyFilters}
         >
           Aplicar

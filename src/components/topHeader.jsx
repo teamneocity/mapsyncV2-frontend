@@ -18,7 +18,7 @@ export function TopHeader() {
   };
 
   return (
-    <header className="flex justify-between items-center py-4 px-4 sm:px-8 bg-[#EBEBEB] sticky top-0 z-10">
+    <header className="flex justify-between items-center py-3 px-4 sm:px-8 bg-[#EBEBEB] sticky top-0 z-10">
       {/* Logo */}
       <div className="px-2 py-2">
         <Link to="/">

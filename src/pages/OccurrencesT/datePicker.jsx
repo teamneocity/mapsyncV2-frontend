@@ -1,5 +1,5 @@
 import * as React from "react";
-import { CalendarIcon } from "lucide-react";
+import CalendarIcon from "@/assets/icons/calendar-icon.svg?react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -15,14 +15,14 @@ export function DatePicker({ date, onChange, className }) {
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          className={`${className} w-full justify-start text-left font-normal bg-white hover:bg-gray-200`}
+          className={`${className} w-full justify-between text-left font-normal bg-white hover:bg-gray-200`}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
           {date ? (
             format(date, "dd/MM/yyyy")
           ) : (
             <span className="text-[#787891]">Escolha uma data</span>
           )}
+          <CalendarIcon className="opacity-40" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">

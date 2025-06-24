@@ -31,17 +31,17 @@ export function OccurrenceList({ occurrences, serviceorders, renderExpandedRow }
   return (
     <div className="w-full mx-auto px-6">
       {/* Header apenas para desktop */}
-      <div className="hidden xl:block bg-[#D9DCE2] text-[#020231] font-semibold rounded-xl px-4 py-5 border border-gray-200 mb-2">
+      <div className="hidden xl:block bg-[#D9DCE2] text-[#020231] font-semibold rounded-xl px-4 py-5 border border-gray-200 mb-2 md:text-sm">
         <div className="grid grid-cols-12 gap-4 items-center">
-          <div className="col-span-1 pl-6">Data</div>
-          <div className="col-span-1">Origem</div>
-          <div className="col-span-1">Protocolo</div>
-          <div className="col-span-1">Enviado por</div>
-          <div className="col-span-1">Revisado por</div>
-          <div className="col-span-1">Bairro</div>
-          <div className="col-span-3">Endereço</div>
-          <div className="col-span-1">Tipo</div>
-          <div className="col-span-1 text-center">Status</div>
+          <div className="col-span-1 pl-6" title="Data">Data</div>
+          <div className="col-span-1" title="Origem">Origem</div>
+          <div className="col-span-1" title="Protocolo">Protocolo</div>
+          <div className="col-span-1 truncate" title="Enviado por">Enviado por</div>
+          <div className="col-span-1 truncate" title="Revisado por">Revisado por</div>
+          <div className="col-span-1" title="Bairro">Bairro</div>
+          <div className="col-span-3" title="Endereço">Endereço</div>
+          <div className="col-span-2" title="Tipo">Tipo</div>
+          <div className="col-span-1" title="Status">Status</div>
         </div>
       </div>
 
@@ -94,7 +94,7 @@ export function OccurrenceList({ occurrences, serviceorders, renderExpandedRow }
                           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
                             {getInicials(occ?.pilot?.name || "NA")}
                           </span>
-                          <span className="text-xs">{occ?.author?.name || "—"}</span>
+                          <span className="text-xs" title={occ?.author?.name}>{occ?.author?.name || "—"}</span>
                         </div>
                       </div>
                     </div>
@@ -145,7 +145,7 @@ export function OccurrenceList({ occurrences, serviceorders, renderExpandedRow }
                     {`${occ.address?.street || ""}, ${occ.address?.number || ""} - ${occ.address?.city || ""}`}
                   </div>
 
-                  <div className="col-span-1 text-sm">{occ.type || "—"}</div>
+                  <div className="col-span-2 text-sm truncate">{occ.type || "—"}</div>
 
                   <div className="col-span-1 flex justify-center">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusClasses(occ.status)}`}>
@@ -158,7 +158,7 @@ export function OccurrenceList({ occurrences, serviceorders, renderExpandedRow }
 
             {/* Linha expandida */}
             {expandedRows.has(occ.id) && (
-              <div className="px-3 py-3 bg-[#F7F7F7] border-t border-gray-200">
+              <div className="px-3 py-3 bg-[#F7F7F7] ">
                 {renderExpandedRow ? renderExpandedRow(occ) : null}
               </div>
             )}

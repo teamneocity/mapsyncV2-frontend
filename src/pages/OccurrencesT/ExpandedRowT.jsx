@@ -5,6 +5,8 @@ import { SelectField } from "./selectField";
 import { DatePicker } from "./datePicker";
 import { GoogleMaps } from "@/components/googleMaps";
 import { ImageCarousel } from "./imagecarousel";
+import ThumbsUp from "@/assets/icons/thumbs-up.svg?react";
+import ThumbsDown from "@/assets/icons/thumbs-down.svg?react";
 
 export function ExpandedRowT({
   occurrence,
@@ -93,6 +95,7 @@ export function ExpandedRowT({
           onClick={() => onOpenReturnModal(occurrence.id)}
         >
           Devolver
+          <ThumbsDown/>
         </Button>
       </div>
 
@@ -174,11 +177,12 @@ export function ExpandedRowT({
           />
         </div>
         <Button
-          className="w-full h-12 bg-[#C9F2E9] hover:bg-green-200 text-[#1C7551]"
+          className="w-full h-12 bg-[#C9F2E9] hover:bg-green-200 text-[#1C7551] items-center justify-center "
           onClick={() => onGenerateOS(occurrence.id)}
           disabled={occurrence.status === "os_gerada"}
         >
           {occurrence.status === "os_gerada" ? "O.S. já gerada" : "Gerar O.S."}
+          <ThumbsUp/>
         </Button>
       </div>
 

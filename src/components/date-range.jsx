@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import CalendarIcon from "@/assets/icons/calendar-icon.svg?react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -23,9 +23,8 @@ export function DateRange({ selectedRange, onDateRangeChange }) {
                     <Button
                         id="date"
                         variant="outline"
-                        className={`w-[250px] justify-start text-left font-normal  ${!date?.from && "text-muted-foreground"} h-12`}
+                        className={`w-[250px] rounded-xl justify-between text-left font-normal  ${!date?.from && "text-muted-foreground"} h-12`}
                     >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
                         {date?.from ? (
                             date.to ? (
                                 <>
@@ -37,6 +36,7 @@ export function DateRange({ selectedRange, onDateRangeChange }) {
                         ) : (
                             <span className="text-[#4B4B62]font-inter">Selecione a Data</span>
                         )}
+                        <CalendarIcon className="mr-2"/>
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
