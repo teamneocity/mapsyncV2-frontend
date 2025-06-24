@@ -11,7 +11,7 @@ export function AuthRoutes() {
     return (
         <Routes>
             <Route path="/" element={<SignIn/>}/>
-            <Route path="/resetPassword" element={<ResetPassword/>}/>
+           
 
 
 

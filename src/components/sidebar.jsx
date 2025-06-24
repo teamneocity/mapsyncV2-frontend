@@ -131,12 +131,6 @@ export function Sidebar() {
               >
                 <SettingsWindow className="w-5 h-5 shrink-0" /> Configurações
               </Link>
-              <Link
-                to="/notifications"
-                className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
-              >
-                <NewsIcon className="w-5 h-5 shrink-0" /> Notificações
-              </Link>
             </div>
           </div>
 
@@ -262,12 +256,6 @@ export function Sidebar() {
                   >
                     <SettingsWindow className="w-5 h-5 shrink-0" />{" "}
                     Configurações
-                  </Link>
-                  <Link
-                    to="/notifications"
-                    className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
-                  >
-                    <NewsIcon className="w-5 h-5 shrink-0" /> Notificações
                   </Link>
                 </div>
               </nav>

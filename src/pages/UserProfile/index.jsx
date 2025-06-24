@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/auth";
 import { getInicials } from "@/lib/utils";
 import { api } from "@/services/api";
 import { LiveActionButton } from "@/components/live-action-button";
+import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
 import { TopHeader } from "@/components/topHeader";
 import Mapa from "@/assets/Mapa.svg";
 import Mapa2 from "@/assets/Mapa2.svg";
@@ -22,7 +23,6 @@ export function UserProfile() {
   const [email, setEmail] = useState(user.email);
   const [passwordOld, setPasswordOld] = useState();
   const [passwordNew, setPasswordNew] = useState();
-  console.log("user", user);
 
   const avatarUrl = user.avatar
     ? `${api.defaults.baseURL}/avatar/${user.avatar}`
@@ -39,26 +39,23 @@ export function UserProfile() {
   }
 
   async function handleUpdateInfo(e) {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    // Passo 1: buscar o ID do usuário logado
-    const response = await api.get("/me");
-    const userId = response.data.id;
+    try {
+      const response = await api.get("/me");
+      const userId = response.data.id;
 
-    // Passo 2: atualizar nome e email
-    await api.patch(`/me/update-employee/${userId}`, {
-      name,
-      email,
-    });
+      await api.patch(`/me/update-employee/${userId}`, {
+        name,
+        email,
+      });
 
-    alert("Informações atualizadas com sucesso!");
-  } catch (error) {
-    console.error(error);
-    alert("Erro ao atualizar as informações.");
+      alert("Informações atualizadas com sucesso!");
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao atualizar as informações.");
+    }
   }
-}
-
 
   async function handleChangePassword(e) {
     e.preventDefault();
@@ -84,13 +81,14 @@ export function UserProfile() {
   }
 
   return (
-    <div className="bg-[#EBEBEB] gap-0 font-inter min-h-screen ">
+    <div className="bg-[#EBEBEB] min-h-screen font-inter">
       <Sidebar />
 
-      <main className="max-w-6xl sm:ml-[250px] mx-auto space-y-8 mt-6">
+      <main className="w-full px-4 sm:pl-[250px] max-w-[1300px] mx-auto space-y-2 pt-6">
         <TopHeader />
-        {/* LINHA 1: Título e descrição */}
-        <section className="bg-white rounded-xl p-2 flex flex-col lg:flex-row justify-between items-center gap-6">
+
+        {/* LINHA 1 */}
+        <section className="bg-white rounded-xl p-2 flex flex-col xl:flex-row justify-between items-center gap-6">
           <div className="flex-1">
             <p className="text-sm text-zinc-800">
               <span className="font-semibold">Seu Perfil.</span> Nesta seção,
@@ -100,7 +98,7 @@ export function UserProfile() {
               as informações relevantes para sua função.
             </p>
           </div>
-          <div className="flex-1 max-w-[584px]">
+          <div className="flex-1 max-w-md w-full">
             <img
               src={Mapa}
               alt="Ilustração"
@@ -109,57 +107,81 @@ export function UserProfile() {
           </div>
         </section>
 
-        {/* LINHA 2: Avatar + Inputs */}
-        <section className="bg-[#F9F9F9] rounded-xl p-6 flex flex-col md:flex-row gap-6">
-          <div className="flex flex-col items-center w-full md:max-w-[200px]">
-            <Avatar className="w-28 h-28">
-              <AvatarImage src={avatar} />
-              <AvatarFallback>{initials}</AvatarFallback>
-            </Avatar>
-            <ProfileUpload onFileChange={handleChangeAvatar} />
+        <section className="bg-[#F9F9F9] rounded-xl p-2 flex flex-col xl:flex-row gap-6 items-stretch xl:h-[270px]">
+
+          {/* Coluna da imagem */}
+          <div className="w-full xl:w-[200px] flex flex-col items-center justify-between h-full">
+            {/* Caixa branca que ocupa quase toda a altura */}
+            <div className="bg-white rounded-xl shadow-md w-full h-[220px] flex items-center justify-center">
+              <div className="w-[120px] h-[120px] rounded-full overflow-hidden">
+                <Avatar className="w-full h-full">
+                  <AvatarImage src={avatar} />
+                  <AvatarFallback>{initials}</AvatarFallback>
+                </Avatar>
+              </div>
+            </div>
+
+            {/* Upload fora da caixa, colado abaixo */}
+            <div className="mt-2 flex items-center gap-2 justify-center">
+              <span className="text-sm font-medium text-zinc-700 bg-white rounded-full px-3 py-1 shadow-sm">
+                Upload da imagem
+              </span>
+
+              <label className="cursor-pointer">
+                <input
+                  type="file"
+                  onChange={(e) => handleChangeAvatar(e.target.files[0])}
+                  className="hidden"
+                />
+                <div className="bg-white hover:bg-zinc-100 p-2 rounded-full shadow-sm">
+                  <CloudUploadAlt className="w-4 h-4 text-zinc-600" />
+                </div>
+              </label>
+            </div>
           </div>
 
-          <form className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">
+          {/* Coluna dos inputs */}
+          <form className="flex-1 grid grid-cols-1 bg-white p-2 border-b rounded-xl sm:grid-cols-2 gap-1">
             <Input
-              className="h-22"
+              className="h-[64px]"
               placeholder="Nome completo"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
             <Input
-              className="h-22"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              className="h-[64px]"
+              placeholder="Data de nascimento"
+              disabled
+              value={user?.birthDate || "01/01/1990"}
             />
             <Input
-              className="h-22"
+              className="h-[64px]"
               placeholder="Setor"
               disabled
               value={user?.sector?.name || "Não definido"}
             />
             <Input
-              className="h-22"
-              placeholder="Data de nascimento"
-              disabled
-              value={user?.birthDate || "01/01/1990"}
+              className="h-[64px]"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
-            <div className="col-span-full pt-2">
+            <div className="col-span-full">
               <Button
                 onClick={handleUpdateInfo}
                 type="button"
-                className="h-[80px] w-full bg-[#A6E0FF] hover:bg-[#87CEEB] text-[#00679D]"
+                className="h-[55px] w-full bg-[#A6E0FF] hover:bg-[#87CEEB] text-[#00679D]"
               >
-                Salvar Informações
+                Salvar
               </Button>
             </div>
           </form>
         </section>
 
-        {/* LINHA 3: Atividades e Senha */}
-        <section className="bg-[#F5F5F5] rounded-xl p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Atividades recentes com scroll */}
-          <div className="max-h-[440px] overflow-y-auto pr-2">
+        {/* LINHA 3 */}
+        <section className="bg-[#F5F5F5] rounded-xl p-2 flex flex-col xl:flex-row gap-6">
+          {/* Atividades */}
+          <div className="max-h-[440px] overflow-y-auto w-full xl:w-1/2">
             <h3 className="font-semibold text-base mb-4">
               Atividades de acessos recentes
             </h3>
@@ -188,8 +210,8 @@ export function UserProfile() {
             </ul>
           </div>
 
-          {/* Alterar senha - altura fixa, botão visível */}
-          <div className="flex flex-col justify-between h-full space-y-4">
+          {/* Senha */}
+          <div className="flex flex-col justify-between w-full xl:w-1/2 space-y-4">
             <div>
               <div className="mb-2">
                 <p className="font-semibold text-sm text-zinc-800">
@@ -207,24 +229,24 @@ export function UserProfile() {
                   className="w-full object-contain"
                 />
               </div>
-
+            
               <PasswordInput
                 placeholder="Senha atual"
                 value={passwordOld}
-                className="h-[80px]"
+                className="h-[64px]"
                 onChange={(e) => setPasswordOld(e.target.value)}
               />
               <PasswordInput
                 placeholder="Nova senha"
                 value={passwordNew}
-                className="h-[80px] mt-2"
+                className="h-[64px] mt-2"
                 onChange={(e) => setPasswordNew(e.target.value)}
               />
             </div>
 
             <Button
               onClick={handleChangePassword}
-              className="h-[70px] w-full bg-[#A6E0FF] hover:bg-[#87CEEB] text-[#00679D] mt-4"
+              className="h-[64px] w-full bg-[#A6E0FF] hover:bg-[#87CEEB] text-[#00679D]"
             >
               Atualizar senha
             </Button>
