@@ -60,17 +60,14 @@ function AuthProvider({ children }) {
     setData({});
   }
 
-  async function updateProfile({ user, avatarFile }) {
+  async function updateProfile({ user }) {
     try {
-      if (avatarFile) {
-        const fileUploadForm = new FormData();
-        fileUploadForm.append("avatar", avatarFile);
+      const { name, email, role } = user;
 
-        const response = await api.patch("/users/avatar", fileUploadForm);
-        user.avatar = response.data.avatar;
-      }
-
-      await api.put("/users", user);
+      await api.patch(`/me/update-employee`, {
+        name,
+        email,
+      });
       localStorage.setItem("@popcity:user", JSON.stringify(user));
       setData({ user, token: data.token });
 

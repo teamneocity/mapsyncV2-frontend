@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sidebar } from "@/components/sidebar";
 import { Input } from "@/components/ui/input";
@@ -14,15 +14,20 @@ import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
 import { TopHeader } from "@/components/topHeader";
 import Mapa from "@/assets/Mapa.svg";
 import Mapa2 from "@/assets/Mapa2.svg";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale"; 
 
 export function UserProfile() {
   const { signOut, user, updateProfile } = useAuth();
+
   const navigate = useNavigate();
 
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
   const [passwordOld, setPasswordOld] = useState();
   const [passwordNew, setPasswordNew] = useState();
+
+  const [recentAccess, setRecentAccess] = useState([]);
 
   const avatarUrl = user.avatar
     ? `${api.defaults.baseURL}/avatar/${user.avatar}`
@@ -42,13 +47,16 @@ export function UserProfile() {
     e.preventDefault();
 
     try {
-      const response = await api.get("/me");
-      const userId = response.data.id;
 
-      await api.patch(`/me/update-employee/${userId}`, {
-        name,
-        email,
-      });
+      await updateProfile({
+        user: {
+          email,
+          name,
+          role: user.role
+        },  
+      })
+
+
 
       alert("Informações atualizadas com sucesso!");
     } catch (error) {
@@ -80,15 +88,26 @@ export function UserProfile() {
     }
   }
 
+    async function fetchRecentAccess() {
+      const recentAccess = await api.get("/me/access-logs");
+      console.log(recentAccess.data);
+      setRecentAccess(recentAccess.data);
+    }
+
+
+    useEffect(() => {
+      fetchRecentAccess();
+    }, []);
+
   return (
     <div className="bg-[#EBEBEB] min-h-screen font-inter">
       <Sidebar />
 
-      <main className="w-full px-4 sm:pl-[250px] max-w-[1300px] mx-auto space-y-2 pt-6">
+      <main className="w-full px-6 sm:pl-[250px] max-w-full space-y-4 pt-6">
         <TopHeader />
 
         {/* LINHA 1 */}
-        <section className="bg-white rounded-xl p-2 flex flex-col xl:flex-row justify-between items-center gap-6">
+        <section className=" max-w-[1500px] w-full mx-auto bg-white rounded-xl p-2 flex flex-col xl:flex-row justify-between items-center gap-6 ">
           <div className="flex-1">
             <p className="text-sm text-zinc-800">
               <span className="font-semibold">Seu Perfil.</span> Nesta seção,
@@ -107,7 +126,7 @@ export function UserProfile() {
           </div>
         </section>
 
-        <section className="bg-[#F9F9F9] rounded-xl p-2 flex flex-col xl:flex-row gap-6 items-stretch xl:h-[270px]">
+        <section className=" max-w-[1500px] w-full mx-auto bg-[#F9F9F9] rounded-xl p-2 flex flex-col xl:flex-row gap-6 items-stretch xl:h-[270px]">
 
           {/* Coluna da imagem */}
           <div className="w-full xl:w-[200px] flex flex-col items-center justify-between h-full">
@@ -179,35 +198,38 @@ export function UserProfile() {
         </section>
 
         {/* LINHA 3 */}
-        <section className="bg-[#F5F5F5] rounded-xl p-2 flex flex-col xl:flex-row gap-6">
+        <section className=" max-w-[1500px] w-full mx-auto bg-[#F5F5F5] rounded-xl p-2 flex flex-col xl:flex-row gap-6">
           {/* Atividades */}
           <div className="max-h-[440px] overflow-y-auto w-full xl:w-1/2">
             <h3 className="font-semibold text-base mb-4">
               Atividades de acessos recentes
             </h3>
             <ul className="space-y-3 text-sm">
-              {[
-                "Mac",
-                "Windows",
-                "Iphone",
-                "Android",
-                "teste",
-                "teste",
-                "Linux",
-                "ChromeOS",
-              ].map((device, i) => (
+              {recentAccess.map((access, i) => (
                 <li
                   key={i}
-                  className="bg-white h-[80px] rounded-lg p-3 flex justify-between items-center"
+                  className="bg-white min-h-[80px] rounded-lg p-3 flex justify-between items-center"
                 >
-                  <span>
-                    Último login em {device}
-                    <br />
-                    03 de junho de 2023 às 16:30 Aracaju, Sergipe, Brasil
-                  </span>
+                  <div>
+                    <div className="font-semibold text-zinc-800">
+                      {access.os || "Sistema desconhecido"}
+                    </div>
+                    <div className="text-zinc-600 text-sm">
+                      Último login em{" "}
+                      {format(
+                        new Date(access.accessedAt),
+                        "dd 'de' MMMM 'às' HH:mm",
+                        { locale: ptBR }
+                      )}
+                    </div>
+                    <div className="text-zinc-500 text-xs">
+                      {access.location || "Localização não identificada"}
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>
+
           </div>
 
           {/* Senha */}
