@@ -40,7 +40,7 @@ export function OccurrencesA() {
         </h1>
 
         <Filters
-          title="Ocorrências"
+          title="Ocorrências" 
           subtitle="Aéreas"
           onSearch={() => {}}
           onFilterType={() => {}}

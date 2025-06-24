@@ -15,7 +15,7 @@ import { TopHeader } from "@/components/topHeader";
 import Mapa from "@/assets/Mapa.svg";
 import Mapa2 from "@/assets/Mapa2.svg";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale"; 
+import { ptBR } from "date-fns/locale";
 
 export function UserProfile() {
   const { signOut, user, updateProfile } = useAuth();
@@ -47,16 +47,13 @@ export function UserProfile() {
     e.preventDefault();
 
     try {
-
       await updateProfile({
         user: {
           email,
           name,
-          role: user.role
-        },  
-      })
-
-
+          role: user.role,
+        },
+      });
 
       alert("Informações atualizadas com sucesso!");
     } catch (error) {
@@ -88,16 +85,15 @@ export function UserProfile() {
     }
   }
 
-    async function fetchRecentAccess() {
-      const recentAccess = await api.get("/me/access-logs");
-      console.log(recentAccess.data);
-      setRecentAccess(recentAccess.data);
-    }
+  async function fetchRecentAccess() {
+    const recentAccess = await api.get("/me/access-logs");
+    console.log(recentAccess.data);
+    setRecentAccess(recentAccess.data);
+  }
 
-
-    useEffect(() => {
-      fetchRecentAccess();
-    }, []);
+  useEffect(() => {
+    fetchRecentAccess();
+  }, []);
 
   return (
     <div className="bg-[#EBEBEB] min-h-screen font-inter">
@@ -127,7 +123,6 @@ export function UserProfile() {
         </section>
 
         <section className=" max-w-[1500px] w-full mx-auto bg-[#F9F9F9] rounded-xl p-2 flex flex-col xl:flex-row gap-6 items-stretch xl:h-[270px]">
-
           {/* Coluna da imagem */}
           <div className="w-full xl:w-[200px] flex flex-col items-center justify-between h-full">
             {/* Caixa branca que ocupa quase toda a altura */}
@@ -205,31 +200,37 @@ export function UserProfile() {
               Atividades de acessos recentes
             </h3>
             <ul className="space-y-3 text-sm">
-              {recentAccess.map((access, i) => (
-                <li
-                  key={i}
-                  className="bg-white min-h-[80px] rounded-lg p-3 flex justify-between items-center"
-                >
-                  <div>
-                    <div className="font-semibold text-zinc-800">
-                      {access.os || "Sistema desconhecido"}
-                    </div>
-                    <div className="text-zinc-600 text-sm">
-                      Último login em{" "}
-                      {format(
-                        new Date(access.accessedAt),
-                        "dd 'de' MMMM 'às' HH:mm",
-                        { locale: ptBR }
-                      )}
-                    </div>
-                    <div className="text-zinc-500 text-xs">
-                      {access.location || "Localização não identificada"}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+              {recentAccess.map((access, i) => {
+                const dataValida =
+                  access.accessedAt && !isNaN(new Date(access.accessedAt));
+                const dataFormatada = dataValida
+                  ? format(
+                      new Date(access.accessedAt),
+                      "dd 'de' MMMM 'às' HH:mm",
+                      { locale: ptBR }
+                    )
+                  : "Data inválida";
 
+                return (
+                  <li
+                    key={i}
+                    className="bg-white min-h-[80px] rounded-lg p-3 flex justify-between items-center"
+                  >
+                    <div>
+                      <div className="font-semibold text-zinc-800">
+                        {access.os || "Sistema desconhecido"}
+                      </div>
+                      <div className="text-zinc-600 text-sm">
+                        Último login em {dataFormatada}
+                      </div>
+                      <div className="text-zinc-500 text-xs">
+                        {access.location || "Localização não identificada"}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
 
           {/* Senha */}
@@ -251,7 +252,7 @@ export function UserProfile() {
                   className="w-full object-contain"
                 />
               </div>
-            
+
               <PasswordInput
                 placeholder="Senha atual"
                 value={passwordOld}
