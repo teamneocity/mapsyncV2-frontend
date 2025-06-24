@@ -21,7 +21,7 @@ export function InspectionCard({ occurrence }) {
   return (
     <div
       className="bg-white rounded-xl shadow-sm overflow-hidden flex-shrink-0 
-      w-[340px] sm:w-[380px] md:w-[420px] lg:w-[460px] xl:w-[500px] border border-gray-200"
+      w-full max-w-[500px] border border-gray-200"
     >
       <div className="relative">
         <img

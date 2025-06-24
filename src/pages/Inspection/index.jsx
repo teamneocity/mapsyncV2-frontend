@@ -102,6 +102,28 @@ export function Inspection() {
           finished: "2025-04-29T00:24:00Z",
         },
       },
+      {
+        id: "5",
+        status: "os_gerada",
+        imageUrl: "https://via.placeholder.com/500x200.png?text=Imagem+1/1",
+        osNumber: "223565165",
+        zone: "Zul",
+        sector: "Pavimentação",
+        sentBy: "Kelvin Marx",
+        reviewedBy: "Anna Maria",
+        neighborhood: "Cirurgia",
+        address: "Rua Permínio de Souza",
+        cep: "46030-250",
+        longitude: "-10252456",
+        altitude: "-358255",
+        occurrenceType: "Pavimentação",
+        timeline: {
+          requested: "2025-04-29T00:24:00Z",
+          accepted: "2025-04-29T00:24:00Z",
+          started: "2025-04-29T00:24:00Z",
+          finished: "2025-04-29T00:24:00Z",
+        },
+      },
     ];
 
     setOccurrences(mockData);
@@ -126,13 +148,14 @@ export function Inspection() {
       </header>
 
       {/* FILTROS */}
-      <div className="px-4 py-4 sm:py-6">
+      <div className="sticky top-[88px] z-10 bg-[#EBEBEB] px-4 py-4 sm:py-6">
+
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:hidden">
           Fiscalização de O.S.
         </h1>
         <Filters
           title="Fiscalização de"
-          subtitle="ordem de serviço"
+          subtitle="Ordem de serviço"
           onSearch={() => {}}
           onFilterType={() => {}}
           onFilterRecent={() => {}}
@@ -144,23 +167,21 @@ export function Inspection() {
 
       {/* LISTA DE CARDS */}
       <div className="px-4 py-2 bg-[#EBEBEB]">
-        <div className="overflow-x-auto">
-          <div className="flex flex-col items-center justify-center md:flex-row md:items-start md:justify-start gap-4 w-max">
+        <div className="w-full  p-4">
+          <div className="grid w-full gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {occurrences.map((occ) => (
-              <InspectionCard key={occ.id} occurrence={occ} />
+              <div key={occ.id} className="w-full">
+                <InspectionCard occurrence={occ} />
+              </div>
             ))}
           </div>
         </div>
       </div>
 
       {/* PAGINAÇÃO */}
-      <footer className="bg-[#EBEBEB] p-4 mt-auto">
+      <footer className="sticky bottom-0 z-10 bg-[#EBEBEB] p-4 shadow-inner">
         <div className="max-w-full mx-auto">
-          <Pagination
-            currentPage={1}
-            totalPages={1}
-            onPageChange={() => {}}
-          />
+          <Pagination currentPage={1} totalPages={1} onPageChange={() => {}} />
         </div>
       </footer>
     </div>
