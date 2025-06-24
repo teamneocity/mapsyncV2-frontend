@@ -5,7 +5,11 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { getInicials } from "@/lib/utils";
 import { format } from "date-fns";
 
-export function OccurrenceList({ occurrences, renderExpandedRow }) {
+export function OccurrenceList({
+  occurrences,
+  serviceorders,
+  renderExpandedRow,
+}) {
   const [expandedRows, setExpandedRows] = useState(new Set());
 
   const toggleRow = (id) => {
@@ -20,9 +24,9 @@ export function OccurrenceList({ occurrences, renderExpandedRow }) {
     const map = {
       em_analise: "bg-[#E8F7FF] text-[#33CFFF]",
       emergencial: "bg-[#FFE8E8] text-[#FF2222]",
-      aprovada: "bg-[#FFF4D6] text-[#FFC118]",
+      aprovada: "bg-[#FFF4D6] text-[#986F00]",
       os_gerada: "bg-[#f0ddee] text-[#733B73]",
-      aguardando_execucao : "bg-[#FFE4B5] text-[#CD853F]"
+      aguardando_execucao: "bg-[#FFE4B5] text-[#CD853F]",
     };
 
     return map[status] || "bg-gray-100 text-gray-600";
@@ -31,17 +35,16 @@ export function OccurrenceList({ occurrences, renderExpandedRow }) {
   return (
     <div className="overflow-x-auto w-full mx-auto px-6">
       {/* Header apenas para desktop */}
-      <div className="hidden xl-custom:grid grid-cols-12 gap-2 bg-[#F2F3F5] text-gray-800 font-semibold rounded-xl px-4 py-5 border border-gray-200 mb-2">
-        <div></div>
-        <div>Data</div>
-        <div>Origem</div>
-        <div>Zona</div>
-        <div>Protocolo</div>
-        <div className="col-span-2">Enviado por:</div>
-        <div>Revisado por:</div>
-        <div>Bairro</div>
+      <div className="hidden xl-custom:grid grid-cols-12 gap-4 bg-[#D9DCE2] text-[#020231] font-semibold rounded-xl px-10 py-5 border border-gray-200 mb-2">
+        <div className="col-span-1">Data</div>
+        <div className="col-span-1">Origem</div>
+        <div className="col-span-2">Protocolo</div>
+        <div className="col-span-1">Enviado por:</div>
+        <div className="col-span-1">Revisado por:</div>
+        <div className="col-span-1">Bairro</div>
         <div className="col-span-2">Endereço</div>
-        <div>Status</div>
+        <div className="col-span-2">Tipo</div>
+        <div className="col-span-1 text-right">Status</div>
       </div>
 
       <table className="min-w-full text-sm table-auto border-separate border-spacing-y-1">
@@ -49,10 +52,10 @@ export function OccurrenceList({ occurrences, renderExpandedRow }) {
           {occurrences.map((occ) => (
             <React.Fragment key={occ.id}>
               <tr onClick={() => toggleRow(occ.id)}>
-                <td colSpan={11} className="px-2">
-                  <div className="flex flex-wrap xl-custom:grid xl-custom:grid-cols-12 gap-4 px-4 py-5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition cursor-pointer">
+                <td colSpan={11} className="px-0">
+                  <div className="flex bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition cursor-pointer">
                     {/* Ícone */}
-                    <div className="flex items-center sm:block col-span-1">
+                    <div className="flex items-center justify-center w-8 pl-2">
                       {expandedRows.has(occ.id) ? (
                         <ChevronDown className="h-4 w-4 text-gray-500" />
                       ) : (
@@ -60,88 +63,91 @@ export function OccurrenceList({ occurrences, renderExpandedRow }) {
                       )}
                     </div>
 
-                    {/* Data */}
-                    <div className="sm:col-span-1 whitespace-nowrap overflow-hidden text-ellipsis">
-                      <span className="block sm:hidden text-xs font-semibold text-gray-400">
-                        Data
-                      </span>
-                      {occ.createdAt
-                        ? format(new Date(occ.createdAt), "dd/MM/yy")
-                        : "—"}
-                    </div>
+                    {/* Conteúdo principal */}
+                    <div className="flex flex-wrap xl-custom:grid text-[#787891] xl-custom:grid-cols-12 gap-4 px-4 py-5">
+                      {/* Data */}
+                      <div className="sm:col-span-1 whitespace-nowrap overflow-hidden text-ellipsis">
+                        <span className="block sm:hidden text-xs font-semibold text-gray-400">
+                          Data
+                        </span>
+                        {occ.createdAt
+                          ? format(new Date(occ.createdAt), "dd/MM/yy")
+                          : "—"}
+                      </div>
 
-                    {/* Origem */}
-                    <div className="sm:col-span-1">
-                      <span className="block sm:hidden text-xs font-semibold text-gray-400">
-                        Origem
-                      </span>
-                      {occ.origin || "Plataforma"}
-                    </div>
+                      {/* Origem */}
+                      <div className="sm:col-span-1">
+                        <span className="block sm:hidden text-xs font-semibold text-gray-400">
+                          Origem
+                        </span>
+                        {occ.origin || "Plataforma"}
+                      </div>
 
-                    {/* Zona */}
-                    <div className="sm:col-span-1">
-                      <span className="block sm:hidden text-xs font-semibold text-gray-400">
-                        Zona
-                      </span>
-                      {occ.zone || "—"}
-                    </div>
+                      {/* Protocolo */}
+                      <div className="sm:col-span-2">
+                        <span className="block sm:hidden text-xs font-semibold text-gray-400">
+                          Protocolo
+                        </span>
+                        {occ.protocol || "254525"}
+                      </div>
 
-                    {/* Protocolo */}
-                    <div className="sm:col-span-1">
-                      <span className="block sm:hidden text-xs font-semibold text-gray-400">
-                        Protocolo
-                      </span>
-                      {occ.protocol || "254525"}
-                    </div>
+                      {/* Enviado por */}
+                      <div className="sm:col-span-1 flex items-center gap-2">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
+                          {getInicials(occ?.pilot?.name || "NA")}
+                        </span>
+                        {occ?.author?.name || "—"}
+                      </div>
 
-                    {/* Enviado por */}
-                    <div className="sm:col-span-2 flex items-center gap-2">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
-                        {getInicials(occ?.pilot?.name || "NA")}
-                      </span>
-                      {occ?.author?.name || "—"}
-                    </div>
+                      {/* Revisado por */}
+                      <div className="sm:col-span-1">
+                        <span className="block sm:hidden text-xs font-semibold text-gray-400">
+                          Revisado por
+                        </span>
+                        {occ?.approvedBy?.name || "—"}
+                      </div>
 
-                    {/* Revisado por */}
-                    <div className="sm:col-span-1">
-                      <span className="block sm:hidden text-xs font-semibold text-gray-400">
-                        Revisado por
-                      </span>
-                      {occ?.approvedBy?.name || "—"}
-                    </div>
+                      {/* Bairro */}
+                      <div className="sm:col-span-1">
+                        <span className="block sm:hidden text-xs font-semibold text-gray-400">
+                          Bairro
+                        </span>
+                        {occ?.address?.neighborhoodName || "—"}
+                      </div>
 
-                    {/* Bairro */}
-                    <div className="sm:col-span-1">
-                      <span className="block sm:hidden text-xs font-semibold text-gray-400">
-                        Bairro
-                      </span>
-                      {occ?.address?.neighborhoodName || "—"}
-                    </div>
+                      {/* Endereço */}
+                      <div className="sm:col-span-2 truncate">
+                        <span className="block sm:hidden text-xs font-semibold text-gray-400">
+                          Endereço
+                        </span>
+                        {`${occ.address?.street || ""}, ${
+                          occ.address?.number || ""
+                        } - ${occ.address?.city || ""}`}
+                      </div>
 
-                    {/* Endereço */}
-                    <div className="sm:col-span-2 truncate">
-                      <span className="block sm:hidden text-xs font-semibold text-gray-400">
-                        Endereço
-                      </span>
-                      {`${occ.address?.street || ""}, ${
-                        occ.address?.number || ""
-                      } - ${occ.address?.city || ""}`}
-                    </div>
+                      {/* Tipo */}
+                      <div className="sm:col-span-2">
+                        <span className="block sm:hidden text-xs font-semibold text-gray-400">
+                          Tipo
+                        </span>
+                        {occ.type || "—"}
+                      </div>
 
-                    {/* Status */}
-                    <div className="sm:col-span-1 w-full break-words">
-                      <span className="block sm:hidden text-xs font-semibold text-gray-400">
-                        Status
-                      </span>
-                      <span
-                        className={`flex flex-col items-center justify-center text-center px-3 py-1 rounded-full text-xs font-semibold leading-tight ${getStatusClasses(
-                          occ.status
-                        )}`}
-                      >
-                        {occ.status
-                          .replace("_", " ")
-                          .replace(/^\w/, (c) => c.toUpperCase())}
-                      </span>
+                      {/* Status */}
+                      <div className="sm:col-span-1 w-full break-words text-right">
+                        <span className="block sm:hidden text-xs font-semibold text-gray-400">
+                          Status
+                        </span>
+                        <span
+                          className={`flex flex-col items-center justify-center text-center px-3 py-1 rounded-full text-xs font-semibold leading-tight ${getStatusClasses(
+                            occ.status
+                          )}`}
+                        >
+                          {occ.status
+                            .replace("_", " ")
+                            .replace(/^\w/, (c) => c.toUpperCase())}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </td>

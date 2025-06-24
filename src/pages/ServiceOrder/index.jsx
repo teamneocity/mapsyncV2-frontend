@@ -15,6 +15,7 @@ import { Link } from "react-router-dom";
 import emurb from "../../assets/emurb.svg";
 import { TopHeader } from "@/components/topHeader";
 
+
 export function ServiceOrder() {
   const { toast } = useToast();
   const { isAdmin, isSupervisor } = usePermissions();
@@ -67,6 +68,7 @@ export function ServiceOrder() {
         id: order.id,
         status: order?.status || order.status,
         createdAt: order.occurrence?.createdAt || order.createdAt,
+        type: order.occurrence?.type || order.type,
         author: order.occurrence?.author || null,
         approvedBy: order.occurrence?.approvedBy || null,
         address: order.occurrence?.address || {},
