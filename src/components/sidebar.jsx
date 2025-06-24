@@ -104,7 +104,7 @@ export function Sidebar() {
                     <AssessmentIcon className="w-5 h-5 shrink-0" /> Fiscalização
                   </Link>
                   <Link
-                    to="/routemap"
+                    // to="/routemap"
                     className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                   >
                     <RoadmapIcon className="w-5 h-5 shrink-0" /> Mapa de
@@ -112,7 +112,7 @@ export function Sidebar() {
                   </Link>
 
                   <Link
-                    to="/reports"
+                    // to="/reports"
                     className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                   >
                     <NewsIcon className="w-5 h-5 shrink-0" /> Relatórios

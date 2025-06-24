@@ -41,7 +41,7 @@ export function OccurrencesA() {
 
         <Filters
           title="Ocorrências"
-          subtitle="aéreas"
+          subtitle="Aéreas"
           onSearch={() => {}}
           onFilterType={() => {}}
           onFilterRecent={() => {}}
