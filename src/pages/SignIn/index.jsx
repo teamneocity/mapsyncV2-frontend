@@ -7,10 +7,7 @@ import { Input } from "@/components/ui/input"
 import { PasswordInput } from "@/components/ui/passwordInput"
 import { Button } from "@/components/ui/button"
 
-
 export function SignIn() {
-
-
     const { signIn } = useAuth()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('');
@@ -20,20 +17,21 @@ export function SignIn() {
     }
 
     const handlePasswordChange = (e) => {
-      setPassword(e.target.value);
+        setPassword(e.target.value);
     };
 
     function handleSignIn() {
         signIn({ email, password })
     }
 
-    return(
-        <div className="min-h-screen flex items-center justify-center font-manrope">
-            <div className="w-full max-w-[375px] min-h-[30rem] flex items-center gap-8 flex-col bg-white   text-center overflow-hidden ">
-                <img src={logo} alt=""  />
+    return (
+        <div className="min-h-screen flex items-center justify-center font-manrope px-4">
+            <div className="w-full max-w-[375px] min-h-[30rem] flex flex-col items-center justify-center gap-8 bg-white p-6 rounded-2xl text-center overflow-hidden">
+                
+                {/* <img src={logo} alt="Logo" className="w-24 mb-2" /> */}
 
                 <div className="w-full text-left flex flex-col gap-2 max-w-[366px]">
-                    <p className="font-bold ">Email</p>
+                    <p className="font-bold">Email</p>
                     <Input 
                         type="email" 
                         placeholder="Digite seu email" 
@@ -42,8 +40,8 @@ export function SignIn() {
                     />
                 </div>
 
-                <div className="w-full max-w-[366px] text-left flex flex-col gap-2 ">
-                    <p className="font-bold ">Senha</p>
+                <div className="w-full max-w-[366px] text-left flex flex-col gap-2">
+                    <p className="font-bold">Senha</p>
                     <PasswordInput 
                         id="password"
                         value={password}
@@ -56,9 +54,8 @@ export function SignIn() {
                     <p>Esqueceu a senha? <span className="font-bold"><Link to="/resetPassword">Vamos recuperar?</Link></span></p>
                 </div>
 
-
-                <div className="w-full ">
-                   <Button className="w-full h-14 rounded-[16px]" onClick={handleSignIn}>Login</Button>
+                <div className="w-full max-w-[366px]">
+                    <Button className="w-full h-14 rounded-[16px]" onClick={handleSignIn}>Login</Button>
                 </div>
             </div>
         </div>
