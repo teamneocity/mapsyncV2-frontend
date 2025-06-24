@@ -34,7 +34,7 @@ export function TopHeader() {
         <Button
           variant="ghost"
           onClick={handleSignOut}
-          className="rounded-full h- bg-white p-2 hover:bg-zinc-100"
+          className="rounded-full h-10 w-12 bg-white p-2 hover:bg-zinc-100 border border-[#EFF2F6] hover:border-zinc-200 transition-colors"
         >
           <LogOut className="w-5 h-5 text-zinc-600" />
         </Button>

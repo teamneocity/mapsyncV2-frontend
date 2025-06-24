@@ -246,7 +246,7 @@ export function OccurrencesT() {
 
       <TopHeader />
 
-      <div className="px-4 py-4 sm:py-6">
+      <div className="px-6 py-4 sm:py-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:hidden">
           Ocorrências Terrestres
         </h1>

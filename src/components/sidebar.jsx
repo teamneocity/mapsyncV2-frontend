@@ -38,11 +38,11 @@ export function Sidebar() {
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-[250px] sm:flex bg-[#EBEBEB] text-[#787891] flex-col font-inter">
         <div className="px-4 py-5">
           <Link to="/">
-            <img src={logoAju1 || "/placeholder.svg"} alt="Logo" />
+            <img src={logoAju1 || "/placeholder.svg"} alt="Logo" width={"159px"} />
           </Link>
         </div>
 
-        <nav className="flex flex-col px-1 py-1">
+        <nav className="flex flex-col px-4 py-1">
           <div>
             <p className="text-base font-normal mb-2 text-[#4B4B62]">
               Workspace
@@ -51,7 +51,7 @@ export function Sidebar() {
               {canSeeAll && (
                 <Link
                   to="/"
-                  className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                  className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900 text-md"
                 >
                   <HouseCheckIcon className="w-5 h-5 shrink-0" /> Dashboard
                 </Link>

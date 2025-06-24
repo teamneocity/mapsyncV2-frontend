@@ -4,7 +4,7 @@ export function LiveActionButton() {
   return (
     <Link
       to="/liveaction"
-      className="flex items-center  justify-center gap-3 w-full max-w-64 py-3 px-8 bg-[#4A4A4A] text-white rounded-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
+      className="flex items-center justify-center gap-3 w-full max-w-64 h-[55px] py-3 px-6 bg-[#4A4A4A] text-white rounded-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
     >
       <div className="flex items-center justify-center w-8 h-8">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -25,7 +25,7 @@ export function LiveActionButton() {
           <path d="M2 7L6 3H18L22 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
-      <span className="text-md font-medium">Live Action</span>
+      <span className="text-sm font-medium">Live Action</span>
     </Link>
   )
 }

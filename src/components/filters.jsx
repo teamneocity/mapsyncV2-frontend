@@ -101,8 +101,8 @@ export function Filters({
   };
 
   return (
-    <header className="bg-[#EBEBEB] px-1 py-1">
-      <div className="flex flex-wrap items-center gap-2 md:gap-3">
+    <header className="w-full bg-[#EBEBEB] px-1 py-1">
+      <div className="w-full flex flex-wrap items-center justify-between gap-2 md:gap-3">
         {/* Título dinâmico */}
         <div className="flex flex-col mr-2 min-w-[160px]">
           <span className="text-[18px] text-gray-700 leading-tight">
@@ -114,7 +114,7 @@ export function Filters({
         </div>
 
         {/* Input de busca */}
-        <div className="w-full md:w-[220px]">
+        <div className="flex-1 w-full md:w-[220px]">
           <Input
             placeholder="Pesquise pelo bairro / nome da rua ou avenida"
             onChange={(e) => onSearch(e.target.value)}

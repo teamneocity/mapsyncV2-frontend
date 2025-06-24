@@ -29,7 +29,7 @@ export function OccurrenceList({ occurrences, renderExpandedRow }) {
   };
 
   return (
-    <div className="overflow-x-auto w-full mx-auto px-2">
+    <div className="overflow-x-auto w-full mx-auto px-6">
       {/* Header apenas para desktop */}
       <div className="hidden xl-custom:grid grid-cols-12 gap-2 bg-[#F2F3F5] text-gray-800 font-semibold rounded-xl px-4 py-5 border border-gray-200 mb-2">
         <div></div>
