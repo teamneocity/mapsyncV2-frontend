@@ -4,7 +4,9 @@ import { format } from "date-fns";
 import { SelectField } from "./selectField";
 import { DatePicker } from "./datePicker";
 import { GoogleMaps } from "@/components/googleMaps";
-import { ImageCarousel } from "./imagecarousel";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { useState } from "react";
+
 import ThumbsUp from "@/assets/icons/thumbs-up.svg?react";
 import ThumbsDown from "@/assets/icons/thumbs-down.svg?react";
 
@@ -18,6 +20,12 @@ export function ExpandedRowT({
   onDeleteImage,
 }) {
   const values = selectedValues[occurrence.id] || {};
+  const [photoOpen, setPhotoOpen] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
+
+  const photoUrl = occurrence?.photos?.[0]?.url || occurrence?.photos?.[0]; // ajuste conforme estrutura
+  const lat = parseFloat(occurrence.address?.latitude || 0);
+  const lng = parseFloat(occurrence.address?.longitude || 0);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 bg-[#F7F7F7] rounded-lg text-sm">
@@ -90,112 +98,254 @@ export function ExpandedRowT({
           </p>
         </div>
         {/* Botão para abrir modal */}
-        <Button
-          className="w-full h-12 bg-[#FFE8E8] hover:bg-red-200 text-[#9D0000]"
-          onClick={() => onOpenReturnModal(occurrence.id)}
-        >
-          Devolver
-          <ThumbsDown/>
-        </Button>
+        {occurrence.status !== "os_gerada" && (
+          <Button
+            className="w-full h-12 bg-[#FFE8E8] hover:bg-red-200 text-[#9D0000]"
+            onClick={() => onOpenReturnModal(occurrence.id)}
+          >
+            Devolver
+            <ThumbsDown />
+          </Button>
+        )}
       </div>
 
-      {/* Coluna 2 - Encaminhamento */}
+      {/* Coluna 2 */}
       <div className="flex flex-col justify-between space-y-4 h-full">
-        <div className="space-y-2">
-          <h3 className="font-semibold text-[#787891] text-base mb-2 pb-1">
-            Programar e gerar O.S
-          </h3>
+        <div className="space-y-2 h-full">
+          {occurrence.status === "os_gerada" ? (
+            <>
+              {/* Imagem */}
+              <Dialog open={photoOpen} onOpenChange={setPhotoOpen}>
+                <DialogTrigger asChild>
+                  <div className="h-64 w-full md:h-full">
+                    {photoUrl ? (
+                      <img
+                        src={photoUrl}
+                        alt="Imagem da ocorrência"
+                        className="rounded-md border h-full w-full object-cover cursor-pointer"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-gray-100 rounded-md flex items-center justify-center text-gray-400">
+                        Sem imagem
+                      </div>
+                    )}
+                  </div>
+                </DialogTrigger>
+                {photoUrl && (
+                  <DialogContent className="max-w-4xl w-full">
+                    <img
+                      src={photoUrl}
+                      alt="Imagem expandida"
+                      className="w-full max-h-[80vh] object-contain"
+                    />
+                  </DialogContent>
+                )}
+              </Dialog>
 
-          <SelectField
-            placeholder="Natureza do serviço"
-            value={values.serviceNatureId || ""}
-            options={selectOptions[occurrence.id]?.natures || []}
-            onChange={(value) =>
-              setSelectedValues((prev) => ({
-                ...prev,
-                [occurrence.id]: {
-                  ...prev[occurrence.id],
-                  serviceNatureId: value,
-                },
-              }))
-            }
-          />
-          <SelectField
-            placeholder="Inspetor responsável"
-            value={values.inspectorId || ""}
-            options={selectOptions[occurrence.id]?.inspectors || []}
-            onChange={(value) =>
-              setSelectedValues((prev) => ({
-                ...prev,
-                [occurrence.id]: {
-                  ...prev[occurrence.id],
-                  inspectorId: value,
-                },
-              }))
-            }
-          />
-          <SelectField
-            placeholder="Encarregado"
-            value={values.foremanId || ""}
-            options={selectOptions[occurrence.id]?.supervisors || []}
-            onChange={(value) =>
-              setSelectedValues((prev) => ({
-                ...prev,
-                [occurrence.id]: {
-                  ...prev[occurrence.id],
-                  foremanId: value,
-                },
-              }))
-            }
-          />
-          <SelectField
-            placeholder="Equipe"
-            value={values.teamId || ""}
-            options={selectOptions[occurrence.id]?.teams || []}
-            onChange={(value) =>
-              setSelectedValues((prev) => ({
-                ...prev,
-                [occurrence.id]: {
-                  ...prev[occurrence.id],
-                  teamId: value,
-                },
-              }))
-            }
-          />
-          <DatePicker
-          className={"h-[55px]"}
-            selectedDate={values.scheduledDate || null}
-            onChange={(date) =>
-              setSelectedValues((prev) => ({
-                ...prev,
-                [occurrence.id]: {
-                  ...prev[occurrence.id],
-                  scheduledDate: date,
-                },
-              }))
-            }
-          />
+              {/* Mapa - só exibe no mobile, no desktop ele vai pra coluna 3 */}
+              <div className="block lg:hidden">
+                <Dialog open={mapOpen} onOpenChange={setMapOpen}>
+                  <DialogTrigger asChild>
+                    <div className="cursor-pointer h-64 w-full rounded-md border overflow-hidden">
+                      <GoogleMaps position={{ lat, lng }} label="ocorrencia" />
+                    </div>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-5xl w-full h-[80vh]">
+                    <GoogleMaps
+                      position={{ lat, lng }}
+                      fullHeight
+                      label="ocorrencia"
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </>
+          ) : (
+            <>
+              <h3 className="font-semibold text-[#787891] text-base mb-2 pb-1">
+                Programar e gerar O.S
+              </h3>
+
+              <SelectField
+                placeholder="Natureza do serviço"
+                value={values.serviceNatureId || ""}
+                options={selectOptions[occurrence.id]?.natures || []}
+                onChange={(value) =>
+                  setSelectedValues((prev) => ({
+                    ...prev,
+                    [occurrence.id]: {
+                      ...prev[occurrence.id],
+                      serviceNatureId: value,
+                    },
+                  }))
+                }
+              />
+              <SelectField
+                placeholder="Inspetor responsável"
+                value={values.inspectorId || ""}
+                options={selectOptions[occurrence.id]?.inspectors || []}
+                onChange={(value) =>
+                  setSelectedValues((prev) => ({
+                    ...prev,
+                    [occurrence.id]: {
+                      ...prev[occurrence.id],
+                      inspectorId: value,
+                    },
+                  }))
+                }
+              />
+              <SelectField
+                placeholder="Encarregado"
+                value={values.foremanId || ""}
+                options={selectOptions[occurrence.id]?.supervisors || []}
+                onChange={(value) =>
+                  setSelectedValues((prev) => ({
+                    ...prev,
+                    [occurrence.id]: {
+                      ...prev[occurrence.id],
+                      foremanId: value,
+                    },
+                  }))
+                }
+              />
+              <SelectField
+                placeholder="Equipe"
+                value={values.teamId || ""}
+                options={selectOptions[occurrence.id]?.teams || []}
+                onChange={(value) =>
+                  setSelectedValues((prev) => ({
+                    ...prev,
+                    [occurrence.id]: {
+                      ...prev[occurrence.id],
+                      teamId: value,
+                    },
+                  }))
+                }
+              />
+              <DatePicker
+                className="h-[55px]"
+                date={values.scheduledDate || null}
+                onChange={(date) =>
+                  setSelectedValues((prev) => ({
+                    ...prev,
+                    [occurrence.id]: {
+                      ...prev[occurrence.id],
+                      scheduledDate: date,
+                    },
+                  }))
+                }
+              />
+            </>
+          )}
         </div>
-        <Button
-          className="w-full h-12 bg-[#C9F2E9] hover:bg-green-200 text-[#1C7551] items-center justify-center "
-          onClick={() => onGenerateOS(occurrence.id)}
-          disabled={occurrence.status === "os_gerada"}
-        >
-          {occurrence.status === "os_gerada" ? "O.S. já gerada" : "Gerar O.S."}
-          <ThumbsUp/>
-        </Button>
+
+        {/* Botão só aparece se OS ainda não foi gerada */}
+        {occurrence.status !== "os_gerada" && (
+          <Button
+            className="w-full h-12 bg-[#C9F2E9] hover:bg-green-200 text-[#1C7551] items-center justify-center"
+            onClick={() => onGenerateOS(occurrence.id)}
+          >
+            Gerar O.S.
+            <ThumbsUp />
+          </Button>
+        )}
       </div>
 
-      {/* Coluna 3 - Imagem e Mapa */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
-        <ImageCarousel occurrence={occurrence} onDeleteImage={onDeleteImage} />
-        <GoogleMaps
-          position={{
-            lat: parseFloat(occurrence.address?.latitude || 0),
-            lng: parseFloat(occurrence.address?.longitude || 0),
-          }}
-          label="ocorrencia"
-        />
+      {/* Mobile: mostrar imagem e mapa quando OS ainda não foi gerada */}
+      {occurrence.status !== "os_gerada" && (
+        <div className="lg:hidden flex flex-col gap-4">
+          {/* Imagem */}
+          <Dialog open={photoOpen} onOpenChange={setPhotoOpen}>
+            <DialogTrigger asChild>
+              <div className="w-full h-52 rounded-md border overflow-hidden">
+                {photoUrl ? (
+                  <img
+                    src={photoUrl}
+                    alt="Imagem da ocorrência"
+                    className="w-full h-full object-cover cursor-pointer"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-gray-100 flex items-center justify-center text-gray-400">
+                    Sem imagem
+                  </div>
+                )}
+              </div>
+            </DialogTrigger>
+            {photoUrl && (
+              <DialogContent className="max-w-4xl w-full">
+                <img
+                  src={photoUrl}
+                  alt="Imagem expandida"
+                  className="w-full max-h-[80vh] object-contain"
+                />
+              </DialogContent>
+            )}
+          </Dialog>
+
+          {/* Mapa */}
+          <Dialog open={mapOpen} onOpenChange={setMapOpen}>
+            <DialogTrigger asChild>
+              <div className="w-full h-52 rounded-md border overflow-hidden">
+                <GoogleMaps position={{ lat, lng }} label="ocorrencia" />
+              </div>
+            </DialogTrigger>
+            <DialogContent className="max-w-5xl w-full h-[80vh]">
+              <GoogleMaps
+                position={{ lat, lng }}
+                fullHeight
+                label="ocorrencia"
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
+      )}
+
+      {/* Coluna 3 - Imagem + Mapa  */}
+      <div
+        className={`h-full w-full ${
+          occurrence.status !== "os_gerada" ? "grid md:grid-cols-2 gap-4" : ""
+        }`}
+      >
+        {occurrence.status !== "os_gerada" && (
+          <div className="hidden lg:block">
+            <Dialog open={photoOpen} onOpenChange={setPhotoOpen}>
+              <DialogTrigger asChild>
+                {photoUrl ? (
+                  <img
+                    src={photoUrl}
+                    alt="Imagem da ocorrência"
+                    className="rounded-md border h-full w-full object-cover cursor-pointer"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-gray-100 rounded-md flex items-center justify-center text-gray-400">
+                    Sem imagem
+                  </div>
+                )}
+              </DialogTrigger>
+              {photoUrl && (
+                <DialogContent className="max-w-4xl w-full">
+                  <img
+                    src={photoUrl}
+                    alt="Imagem expandida"
+                    className="w-full max-h-[80vh] object-contain"
+                  />
+                </DialogContent>
+              )}
+            </Dialog>
+          </div>
+        )}
+
+        {/* Mapa - sempre aparece */}
+        <Dialog open={mapOpen} onOpenChange={setMapOpen}>
+          <DialogTrigger asChild>
+            <div className="cursor-pointer h-full w-full rounded-md border overflow-hidden">
+              <GoogleMaps position={{ lat, lng }} label="ocorrencia" />
+            </div>
+          </DialogTrigger>
+          <DialogContent className="max-w-5xl w-full h-[80vh]">
+            <GoogleMaps position={{ lat, lng }} fullHeight label="ocorrencia" />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

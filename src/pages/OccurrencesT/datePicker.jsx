@@ -10,8 +10,10 @@ import {
 import { format } from "date-fns";
 
 export function DatePicker({ date, onChange, className }) {
+  const [open, setOpen] = React.useState(false);
+
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
@@ -26,7 +28,16 @@ export function DatePicker({ date, onChange, className }) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
-        <Calendar mode="single" selected={date} onSelect={onChange} />
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={(selected) => {
+            if (selected) {
+              onChange(selected); // Atualiza o estado no pai
+              setOpen(false);     // Fecha o popover
+            }
+          }}
+        />
       </PopoverContent>
     </Popover>
   );
