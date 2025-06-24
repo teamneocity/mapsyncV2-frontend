@@ -138,7 +138,7 @@ export function ServiceOrder() {
         </h1>
         <Filters
           title="Ordens de Serviço"
-          subtitle="registradas"
+          subtitle="Registradas"
           onSearch={(input) => setSearchTerm(input)}
           onFilterType={(type) => setFilterType(type)}
           onFilterRecent={(order) => setFilterRecent(order)}

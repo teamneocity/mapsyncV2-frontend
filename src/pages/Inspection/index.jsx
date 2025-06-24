@@ -155,7 +155,7 @@ export function Inspection() {
         </h1>
         <Filters
           title="Fiscalização de"
-          subtitle="Ordem de serviço"
+          subtitle="Ordens de serviço"
           onSearch={() => {}}
           onFilterType={() => {}}
           onFilterRecent={() => {}}
