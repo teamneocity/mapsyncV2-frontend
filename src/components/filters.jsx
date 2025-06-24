@@ -153,7 +153,7 @@ export function Filters({
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm text-[#4B4B62] truncate"
+              className="w-full sm:min-w-fit gap-2 h-12 justify-between rounded-xl border-none shadow-sm text-[#4B4B62] truncate"
             >
               Filtrar por tipo de ocorrências
               <SlidersHorizontal className="ml-1 h-4 w-4" />
