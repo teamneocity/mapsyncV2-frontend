@@ -18,51 +18,72 @@ export function ExpandedRowT({
   const values = selectedValues[occurrence.id] || {};
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 bg-[#F7F7F7] p-4 rounded-lg  text-sm">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 bg-[#F7F7F7] rounded-lg text-sm">
       {/* Coluna 1 - Info */}
       <div className="flex flex-col bg-[#F7F7F7] justify-between space-y-4 h-full">
-        <div className="space-y-1 bg-[#F7F7F7]">
-          <h3 className="font-semibold text-[#787891] text-base mb-2  pb-1">
+        <div className="space-y-3 bg-[#F7F7F7] pr-2">
+          <h3 className="font-semibold text-[#787891] text-base mb-2 pb-1">
             Informações sobre a ocorrência
           </h3>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col items-start justify-between space-y-2 flex-1">
+              <p>
+                <span className="font-bold">Enviado por:</span>{" "}
+                {occurrence.author.name || "—"}
+              </p>
+              <p>
+                <span className="font-bold">Data:</span>{" "}
+                {format(new Date(occurrence.createdAt), "dd/MM/yyyy HH:mm")}
+              </p>
+            </div>
+            <div className="flex flex-col items-start justify-between space-y-2 flex-1">
+              <p>
+                <span className="font-bold">Ocorrência:</span>{" "}
+                {occurrence.type || "—"}
+              </p>
+              <p>
+                <span className="font-bold">Aprovado por:</span>{" "}
+                {occurrence.approvedBy.name || "—"}
+              </p>
+            </div>
+          </div>
           <p>
-            <span className="text-gray-500 font-medium">Data:</span>{" "}
-            {format(new Date(occurrence.createdAt), "dd/MM/yyyy HH:mm")}
-          </p>
-          <p>
-            <span className="text-gray-500 font-medium">Descrição:</span>{" "}
+            <span className="font-bold">Descrição:</span>{" "}
             {occurrence.description || "—"}
           </p>
           <p>
-            <span className="text-gray-500 font-medium">Endereço:</span>{" "}
+            <span className="font-bold">Endereço:</span>{" "}
             {occurrence.address?.street || "—"}
           </p>
+
           <p>
-            <span className="text-gray-500 font-medium">CEP:</span>{" "}
-            {occurrence.address?.zipCode || "—"}
-          </p>
-          <p>
-            <span className="text-gray-500 font-medium">Bairro:</span>{" "}
+            <span className="font-bold">Bairro:</span>{" "}
             {occurrence.address?.neighborhoodName || "—"}
           </p>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="lex-col items-start justify-between space-y-2 flex-1">
+              <p>
+                <span className="font-bold">CEP:</span>
+                {occurrence.address?.zipCode || "—"}
+              </p>
+              <p>
+                <span className="font-bold">Latitude:</span>{" "}
+                {occurrence.address.latitude}
+              </p>
+            </div>
+            <div className="lex-col items-start justify-between space-y-2 flex-1">
+              <p>
+                <span className="font-bold">Região: </span>
+                {occurrence.address?.state || "Não informada"}
+              </p>
+              <p>
+                <span className="font-bold">Longitude:</span>{" "}
+                {occurrence.address.longitude}
+              </p>
+            </div>
+          </div>
           <p>
-            <span className="text-gray-500 font-medium">Região:</span>{" "}
-            {occurrence.address?.state || "—"}
-          </p>
-          <p>
-            <span className="text-gray-500 font-medium">Tipo:</span>{" "}
-            {occurrence.type || "—"}
-          </p>
-          <p>
-            <span className="text-gray-500 font-medium">Latitude:</span>{" "}
-            {occurrence.address.latitude}
-          </p>
-          <p>
-            <span className="text-gray-500 font-medium">Longitude:</span>{" "}
-            {occurrence.address.longitude}
-          </p>
-          <p>
-            <span className="text-gray-500 font-medium">Setor atual:</span>{" "}
+            <span className="font-bold">Setor atual:</span>{" "}
             {occurrence.sector?.name || "Não informado"}
           </p>
         </div>
@@ -139,6 +160,7 @@ export function ExpandedRowT({
             }
           />
           <DatePicker
+          className={"h-[55px]"}
             selectedDate={values.scheduledDate || null}
             onChange={(date) =>
               setSelectedValues((prev) => ({

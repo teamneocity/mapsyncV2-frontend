@@ -12,7 +12,7 @@ export function SelectField({ label, options, value, onChange, placeholder = "Se
     <div className="space-y-1">
       <p className="text-sm font-medium text-gray-600">{label}</p>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="w-full text-[#787891] h-10 bg-white border-none">
+        <SelectTrigger className="w-full text-[#787891] h-[55px] bg-white border-none">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>

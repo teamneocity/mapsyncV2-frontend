@@ -35,12 +35,12 @@ export function OccurrenceList({ occurrences, serviceorders, renderExpandedRow }
         <div className="grid grid-cols-12 gap-4 items-center">
           <div className="col-span-1 pl-6">Data</div>
           <div className="col-span-1">Origem</div>
-          <div className="col-span-2">Protocolo</div>
+          <div className="col-span-1">Protocolo</div>
           <div className="col-span-1">Enviado por</div>
           <div className="col-span-1">Revisado por</div>
           <div className="col-span-1">Bairro</div>
-          <div className="col-span-2">Endereço</div>
-          <div className="col-span-2">Tipo</div>
+          <div className="col-span-3">Endereço</div>
+          <div className="col-span-1">Tipo</div>
           <div className="col-span-1 text-center">Status</div>
         </div>
       </div>
@@ -48,7 +48,7 @@ export function OccurrenceList({ occurrences, serviceorders, renderExpandedRow }
       {/* Lista de ocorrências */}
       <div className="space-y-1">
         {occurrences.map((occ) => (
-          <div key={occ.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <div key={occ.id} className={`${expandedRows.has(occ.id) ? "bg-[#F7F7F7]" : "bg-white"} border border-gray-200 rounded-xl overflow-hidden`}>
             {/* Linha principal */}
             <div className="hover:bg-gray-50 transition cursor-pointer" onClick={() => toggleRow(occ.id)}>
               {/* Layout Mobile */}
@@ -123,24 +123,29 @@ export function OccurrenceList({ occurrences, serviceorders, renderExpandedRow }
 
                   <div className="col-span-1 text-sm">{occ.origin || "Plataforma"}</div>
 
-                  <div className="col-span-2 text-sm">{occ.protocol || "254525"}</div>
+                  <div className="col-span-1 text-sm">{occ.protocol || "-"}</div>
 
                   <div className="col-span-1 flex items-center gap-2">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
+                    <span className="flex h-7 w-7 px-3 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
                       {getInicials(occ?.pilot?.name || "NA")}
                     </span>
                     <span className="text-sm truncate">{occ?.author?.name || "—"}</span>
                   </div>
 
-                  <div className="col-span-1 text-sm">{occ?.approvedBy?.name || "—"}</div>
+                  <div className="col-span-1 flex items-center gap-2">
+                    <span className="flex h-7 w-7 px-3 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
+                      {getInicials(occ?.pilot?.name || "NA")}
+                    </span>
+                    <span className="text-sm truncate">{occ?.approvedBy?.name || "—"}</span>
+                  </div>
 
                   <div className="col-span-1 text-sm">{occ?.address?.neighborhoodName || "—"}</div>
 
-                  <div className="col-span-2 text-sm truncate">
+                  <div className="col-span-3 text-sm truncate">
                     {`${occ.address?.street || ""}, ${occ.address?.number || ""} - ${occ.address?.city || ""}`}
                   </div>
 
-                  <div className="col-span-2 text-sm">{occ.type || "—"}</div>
+                  <div className="col-span-1 text-sm">{occ.type || "—"}</div>
 
                   <div className="col-span-1 flex justify-center">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusClasses(occ.status)}`}>
@@ -153,7 +158,7 @@ export function OccurrenceList({ occurrences, serviceorders, renderExpandedRow }
 
             {/* Linha expandida */}
             {expandedRows.has(occ.id) && (
-              <div className="px-4 py-4 bg-[#FAFAFA] border-t border-gray-200">
+              <div className="px-3 py-3 bg-[#F7F7F7] border-t border-gray-200">
                 {renderExpandedRow ? renderExpandedRow(occ) : null}
               </div>
             )}

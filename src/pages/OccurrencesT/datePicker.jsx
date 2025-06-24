@@ -9,13 +9,13 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 
-export function DatePicker({ date, onChange }) {
+export function DatePicker({ date, onChange, className }) {
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          className="w-full justify-start text-left font-normal bg-white hover:bg-gray-200"
+          className={`${className} w-full justify-start text-left font-normal bg-white hover:bg-gray-200`}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
           {date ? (
