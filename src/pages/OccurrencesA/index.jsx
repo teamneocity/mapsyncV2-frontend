@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
 import { Filters } from "@/components/filters";
-import { OccurrenceList } from "@/components/occurrenceList";
+import { OccurrenceList } from "@/components/OccurrenceList";
 import { ExpandedRowA } from "./ExpandedRowA";
 import { api } from "@/services/api";
 import { Pagination } from "@/components/pagination";
