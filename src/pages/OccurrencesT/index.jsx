@@ -252,7 +252,7 @@ export function OccurrencesT() {
         </h1>
         <Filters
           title="Ocorrências"
-          subtitle="terrestres"
+          subtitle="Terrestres"
           onSearch={(input) => setSearchTerm(input)}
           onFilterType={(type) => setFilterType(type)}
           onFilterRecent={(order) => setFilterRecent(order)}

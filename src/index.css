@@ -153,8 +153,8 @@
 
 /* Estilo base para a barra de rolagem */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 4px;
+  height: 4px;
   background-color: transparent; /* Torna o fundo da barra transparente */
 }
 
@@ -165,15 +165,15 @@
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 5px;
+  background: #d5d5d5;
+  border-radius: 2px;
   opacity: 0; /* Inicialmente invisível */
   transition: opacity 0.3s ease; /* Transição suave para a opacidade */
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #b6b6b6;
 }
 
 /* Classe para elementos com rolagem */

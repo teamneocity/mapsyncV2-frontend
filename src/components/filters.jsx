@@ -102,7 +102,7 @@ export function Filters({
 
   return (
     <header className="w-full bg-[#EBEBEB] px-1 py-1">
-      <div className="w-full flex flex-wrap items-center justify-between gap-2 md:gap-3">
+      <div className="w-full flex items-center justify-between gap-2 md:gap-3 flex-wrap md:flex-nowrap rounded-xl overflow-x-auto overflow-y-hidden scrollbar-hide scroll-smooth">
         {/* Título dinâmico */}
         <div className="flex flex-col mr-2 min-w-[160px]">
           <span className="text-[18px] text-gray-700 leading-tight">
@@ -114,11 +114,12 @@ export function Filters({
         </div>
 
         {/* Input de busca */}
-        <div className="flex-1 w-full md:w-[220px]">
+        <div className="flex-1 md:min-w-[220px]">
           <Input
             placeholder="Pesquise pelo bairro / nome da rua ou avenida"
             onChange={(e) => onSearch(e.target.value)}
-            className="text-sm h-12 gap-2 justify-between rounded-xl border-none shadow-sm placeholder:text-[#4B4B62]"
+            hideRing
+            className="text-sm h-12 gap-2 justify-between rounded-xl border-none shadow-sm placeholder:text-[#4B4B62] truncate"
           />
         </div>
 
@@ -152,7 +153,7 @@ export function Filters({
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm text-[#4B4B62]"
+              className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm text-[#4B4B62] truncate"
             >
               Filtrar por tipo de ocorrências
               <SlidersHorizontal className="ml-1 h-4 w-4" />
