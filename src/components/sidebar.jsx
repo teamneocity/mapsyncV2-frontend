@@ -12,6 +12,7 @@ import TrackIcon from "@/assets/icons/track.svg?react";
 import AngleSmallRight from "@/assets/icons/angleSmallRight.svg?react";
 import PeopleLine from "@/assets/icons/peopleLine.svg?react";
 import SettingsWindow from "@/assets/icons/settingsWindow.svg?react";
+import IconUsers from "@/assets/icons/IconUsers.svg?react";
 import { PanelLeftClose } from "lucide-react";
 
 import { Link } from "react-router-dom";
@@ -38,7 +39,11 @@ export function Sidebar() {
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-[250px] sm:flex bg-[#EBEBEB] text-[#787891] flex-col font-inter">
         <div className="px-4 py-5">
           <Link to="/">
-            <img src={logoAju1 || "/placeholder.svg"} alt="Logo" width={"159px"} />
+            <img
+              src={logoAju1 || "/placeholder.svg"}
+              alt="Logo"
+              width={"159px"}
+            />
           </Link>
         </div>
 
@@ -49,13 +54,16 @@ export function Sidebar() {
             </p>
             <div className="flex flex-col gap-1 text-[#787891] border-b pb-3">
               {canSeeAll && (
-                <Link
-                  to="/"
-                  className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900 text-md"
-                >
-                  <HouseCheckIcon className="w-5 h-5 shrink-0" /> Dashboard
-                </Link>
+                <>
+                  <Link
+                    to="/"
+                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900 text-md"
+                  >
+                    <HouseCheckIcon className="w-5 h-5 shrink-0" /> Dashboard
+                  </Link>
+                </>
               )}
+
               {isSupervisor && (
                 <Link
                   to="/sectorAdmin"
@@ -131,6 +139,15 @@ export function Sidebar() {
               >
                 <SettingsWindow className="w-5 h-5 shrink-0" /> Configurações
               </Link>
+              {canSeeAll && (
+                <Link
+                  to="/userManagement"
+                  className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900 text-md"
+                >
+                  <IconUsers className="w-5 h-5 shrink-0" /> Gestão de
+                  Usuários
+                </Link>
+              )}
             </div>
           </div>
 
@@ -257,6 +274,15 @@ export function Sidebar() {
                     <SettingsWindow className="w-5 h-5 shrink-0" />{" "}
                     Configurações
                   </Link>
+                  {canSeeAll && (
+                <Link
+                  to="/userManagement"
+                  className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900 text-md"
+                >
+                  <IconUsers className="w-5 h-5 shrink-0" /> Gestão de
+                  Usuários
+                </Link>
+              )}
                 </div>
               </nav>
 

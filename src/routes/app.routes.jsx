@@ -18,6 +18,7 @@ import { CreateOccurrencePage } from "@/pages/Pilot"
 import { CreateOccurrenceTPage } from "@/pages/PilotT"
 import { Inspection } from "@/pages/Inspection"
 import { SectorAdmin } from "@/pages/SectorAdmin"
+import { UserManagement } from "@/pages/UserManagement"
 import NeighborhoodOccurrences from "@/pages/LiveAction"
 
 export function AppRoutes() {
@@ -68,6 +69,7 @@ export function AppRoutes() {
       <Route path="/analysis" element={<Analysis />} />
       <Route path="/inspection" element={<Inspection />} />
       <Route path="/sectorAdmin" element={<SectorAdmin/>}/>
+      <Route path="/userManagement" element={<UserManagement/>} />
 
 
       {/* Admin/Gestor */}
