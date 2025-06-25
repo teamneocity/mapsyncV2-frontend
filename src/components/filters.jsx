@@ -11,7 +11,7 @@ import { useState } from "react";
 import { DateRange } from "./date-range";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import Stroke from "@/assets/icons/Stroke.svg?react"
+import Stroke from "@/assets/icons/Stroke.svg?react";
 
 // Enum for neighborhoods
 const neighborhoods = [
@@ -154,10 +154,10 @@ export function Filters({
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="w-full sm:min-w-fit gap-2 h-12 justify-between rounded-xl border-none shadow-sm text-[#4B4B62] truncate"
+              className="w-full sm:w-[220px] gap-2 h-12 px-3 justify-between rounded-xl border-none shadow-sm text-[#4B4B62] truncate"
             >
-              Filtrar por tipo de ocorrências
-              <Stroke className="ml-1 h-4 w-4" />
+              <span className="truncate">Tipo de ocorrência</span>
+              <Stroke className="ml-1 h-4 w-4 shrink-0" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
@@ -187,7 +187,6 @@ export function Filters({
               className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm text-[#4B4B62]"
             >
               Filtrar por status
-              
               <Stroke className="ml-1 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
