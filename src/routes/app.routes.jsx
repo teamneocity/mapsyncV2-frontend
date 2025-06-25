@@ -69,7 +69,7 @@ export function AppRoutes() {
       <Route path="/analysis" element={<Analysis />} />
       <Route path="/inspection" element={<Inspection />} />
       <Route path="/sectorAdmin" element={<SectorAdmin/>}/>
-      
+      <Route path="/userManagement" element={<UserManagement/>} />
 
 
       {/* Admin/Gestor */}

@@ -13,7 +13,7 @@ import AngleSmallRight from "@/assets/icons/angleSmallRight.svg?react";
 import PeopleLine from "@/assets/icons/peopleLine.svg?react";
 import SettingsWindow from "@/assets/icons/settingsWindow.svg?react";
 import IconUsers from "@/assets/icons/IconUsers.svg?react";
-import { PanelLeftClose } from "lucide-react";
+import { Icon, PanelLeftClose } from "lucide-react";
 
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -139,6 +139,16 @@ export function Sidebar() {
               >
                 <SettingsWindow className="w-5 h-5 shrink-0" /> Configurações
               </Link>
+              {canSeeAll && (
+                <>
+                  <Link
+                    to="/userManagement"
+                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900 text-md"
+                  >
+                    <IconUsers className="w-5 h-5 shrink-0" /> Usuários
+                  </Link>
+                </>
+              )}
             
             </div>
           </div>
@@ -266,6 +276,16 @@ export function Sidebar() {
                     <SettingsWindow className="w-5 h-5 shrink-0" />{" "}
                     Configurações
                   </Link>
+                  {canSeeAll && (
+                <>
+                  <Link
+                    to="/userManagement"
+                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900 text-md"
+                  >
+                    <IconUsers className="w-5 h-5 shrink-0" /> Usuários
+                  </Link>
+                </>
+              )}
                   
                 </div>
               </nav>
