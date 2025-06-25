@@ -59,13 +59,11 @@ export function ServicePlanning() {
       <TopHeader />
 
       <div className="px-6 py-4 sm:py-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:hidden">
-          Planejamento & Execução de Ordem de Serviço
-        </h1>
+        
 
         <Filters
-          title="Ordem de Serviço"
-          subtitle="Planejamento"
+          title="Planejamento & execução "
+          subtitle="de ordem de serviço"
           onSearch={() => {}}
           onFilterType={() => {}}
           onFilterRecent={() => {}}
