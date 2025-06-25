@@ -139,15 +139,7 @@ export function Sidebar() {
               >
                 <SettingsWindow className="w-5 h-5 shrink-0" /> Configurações
               </Link>
-              {canSeeAll && (
-                <Link
-                  to="/userManagement"
-                  className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900 text-md"
-                >
-                  <IconUsers className="w-5 h-5 shrink-0" /> Gestão de
-                  Usuários
-                </Link>
-              )}
+            
             </div>
           </div>
 
@@ -274,15 +266,7 @@ export function Sidebar() {
                     <SettingsWindow className="w-5 h-5 shrink-0" />{" "}
                     Configurações
                   </Link>
-                  {canSeeAll && (
-                <Link
-                  to="/userManagement"
-                  className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900 text-md"
-                >
-                  <IconUsers className="w-5 h-5 shrink-0" /> Gestão de
-                  Usuários
-                </Link>
-              )}
+                  
                 </div>
               </nav>
 
