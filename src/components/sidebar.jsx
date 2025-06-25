@@ -14,6 +14,7 @@ import PeopleLine from "@/assets/icons/peopleLine.svg?react";
 import SettingsWindow from "@/assets/icons/settingsWindow.svg?react";
 import IconUsers from "@/assets/icons/iconUsers.svg?react";
 import TaskChecklist from "@/assets/icons/TaskChecklist.svg?react";
+import IconFeedback from "@/assets/icons/IconFeedback.svg?react"
 import { Icon, PanelLeftClose } from "lucide-react";
 
 import { Link } from "react-router-dom";
@@ -165,6 +166,12 @@ export function Sidebar() {
               <p className="text-base font-normal mb-2 text-[#4B4B62]">
                 Suporte
               </p>
+              <Link
+                    to="/feedback"
+                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900 text-md"
+                  >
+                    <IconFeedback className="w-5 h-5 shrink-0" /> Feedback
+                  </Link>
             </div>
           )}
         </nav>
