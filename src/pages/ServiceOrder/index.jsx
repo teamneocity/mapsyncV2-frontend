@@ -15,7 +15,6 @@ import { Link } from "react-router-dom";
 import emurb from "../../assets/emurb.svg";
 import { TopHeader } from "@/components/topHeader";
 
-
 export function ServiceOrder() {
   const { toast } = useToast();
   const { isAdmin, isSupervisor } = usePermissions();
@@ -23,8 +22,6 @@ export function ServiceOrder() {
   const [occurrences, setOccurrences] = useState([]);
   const [selectedValues, setSelectedValues] = useState({});
   const [selectOptions, setSelectOptions] = useState({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState(null);
   const [filterRecent, setFilterRecent] = useState(null);
@@ -33,6 +30,8 @@ export function ServiceOrder() {
     startDate: null,
     endDate: null,
   });
+  const [currentPage, setCurrentPage] = useState(1); // controla a página atual
+  const [hasNextPage, setHasNextPage] = useState(false);
 
   useEffect(() => {
     if (!isAdmin && !isSupervisor) {
@@ -41,12 +40,14 @@ export function ServiceOrder() {
   }, [isAdmin, isSupervisor]);
 
   useEffect(() => {
-    fetchServiceOrders(currentPage);
-  }, [currentPage]);
+    fetchServiceOrders(1); // apenas carrega a página 1 inicialmente
+  }, []);
 
   const fetchServiceOrders = async (page = 1) => {
-    try {
-      const params = {
+  try {
+    const response = await api.get("/service-orders", {
+      params: {
+        page,
         search: searchTerm,
         recent: filterRecent,
         type: filterType,
@@ -57,39 +58,38 @@ export function ServiceOrder() {
         endDate: filterDateRange.endDate
           ? format(filterDateRange.endDate, "yyyy-MM-dd")
           : null,
-        page,
-        limit: 6,
-      };
+      },
+    });
 
-      const res = await api.get("/service-orders", { params });
-      const result = res.data;
+    const result = response.data;
+    const flattened = (result.serviceorders || []).map((order) => ({
+      id: order.id,
+      status: order?.status || order.status,
+      createdAt: order.occurrence?.createdAt || order.createdAt,
+      type: order.occurrence?.type || order.type,
+      author: order.occurrence?.author || null,
+      approvedBy: order.occurrence?.approvedBy || null,
+      address: order.occurrence?.address || {},
+      protocol: order.protocolNumber || "-",
+      zone: order.occurrence?.zone || "—",
+      origin: "Plataforma",
+      raw: order,
+    }));
 
-      const flattened = (result.serviceorders || []).map((order) => ({
-        id: order.id,
-        status: order?.status || order.status,
-        createdAt: order.occurrence?.createdAt || order.createdAt,
-        type: order.occurrence?.type || order.type,
-        author: order.occurrence?.author || null,
-        approvedBy: order.occurrence?.approvedBy || null,
-        address: order.occurrence?.address || {},
-        protocol: order.protocolNumber || "-",
-        zone: order.occurrence?.zone || "—",
-        origin: "Plataforma",
-        raw: order, 
-      }));
+    setOccurrences(flattened);
+    setCurrentPage(page);
+    setHasNextPage(result.serviceorders?.length > 0); // se vier vazio, não tem mais página
+  } catch (error) {
+    toast({
+      variant: "destructive",
+      title: "Erro ao buscar ordens de serviço",
+      description: error.message,
+    });
+    setOccurrences([]);
+    setHasNextPage(false);
+  }
+};
 
-      setOccurrences(flattened);
-      setCurrentPage(result.currentPage || 1);
-      setTotalPages(result.totalPages || 1);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro ao buscar ordens de serviço",
-        description: error.message,
-      });
-      setOccurrences([]);
-    }
-  };
 
   const handleApplyFilters = () => {
     fetchServiceOrders(1);
@@ -130,7 +130,7 @@ export function ServiceOrder() {
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
 
-      <TopHeader/>
+      <TopHeader />
 
       <div className="px-4 py-4 sm:py-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:hidden">
@@ -169,9 +169,8 @@ export function ServiceOrder() {
       <footer className="bg-[#EBEBEB] p-4 mt-auto">
         <div className="max-w-full mx-auto">
           <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
+            onPageChange={fetchServiceOrders}
+            hasNextPage={hasNextPage}
           />
         </div>
       </footer>

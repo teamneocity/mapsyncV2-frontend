@@ -4,15 +4,14 @@ import { Sidebar } from "@/components/sidebar";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/pagination";
 import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
 import { useAuth } from "@/hooks/auth";
 import { getInicials } from "@/lib/utils";
 import { api } from "@/services/api";
 import { TopHeader } from "@/components/topHeader";
 import ImgUsers from "@/assets/icons/imgUsers.svg";
-import Block from "@/assets/icons/block.svg?react";
 import Trash from "@/assets/icons/trash.svg?react";
-import Edit from "@/assets/icons/edit.svg?react";
 
 export function UserManagement() {
   const { user } = useAuth();
@@ -22,7 +21,6 @@ export function UserManagement() {
   const [editEmail, setEditEmail] = useState("");
   const [editRole, setEditRole] = useState("");
 
-  // no topo do componente
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -30,10 +28,15 @@ export function UserManagement() {
 
   const [users, setUsers] = useState([]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [removeModalOpen, setRemoveModalOpen] = useState(false);
   const [blockModalOpen, setBlockModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null); // pra saber qual usuário foi clicado
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const [hasNextPage, setHasNextPage] = useState(true);
 
   async function handleCreateUser(e) {
     e.preventDefault();
@@ -49,6 +52,7 @@ export function UserManagement() {
       setNewEmail("");
       setNewPassword("");
       setNewRole("SECTOR_CHIEF");
+      fetchUsers();
     } catch (error) {
       console.error(error);
       alert("Erro ao criar usuário.");
@@ -59,10 +63,14 @@ export function UserManagement() {
     fetchUsers();
   }, []);
 
-  async function fetchUsers() {
+  async function fetchUsers(page = 1) {
     try {
-      const response = await api.get("/employees");
-      setUsers(response.data.employees); // agora sim, é um array
+      const response = await api.get(`/employees?page=${page}`);
+      const data = response.data.employees || [];
+
+      setUsers(data);
+      setCurrentPage(page);
+      setHasNextPage(data.length > 0); // se vier vazio, desativa botão "Próxima"
     } catch (error) {
       console.error("Erro ao buscar usuários:", error);
     }
@@ -72,7 +80,7 @@ export function UserManagement() {
     ? `${api.defaults.baseURL}/avatar/${user.avatar}`
     : "";
   const [avatar, setAvatar] = useState(avatarUrl);
-  const initials = getInicials(name);
+  const initials = getInicials(user.name);
 
   function handleChangeAvatar(file) {
     const imagePreview = URL.createObjectURL(file);
@@ -82,63 +90,7 @@ export function UserManagement() {
   return (
     <div className="bg-[#EBEBEB] min-h-screen font-inter">
       <Sidebar />
-      {/* MODAL EDITAR */}
-      {editModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md space-y-4">
-            <h2 className="text-lg font-semibold">Editar usuário</h2>
 
-            <div className="space-y-2">
-              <Input
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                placeholder="Nome completo"
-              />
-              <Input
-                value={editEmail}
-                onChange={(e) => setEditEmail(e.target.value)}
-                placeholder="Email"
-              />
-              <select
-                value={editRole}
-                onChange={(e) => setEditRole(e.target.value)}
-                className="w-full h-[40px] border border-gray-300 rounded-md px-2 text-sm"
-              >
-                <option value="SECTOR_CHIEF">Chefe de Setor</option>
-                <option value="SUPERVISOR">Supervisor</option>
-                <option value="MANAGER">Gestor</option>
-                <option value="ADMIN">Administrador</option>
-              </select>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <Button onClick={() => setEditModalOpen(false)} variant="outline">
-                Cancelar
-              </Button>
-              <Button
-                onClick={async () => {
-                  try {
-                    await api.put(`/accounts/${selectedUser.id}`, {
-                      name: editName,
-                      email: editEmail,
-                      role: editRole,
-                    });
-                    setEditModalOpen(false);
-                    fetchUsers();
-                  } catch (error) {
-                    console.error("Erro ao editar:", error);
-                    alert("Erro ao editar usuário");
-                  }
-                }}
-              >
-                Confirmar
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL REMOVER */}
       {removeModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md space-y-4">
@@ -158,11 +110,10 @@ export function UserManagement() {
               </Button>
               <Button
                 onClick={async () => {
-                  console.log("Usuário selecionado:", selectedUser.id);
                   try {
                     await api.delete(`/employees/${selectedUser.id}`);
                     setRemoveModalOpen(false);
-                    fetchUsers(); // Atualiza lista
+                    fetchUsers();
                   } catch (error) {
                     console.error("Erro ao remover:", error);
                     alert("Erro ao remover usuário");
@@ -171,45 +122,6 @@ export function UserManagement() {
                 className="bg-red-500 hover:bg-red-600 text-white"
               >
                 Remover
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL BLOQUEAR */}
-      {blockModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md space-y-4">
-            <h2 className="text-lg font-semibold text-yellow-600">
-              Bloquear usuário
-            </h2>
-            <p>
-              Deseja bloquear <strong>{selectedUser?.name}</strong>?
-            </p>
-            <div className="flex justify-end gap-2">
-              <Button
-                onClick={() => setBlockModalOpen(false)}
-                variant="outline"
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={async () => {
-                  try {
-                    await api.put(`/accounts/${selectedUser.id}/status`, {
-                      status: "bloqueado",
-                    });
-                    setBlockModalOpen(false);
-                    fetchUsers(); // Atualiza lista
-                  } catch (error) {
-                    console.error("Erro ao bloquear:", error);
-                    alert("Erro ao bloquear usuário");
-                  }
-                }}
-                className="bg-yellow-400 hover:bg-yellow-500 text-white"
-              >
-                Bloquear
               </Button>
             </div>
           </div>
@@ -225,9 +137,7 @@ export function UserManagement() {
             <p className="text-sm text-zinc-800">
               Opções de gerenciamento de usuários. Saiba quais funções cada
               usuário pode desempenhar e quais permissões são atribuídas a cada
-              perfil. Garantimos segurança, organização e personalização de
-              acessos, respeitando o nível de responsabilidade e a função de
-              cada colaborador ou equipe.
+              perfil.
             </p>
           </div>
           <div className="flex-1 max-w-md w-full">
@@ -242,14 +152,11 @@ export function UserManagement() {
         {/* SEÇÃO 2 - Pesquisa visual */}
         <section className="max-w-[1500px] w-full mx-auto bg-white border border-zinc-200 rounded-xl px-4 py-4 flex flex-col xl:flex-row gap-3 items-center justify-between">
           <div className="flex flex-wrap w-full gap-2">
-            {/* Input */}
             <input
               type="text"
               placeholder="Pesquise por nome"
               className="flex-1 min-w-[150px] h-[48px] rounded-xl border border-zinc-300 px-4 text-sm placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-200 bg-white"
             />
-
-            {/* Select */}
             <select className="w-[150px] h-[48px] rounded-xl border border-zinc-300 px-3 text-sm bg-white text-zinc-700">
               <option>Por cargo</option>
               <option value="ADMIN">Administrador</option>
@@ -257,17 +164,14 @@ export function UserManagement() {
               <option value="SUPERVISOR">Supervisor</option>
               <option value="SECTOR_CHIEF">Chefe de setor</option>
             </select>
-
-            {/* Botão */}
             <button className="h-[48px] px-4 bg-[#A6E0FF] hover:bg-[#87CEEB] text-[#00679D] text-sm font-medium rounded-xl transition">
               Aplicar
             </button>
           </div>
         </section>
 
-        {/* SEÇÃO 3 - Formulário de dados */}
+        {/* SEÇÃO 3 - Formulário */}
         <section className="max-w-[1500px] w-full mx-auto bg-[#F9F9F9] rounded-xl p-2 flex flex-col xl:flex-row gap-6 items-stretch xl:h-[270px]">
-          {/* Coluna da imagem */}
           <div className="w-full xl:w-[200px] flex flex-col items-center justify-between h-full">
             <div className="bg-white rounded-xl shadow-md w-full h-[220px] flex items-center justify-center">
               <div className="w-[120px] h-[120px] rounded-full overflow-hidden">
@@ -277,12 +181,10 @@ export function UserManagement() {
                 </Avatar>
               </div>
             </div>
-
             <div className="mt-2 flex items-center gap-2 justify-center">
               <span className="text-sm font-medium text-zinc-700 bg-white rounded-full px-3 py-1 shadow-sm">
                 Upload da imagem
               </span>
-
               <label className="cursor-pointer">
                 <input
                   type="file"
@@ -296,7 +198,6 @@ export function UserManagement() {
             </div>
           </div>
 
-          {/* Coluna dos inputs */}
           <form
             onSubmit={handleCreateUser}
             className="flex-1 grid grid-cols-1 bg-white p-2 border-b rounded-xl sm:grid-cols-2 gap-1"
@@ -345,9 +246,9 @@ export function UserManagement() {
             </div>
           </form>
         </section>
+
         {/* SEÇÃO 4 - Lista de usuários */}
         <section className="max-w-[1500px] w-full mx-auto">
-          {/* Cabeçalho - apenas desktop */}
           <div className="hidden xl:block bg-[#D9DCE2] text-[#020231] font-semibold rounded-xl px-4 py-5 border border-gray-200 mb-2 text-sm">
             <div className="grid grid-cols-12 gap-4 items-center">
               <div className="col-span-3">Nome</div>
@@ -363,9 +264,7 @@ export function UserManagement() {
               key={user.id}
               className="bg-white border border-gray-200 rounded-xl overflow-hidden"
             >
-              {/* Linha principal */}
               <div className="hover:bg-gray-50 transition cursor-pointer">
-                {/* Mobile */}
                 <div className="xl:hidden p-4">
                   <div className="flex items-start gap-3">
                     <div className="flex-1 space-y-3 text-sm">
@@ -420,7 +319,6 @@ export function UserManagement() {
                   </div>
                 </div>
 
-                {/* Desktop */}
                 <div className="hidden xl:block p-4">
                   <div className="grid grid-cols-12 gap-4 items-center text-[#787891] text-sm">
                     <div className="col-span-3 flex items-center gap-2">
@@ -435,37 +333,13 @@ export function UserManagement() {
                       <button
                         onClick={() => {
                           setSelectedUser(user);
-                          setEditName(user.name);
-                          setEditEmail(user.email);
-                          setEditRole(user.role);
-                          setEditModalOpen(true);
-                        }}
-                        className="p-1 hover:bg-zinc-100 rounded"
-                      >
-                        <Edit className="w-4 h-4 text-blue-600" />
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setSelectedUser(user);
                           setRemoveModalOpen(true);
                         }}
                         className="p-1 hover:bg-zinc-100 rounded"
                       >
                         <Trash className="w-4 h-4 text-red-500" />
                       </button>
-
-                      <button
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setBlockModalOpen(true);
-                        }}
-                        className="p-1 hover:bg-zinc-100 rounded"
-                      >
-                        <Block className="w-4 h-4 text-yellow-500" />
-                      </button>
                     </div>
-
                     <div className="col-span-2 flex justify-end">
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -483,6 +357,13 @@ export function UserManagement() {
             </div>
           ))}
         </section>
+
+        {/* PAGINAÇÃO */}
+        <footer className="bg-[#EBEBEB] p-4 mt-4">
+          <div className="max-w-[1500px] mx-auto">
+            <Pagination onPageChange={fetchUsers} hasNextPage={hasNextPage} />
+          </div>
+        </footer>
       </main>
     </div>
   );

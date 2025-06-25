@@ -1,43 +1,31 @@
 "use client";
 
-"use client";
-
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/auth";
 import { useToast } from "@/hooks/use-toast";
 import { useMediaQuery } from "@/hooks/use-media-query";
-
 import { Sidebar } from "@/components/sidebar";
 import { Filters } from "@/components/filters";
 import { LiveActionButton } from "@/components/live-action-button";
 import { Pagination } from "@/components/pagination";
-
 import { api } from "@/services/api";
-
 import { format } from "date-fns";
-
 import { useUserSector } from "@/hooks/useUserSector";
 import { usePermissions } from "@/hooks/usePermissions";
-
 import { OccurrenceList } from "@/components/OccurrenceList";
-import { ExpandedRowT } from "./ExpandedRowT";
 import { ExpandedRowWithLoad } from "./ExpandedRowWithLoad";
-import { Link } from "react-router-dom";
 import { TopHeader } from "@/components/topHeader";
-
-import emurb from "../../assets/emurb.svg";
 
 export function OccurrencesT() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const { setor } = useUserSector();
+  const { isAdmin, isSupervisor, isInspector } = usePermissions();
 
   const [occurrences, setOccurrences] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-
-  const isMobile = useMediaQuery("(max-width: 768px)");
-
-  // Filtros
+  const [selectOptions, setSelectOptions] = useState({});
+  const [selectedValues, setSelectedValues] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState(null);
   const [filterRecent, setFilterRecent] = useState(null);
@@ -47,37 +35,35 @@ export function OccurrencesT() {
     endDate: null,
   });
 
-  const [selectOptions, setSelectOptions] = useState({});
-
-  const { setor } = useUserSector();
-  const { isAdmin, isSupervisor, isInspector } = usePermissions();
-  const [selectedValues, setSelectedValues] = useState({});
-
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
   const [returnReason, setReturnReason] = useState("");
   const [selectedOccurrenceId, setSelectedOccurrenceId] = useState(null);
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
   useEffect(() => {
     if (!isAdmin && !isSupervisor && !isInspector) {
-      // Redireciona para página de erro ou dashboardl/
       window.location.href = "/";
     }
-  }, [isAdmin]);
+  }, [isAdmin, isSupervisor, isInspector]);
+
+  useEffect(() => {
+  fetchOccurrences(1); // apenas carrega a página 1 inicialmente
+}, []);
+
+
 
   const handleApplyFilters = () => {
     fetchOccurrences(1);
   };
 
-  useEffect(() => {
-    fetchOccurrences(currentPage);
-  }, [currentPage]);
-
   const fetchOccurrences = async (page = 1) => {
-    try {
-      const params = {
+  try {
+    const response = await api.get("/occurrences", {
+      params: {
+        page,
         search: searchTerm,
         recent: filterRecent,
-        type: null,
+        type: filterType,
         neighborhood: filterNeighborhood,
         startDate: filterDateRange.startDate
           ? format(filterDateRange.startDate, "yyyy-MM-dd")
@@ -85,31 +71,30 @@ export function OccurrencesT() {
         endDate: filterDateRange.endDate
           ? format(filterDateRange.endDate, "yyyy-MM-dd")
           : null,
-        page,
-        limit: 6,
-      };
+      },
+    });
 
-      const res = await api.get("/occurrences", { params });
-      const allOccurrences = res.data.occurrences || [];
+    const allOccurrences = response.data.occurrences || [];
 
-      // filtro direto do front
-      const filteredOccurrences = allOccurrences.filter(
-        (occ) => occ.status !== "em_analise"
-      );
+    const filteredOccurrences = allOccurrences.filter(
+      (occ) => occ.status !== "em_analise"
+    );
 
-      setOccurrences(filteredOccurrences);
-      setCurrentPage(res.data.currentPage);
-      setTotalPages(res.data.totalPages);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro ao buscar ocorrências",
-        description: error.message,
-      });
-    }
-  };
+    setOccurrences(filteredOccurrences);
+    setCurrentPage(page);
+    setHasNextPage(allOccurrences.length > 0);
+  } catch (error) {
+    toast({
+      variant: "destructive",
+      title: "Erro ao buscar ocorrências",
+      description: error.message,
+    });
+    setOccurrences([]);
+    setHasNextPage(false);
+  }
+};
 
-  //devolve a ocorrencia
+
   const handleReturnOccurrence = async () => {
     if (!returnReason.trim()) {
       toast({
@@ -131,7 +116,7 @@ export function OccurrencesT() {
       setIsReturnModalOpen(false);
       setReturnReason("");
       setSelectedOccurrenceId(null);
-      fetchOccurrences(currentPage);
+      fetchOccurrences(1);
     } catch (error) {
       toast({
         variant: "destructive",
@@ -141,7 +126,6 @@ export function OccurrencesT() {
     }
   };
 
-  //aceita a ocorrencia
   const handleGenerateOS = async (occurrenceId) => {
     const values = selectedValues[occurrenceId];
     const occurrence = occurrences.find((o) => o.id === occurrenceId);
@@ -179,13 +163,9 @@ export function OccurrencesT() {
     if (inspectorId) payload.inspectorId = inspectorId;
 
     try {
-      console.log("Payload enviado:", payload);
       await api.post("/service-orders", payload);
-
       toast({ title: "Ordem de Serviço gerada com sucesso!" });
-
-      // Apenas atualiza os dados da tela, sem PUT
-      fetchOccurrences(currentPage);
+      fetchOccurrences(1);
     } catch (error) {
       toast({
         variant: "destructive",
@@ -195,18 +175,14 @@ export function OccurrencesT() {
     }
   };
 
-  //deleta a imagem do carrosel
   const handleDeleteImage = async (imageId) => {
     try {
       await api.post("/occurrences/deletepicture", {
         data: { id: imageId },
       });
 
-      toast({
-        title: "Imagem excluída com sucesso",
-      });
-
-      fetchOccurrences(currentPage);
+      toast({ title: "Imagem excluída com sucesso" });
+      fetchOccurrences(1);
     } catch (error) {
       toast({
         variant: "destructive",
@@ -216,7 +192,6 @@ export function OccurrencesT() {
     }
   };
 
-  //busca informações do back
   const loadOptionsForOccurrence = async (occurrence) => {
     if (!occurrence || !occurrence.sector?.id) return;
 
@@ -243,7 +218,6 @@ export function OccurrencesT() {
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
-
       <TopHeader />
 
       <div className="px-6 py-4 sm:py-6">
@@ -274,7 +248,7 @@ export function OccurrencesT() {
             setSelectedValues={setSelectedValues}
             selectOptions={selectOptions}
             onGenerateOS={handleGenerateOS}
-            showEmergencialStatus={true} 
+            showEmergencialStatus={true}
             onOpenReturnModal={(id) => {
               setSelectedOccurrenceId(id);
               setIsReturnModalOpen(true);
@@ -286,13 +260,12 @@ export function OccurrencesT() {
 
       <footer className="bg-[#EBEBEB] p-4 mt-auto">
         <div className="max-w-full mx-auto">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
+          <Pagination onPageChange={fetchOccurrences} hasNextPage={hasNextPage} />
+
+
         </div>
       </footer>
+
       {isReturnModalOpen && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
           <div className="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-lg space-y-5 text-center">
