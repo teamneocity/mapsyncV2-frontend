@@ -100,34 +100,34 @@ export function ExpandedRowA({ occurrence }) {
       <div className="col-span-1 h-full flex flex-col justify-between">
         <div className="space-y-4">
           <h3 className="font-semibold text-[#787891] mb-2">Ações</h3>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="bg-[#ECECEC] rounded-xl grid grid-cols-4 gap-2 p-2">
             <Button
-              variant="outline"
-              className="flex flex-col border-none items-center gap-1 py-8 bg-[#ECECEC] hover:bg-[#E0E0E0] transition"
+              variant="ghost"
+              className="flex flex-col items-center justify-center gap-1 h-[60px] hover:bg-[#DCDCDC] rounded-md"
             >
               <Vector className="w-5 h-5" />
               <span className="text-[#787891] text-xs">Ver notas</span>
             </Button>
 
             <Button
-              variant="outline"
-              className="flex flex-col border-none items-center gap-1 py-8 bg-[#ECECEC] hover:bg-[#E0E0E0] transition"
+              variant="ghost"
+              className="flex flex-col items-center justify-center gap-1 h-[60px] hover:bg-[#DCDCDC] rounded-md"
             >
               <FilePdf className="w-5 h-5" />
               <span className="text-[#787891] text-xs">Gerar PDF</span>
             </Button>
 
             <Button
-              variant="outline"
-              className="flex flex-col border-none items-center gap-1 py-8 bg-[#ECECEC] hover:bg-[#E0E0E0] transition"
+              variant="ghost"
+              className="flex flex-col items-center justify-center gap-1 h-[60px] hover:bg-[#DCDCDC] rounded-md"
             >
               <CloudUploadAlt className="w-5 h-5" />
               <span className="text-[#787891] text-xs">Upload</span>
             </Button>
 
             <Button
-              variant="outline"
-              className="flex flex-col border-none items-center gap-1 py-8 bg-[#ECECEC] hover:bg-[#E0E0E0] transition"
+              variant="ghost"
+              className="flex flex-col items-center justify-center gap-1 h-[60px] hover:bg-[#DCDCDC] rounded-md"
             >
               <CloudShare className="w-5 h-5" />
               <span className="text-[#787891] text-xs">Compartilhar</span>
