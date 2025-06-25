@@ -241,16 +241,16 @@ export function UserManagement() {
 
         {/* SEÇÃO 2 - Pesquisa visual */}
         <section className="max-w-[1500px] w-full mx-auto bg-white border border-zinc-200 rounded-xl px-4 py-4 flex flex-col xl:flex-row gap-3 items-center justify-between">
-          <div className="flex w-full gap-2">
-            {/* Input ocupa todo o espaço disponível */}
+          <div className="flex flex-wrap w-full gap-2">
+            {/* Input */}
             <input
               type="text"
               placeholder="Pesquise por nome"
-              className="flex-1 h-[48px] rounded-xl border border-zinc-300 px-4 text-sm placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-200 bg-white"
+              className="flex-1 min-w-[150px] h-[48px] rounded-xl border border-zinc-300 px-4 text-sm placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-200 bg-white"
             />
 
-            {/* Select e botão alinhados à direita */}
-            <select className="h-[48px] rounded-xl border border-zinc-300 px-3 text-sm bg-white text-zinc-700">
+            {/* Select */}
+            <select className="w-[150px] h-[48px] rounded-xl border border-zinc-300 px-3 text-sm bg-white text-zinc-700">
               <option>Por cargo</option>
               <option value="ADMIN">Administrador</option>
               <option value="MANAGER">Gestor</option>
@@ -258,7 +258,8 @@ export function UserManagement() {
               <option value="SECTOR_CHIEF">Chefe de setor</option>
             </select>
 
-            <button className="h-[48px] px-6 bg-[#A6E0FF] hover:bg-[#87CEEB] text-[#00679D] text-sm font-medium rounded-xl transition">
+            {/* Botão */}
+            <button className="h-[48px] px-4 bg-[#A6E0FF] hover:bg-[#87CEEB] text-[#00679D] text-sm font-medium rounded-xl transition">
               Aplicar
             </button>
           </div>
@@ -327,8 +328,13 @@ export function UserManagement() {
               <option value="SECTOR_CHIEF">Chefe de Setor</option>
               <option value="SUPERVISOR">Supervisor</option>
               <option value="MANAGER">Gestor</option>
-              <option value="ADMIN">Administrador</option>
+              <option value="ANALYST">Analista</option>
+              <option value="INSPECTOR">Inspetor</option>
+              <option value="PILOT">Piloto</option>
+              <option value="DRONE_OPERATOR">Operador de Drone</option>
+              <option value="CHIEF">Chefe Geral</option>
             </select>
+
             <div className="col-span-full">
               <Button
                 type="submit"
