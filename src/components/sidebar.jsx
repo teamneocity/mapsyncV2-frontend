@@ -12,7 +12,7 @@ import TrackIcon from "@/assets/icons/track.svg?react";
 import AngleSmallRight from "@/assets/icons/angleSmallRight.svg?react";
 import PeopleLine from "@/assets/icons/peopleLine.svg?react";
 import SettingsWindow from "@/assets/icons/settingsWindow.svg?react";
-import IconUsers from "@/assets/icons/IconUsers.svg?react";
+import IconUsers from "@/assets/icons/iconUsers.svg?react";
 import { Icon, PanelLeftClose } from "lucide-react";
 
 import { Link } from "react-router-dom";
