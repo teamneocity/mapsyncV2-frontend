@@ -13,6 +13,7 @@ import AngleSmallRight from "@/assets/icons/angleSmallRight.svg?react";
 import PeopleLine from "@/assets/icons/peopleLine.svg?react";
 import SettingsWindow from "@/assets/icons/settingsWindow.svg?react";
 import IconUsers from "@/assets/icons/iconUsers.svg?react";
+import TaskChecklist from "@/assets/icons/TaskChecklist.svg?react";
 import { Icon, PanelLeftClose } from "lucide-react";
 
 import { Link } from "react-router-dom";
@@ -103,8 +104,15 @@ export function Sidebar() {
                     to="/serviceorder"
                     className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                   >
-                    <CalendarIcon className="w-5 h-5 shrink-0" /> O.S.
+                    <TaskChecklist className="w-5 h-5 shrink-0" /> O.S.
                   </Link>
+                  <Link
+                    to="/servicePlanning"
+                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                  >
+                    <CalendarIcon className="w-5 h-5 shrink-0" /> Planejamento
+                  </Link>
+
                   <Link
                     to="/inspection"
                     className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
@@ -149,7 +157,6 @@ export function Sidebar() {
                   </Link>
                 </>
               )}
-            
             </div>
           </div>
 
@@ -244,7 +251,7 @@ export function Sidebar() {
                         to="/serviceorder"
                         className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                       >
-                        <CalendarIcon className="w-5 h-5 shrink-0" /> O.S.
+                        <TaskChecklist className="w-5 h-5 shrink-0" /> O.S.
                       </Link>
                       <Link
                         to="/inspection"
@@ -277,16 +284,15 @@ export function Sidebar() {
                     Configurações
                   </Link>
                   {canSeeAll && (
-                <>
-                  <Link
-                    to="/userManagement"
-                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900 text-md"
-                  >
-                    <IconUsers className="w-5 h-5 shrink-0" /> Usuários
-                  </Link>
-                </>
-              )}
-                  
+                    <>
+                      <Link
+                        to="/userManagement"
+                        className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900 text-md"
+                      >
+                        <IconUsers className="w-5 h-5 shrink-0" /> Usuários
+                      </Link>
+                    </>
+                  )}
                 </div>
               </nav>
 

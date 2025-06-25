@@ -20,6 +20,7 @@ import { Inspection } from "@/pages/Inspection"
 import { SectorAdmin } from "@/pages/SectorAdmin"
 import { UserManagement } from "@/pages/UserManagement"
 import { Map } from "@/pages/Map"
+import { ServicePlanning } from "@/pages/ServicePlanning"
 import NeighborhoodOccurrences from "@/pages/LiveAction"
 
 export function AppRoutes() {
@@ -72,6 +73,7 @@ export function AppRoutes() {
       <Route path="/sectorAdmin" element={<SectorAdmin/>}/>
       <Route path="/userManagement" element={<UserManagement/>} />
       <Route path="/map" element={<Map />} />
+      <Route path="/servicePlanning" element={<ServicePlanning />} />
 
 
       {/* Admin/Gestor */}
