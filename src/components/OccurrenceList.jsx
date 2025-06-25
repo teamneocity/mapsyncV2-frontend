@@ -9,6 +9,7 @@ export function OccurrenceList({
   occurrences,
   serviceorders,
   renderExpandedRow,
+  showEmergencialStatus = false, 
 }) {
   const [expandedRows, setExpandedRows] = useState(new Set());
 

@@ -274,6 +274,7 @@ export function OccurrencesT() {
             setSelectedValues={setSelectedValues}
             selectOptions={selectOptions}
             onGenerateOS={handleGenerateOS}
+            showEmergencialStatus={true} 
             onOpenReturnModal={(id) => {
               setSelectedOccurrenceId(id);
               setIsReturnModalOpen(true);
