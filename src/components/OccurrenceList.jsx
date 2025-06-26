@@ -9,9 +9,23 @@ export function OccurrenceList({
   occurrences,
   serviceorders,
   renderExpandedRow,
-  showEmergencialStatus = false, 
+  showEmergencialStatus = false,
 }) {
   const [expandedRows, setExpandedRows] = useState(new Set());
+  
+  const dataToRender = serviceorders?.length > 0
+  ? serviceorders.map((s) => ({
+      ...s.occurrence,
+      isEmergencial: s.occurrence?.isEmergencial // garante que venha
+    }))
+  : occurrences;
+
+if (serviceorders?.length > 0) {
+  console.log("isEmergencial da primeira OS:", serviceorders[0].occurrence?.isEmergencial);
+}
+
+
+
 
   const toggleRow = (id) => {
     setExpandedRows((prev) => {
@@ -28,9 +42,9 @@ export function OccurrenceList({
       aprovada: "bg-[#FFF4D6] text-[#986F00]",
       os_gerada: "bg-[#f0ddee] text-[#733B73]",
       aguardando_execucao: "bg-[#FFE4B5] text-[#CD853F]",
-      pendente : "bg-[#E8F7FF] text-[#33CFFF]",
-      aceita : "bg-[#FFF4D6] text-[#986F00]",
-      verificada : "bg-[#DDF2EE] text-[#40C4AA]"
+      pendente: "bg-[#E8F7FF] text-[#33CFFF]",
+      aceita: "bg-[#FFF4D6] text-[#986F00]",
+      verificada: "bg-[#DDF2EE] text-[#40C4AA]",
     };
 
     return map[status] || "bg-gray-100 text-gray-600";
@@ -73,7 +87,7 @@ export function OccurrenceList({
 
       {/* Lista de ocorrências */}
       <div className="space-y-1">
-        {occurrences.map((occ) => (
+        {dataToRender.map((occ) => (
           <div
             key={occ.id}
             className={`${
@@ -108,15 +122,24 @@ export function OccurrenceList({
                             : "—"}
                         </div>
                       </div>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusClasses(
-                          occ.status
-                        )}`}
-                      >
-                        {occ.status
-                          .replace("_", " ")
-                          .replace(/^\w/, (c) => c.toUpperCase())}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusClasses(
+                            occ.status
+                          )}`}
+                        >
+                          {occ.status
+                            .replace("_", " ")
+                            .replace(/^\w/, (c) => c.toUpperCase())}
+                        </span>
+
+                        {occ.isEmergencial && (
+                          <div
+                            title="EMERGENCIAL"
+                            className="w-3.5 h-3.5 rounded-full bg-[#FFE8E8] border border-red-500"
+                          />
+                        )}
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 text-sm text-gray-600">
@@ -192,7 +215,6 @@ export function OccurrenceList({
 
                   <div className="col-span-1 text-sm">
                     {occ.protocol || "—"}
-
                   </div>
 
                   <div className="col-span-1 flex items-center gap-2">
@@ -216,8 +238,9 @@ export function OccurrenceList({
                   </div>
 
                   <div className="col-span-1 text-sm">
-                    {occ?.address?.neighborhoodName || occ?.address?.neighborhood || "—"}
-
+                    {occ?.address?.neighborhoodName ||
+                      occ?.address?.neighborhood ||
+                      "—"}
                   </div>
 
                   <div className="col-span-3 text-sm truncate">
@@ -230,7 +253,7 @@ export function OccurrenceList({
                     {occ.type || "—"}
                   </div>
 
-                  <div className="col-span-1 flex justify-center">
+                  <div className="col-span-1 flex justify-center items-center gap-2">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusClasses(
                         occ.status
@@ -240,6 +263,13 @@ export function OccurrenceList({
                         .replace("_", " ")
                         .replace(/^\w/, (c) => c.toUpperCase())}
                     </span>
+
+                    {occ.isEmergencial && (
+                      <div
+                        title="EMERGENCIAL"
+                        className="w-3.5 h-3.5 rounded-full bg-[#FFE8E8] border border-red-500"
+                      />
+                    )}
                   </div>
                 </div>
               </div>

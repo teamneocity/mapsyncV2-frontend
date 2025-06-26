@@ -12,7 +12,6 @@ import { LiveActionButton } from "@/components/live-action-button";
 import { Pagination } from "@/components/pagination";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
-import emurb from "../../assets/emurb.svg";
 import { TopHeader } from "@/components/topHeader";
 
 export function ServiceOrder() {
@@ -38,52 +37,52 @@ export function ServiceOrder() {
   }, []);
 
   const fetchServiceOrders = async (page = 1) => {
-  try {
-    const response = await api.get("/service-orders", {
-      params: {
-        page,
-        search: searchTerm,
-        recent: filterRecent,
-        type: filterType,
-        neighborhood: filterNeighborhood,
-        startDate: filterDateRange.startDate
-          ? format(filterDateRange.startDate, "yyyy-MM-dd")
-          : null,
-        endDate: filterDateRange.endDate
-          ? format(filterDateRange.endDate, "yyyy-MM-dd")
-          : null,
-      },
-    });
+    try {
+      const response = await api.get("/service-orders", {
+        params: {
+          page,
+          search: searchTerm,
+          recent: filterRecent,
+          type: filterType,
+          neighborhood: filterNeighborhood,
+          startDate: filterDateRange.startDate
+            ? format(filterDateRange.startDate, "yyyy-MM-dd")
+            : null,
+          endDate: filterDateRange.endDate
+            ? format(filterDateRange.endDate, "yyyy-MM-dd")
+            : null,
+        },
+      });
 
-    const result = response.data;
-    const flattened = (result.serviceorders || []).map((order) => ({
-      id: order.id,
-      status: order?.status || order.status,
-      createdAt: order.occurrence?.createdAt || order.createdAt,
-      type: order.occurrence?.type || order.type,
-      author: order.occurrence?.author || null,
-      approvedBy: order.occurrence?.approvedBy || null,
-      address: order.occurrence?.address || {},
-      protocol: order.protocolNumber || "-",
-      zone: order.occurrence?.zone || "—",
-      origin: "Plataforma",
-      raw: order,
-    }));
+      const result = response.data;
+      const flattened = (result.serviceorders || []).map((order) => ({
+        id: order.id,
+        status: order?.status || order.status,
+        createdAt: order.occurrence?.createdAt || order.createdAt,
+        type: order.occurrence?.type || order.type,
+        author: order.occurrence?.author || null,
+        approvedBy: order.occurrence?.approvedBy || null,
+        address: order.occurrence?.address || {},
+        protocol: order.protocolNumber || "-",
+        zone: order.occurrence?.zone || "—",
+        origin: "Plataforma",
+        isEmergencial: order.occurrence?.isEmergencial || false,
+        raw: order,
+      }));
 
-    setOccurrences(flattened);
-    setCurrentPage(page);
-    setHasNextPage(result.serviceorders?.length > 0); // se vier vazio, não tem mais página
-  } catch (error) {
-    toast({
-      variant: "destructive",
-      title: "Erro ao buscar ordens de serviço",
-      description: error.message,
-    });
-    setOccurrences([]);
-    setHasNextPage(false);
-  }
-};
-
+      setOccurrences(flattened);
+      setCurrentPage(page);
+      setHasNextPage(result.serviceorders?.length > 0); 
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao buscar ordens de serviço",
+        description: error.message,
+      });
+      setOccurrences([]);
+      setHasNextPage(false);
+    }
+  };
 
   const handleApplyFilters = () => {
     fetchServiceOrders(1);

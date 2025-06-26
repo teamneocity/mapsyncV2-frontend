@@ -59,7 +59,6 @@ export function Analysis() {
   const [isIgnoreOcurrenceModalOpen, setIsIgnoreOcurrenceModalOpen] =
     useState(false);
 
-
   useEffect(() => {
     fetchOccurrences(currentPage);
   }, [currentPage]);
@@ -97,7 +96,7 @@ export function Analysis() {
     }
   };
 
-  const handleForwardOccurrence = async (occurrenceId) => {
+  const handleForwardOccurrence = async (occurrenceId, isEmergencial) => {
     try {
       if (!editableSectorId) {
         toast({
@@ -111,6 +110,7 @@ export function Analysis() {
       await api.post("/occurrences/approve", {
         occurrenceId,
         sectorId: editableSectorId,
+        isEmergencial,
       });
 
       toast({ title: "Ocorrência encaminhada com sucesso!" });
@@ -139,29 +139,28 @@ export function Analysis() {
   };
 
   const handleNotValidatePhoto = async (reason) => {
-  try {
-    await api.post(`/occurrences/reject`, {
-      occurrenceId: selectedOccurrenceId,
-      reason: reason,
-    });
+    try {
+      await api.post(`/occurrences/reject`, {
+        occurrenceId: selectedOccurrenceId,
+        reason: reason,
+      });
 
-    toast({ title: "Ocorrência apagada com sucesso!" });
-    fetchOccurrences(currentPage);
-  } catch (error) {
-    toast({
-      variant: "destructive",
-      title: "Erro ao apagar ocorrência",
-      description: error.message,
-    });
-  }
-};
-
+      toast({ title: "Ocorrência apagada com sucesso!" });
+      fetchOccurrences(currentPage);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao apagar ocorrência",
+        description: error.message,
+      });
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
 
-      <TopHeader/>
+      <TopHeader />
 
       <div className="px-4 py-4 sm:py-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:hidden">

@@ -7,8 +7,6 @@ import { GoogleMaps } from "@/components/googleMaps";
 import { api } from "@/services/api";
 import { MediaMapSection } from "@/components/MediaMapSection";
 
-import { oc } from "date-fns/locale";
-
 export function ExpandedRowAnalysis({
   occurrence,
   editableSectorId,
@@ -22,6 +20,7 @@ export function ExpandedRowAnalysis({
   handleDeleteImage,
 }) {
   const [sectors, setSectors] = useState([]);
+  const [isEmergencialSelection, setIsEmergencialSelection] = useState(false);
 
   useEffect(() => {
     async function fetchSectors() {
@@ -52,10 +51,10 @@ export function ExpandedRowAnalysis({
   const regiao = occurrence.address?.state || "Não informado";
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 bg-white p-4 rounded-lg shadow-sm text-sm">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 bg-[#F7F7F7] p-4 rounded-lg shadow-sm text-sm">
       {/* Coluna 1 - Informações */}
       <div className="flex flex-col justify-between space-y-4 h-full">
-        <div className="space-y-1">
+        <div className="space-y-1 text-[#787891]">
           <h3 className="font-semibold text-base mb-2 border-b pb-1">
             Informações sobre a ocorrência
           </h3>
@@ -102,16 +101,16 @@ export function ExpandedRowAnalysis({
       </div>
 
       {/* Coluna 2 - Edição */}
-      <div className="flex flex-col justify-between space-y-4 h-full">
-        <div className="space-y-4">
+      <div className="flex flex-col justify-between space-y-6 h-full">
+        <div className="space-y-6">
           <div>
-            <label className="font-semibold block mb-1">
+            <label className="font-semibold block mb-1 text-[#787891]">
               Setor responsável
             </label>
             <select
               value={editableSectorId ?? ""}
               onChange={(e) => setEditableSectorId(e.target.value)}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 rounded h-[55px] text-[#787891]"
             >
               <option value="">Selecione o setor</option>
               {sectors.map((sector) => (
@@ -120,6 +119,24 @@ export function ExpandedRowAnalysis({
                 </option>
               ))}
             </select>
+
+            <div className="mt-4">
+              <label className="font-semibold block mb-1 text-[#787891]">Classificação</label>
+              <select
+                value={isEmergencialSelection ? "true" : "false"}
+                onChange={(e) =>
+                  setIsEmergencialSelection(e.target.value === "true")
+                }
+                className={`w-full p-2 rounded text-sm h-[55px] ${
+                  isEmergencialSelection
+                    ? "text-red-600 font-semibold"
+                    : "text-[#787891]"
+                }`}
+              >
+                <option value="false">Não emergencial</option>
+                <option value="true">Emergencial</option>
+              </select>
+            </div>
           </div>
 
           <div>
@@ -130,14 +147,16 @@ export function ExpandedRowAnalysis({
               rows={4}
               value={editableDescription}
               onChange={(e) => setEditableDescription(e.target.value)}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 rounded min-h-[55px]"
               placeholder={occurrence.description}
             />
           </div>
         </div>
         <Button
           className="w-full bg-[#FFF0E6] hover:bg-orange-200 text-[#FF7A21] flex items-center justify-center gap-2"
-          onClick={() => handleForwardOccurrence(occurrence.id)}
+          onClick={() =>
+            handleForwardOccurrence(occurrence.id, isEmergencialSelection)
+          }
         >
           Encaminhar
           <ThumbsUp className="w-4 h-4" />
