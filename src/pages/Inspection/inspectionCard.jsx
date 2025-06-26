@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { Clock } from "lucide-react";
+import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 
 export function InspectionCard({ serviceorder }) {
   const occurrence = serviceorder.occurrence;
@@ -20,9 +21,10 @@ export function InspectionCard({ serviceorder }) {
   const statusClass =
     statusColors[occurrence.status] || "bg-gray-200 text-gray-600";
 
-  const imageUrl =
-    occurrence.photos?.initial?.[0] ||
-    "https://via.placeholder.com/500x200.png?text=Sem+imagem";
+  const hasImage = occurrence.photos?.initial?.[0];
+  const imageUrl = hasImage
+    ? `https://mapsync-media.s3.sa-east-1.amazonaws.com/${hasImage}`
+    : "https://via.placeholder.com/500x200.png?text=Sem+imagem";
 
   const timeline = {
     requested: occurrence.createdAt,
@@ -30,11 +32,13 @@ export function InspectionCard({ serviceorder }) {
     started: serviceorder.startedAt,
     finished: serviceorder.finishedAt,
   };
-  
 
   return (
-    <div className="bg-[#F7F7F7] rounded-xl shadow-sm overflow-hidden flex-shrink-0 w-full max-w-[525px] border border-gray-200 min-h-[650px] sm:min-h-[auto]">
+    <div className="bg-[#F7F7F7] rounded-[12px] shadow-sm overflow-hidden flex-shrink-0 w-full max-w-[525px] border border-gray-200 min-h-[650px] sm:min-h-[auto]">
       <div className="relative">
+  <Dialog>
+    <DialogTrigger asChild>
+      <div className="m-2 rounded-[12px] border border-gray-200 bg-white overflow-hidden cursor-pointer relative">
         <img
           src={imageUrl}
           alt="Imagem da ocorrência"
@@ -44,6 +48,20 @@ export function InspectionCard({ serviceorder }) {
           Imagem 1/1
         </div>
       </div>
+    </DialogTrigger>
+
+    {imageUrl && !imageUrl.includes("placeholder") && (
+      <DialogContent className="max-w-4xl w-full">
+        <img
+          src={imageUrl}
+          alt="Imagem expandida"
+          className="w-full max-h-[80vh] object-contain rounded-[12px] border border-gray-200 bg-white p-1"
+        />
+      </DialogContent>
+    )}
+  </Dialog>
+</div>
+
 
       <div className="flex justify-end p-2 border-b border-dotted border-gray-300 pb-4 mb-4">
         <span
@@ -71,11 +89,12 @@ export function InspectionCard({ serviceorder }) {
             <strong>Revisado por:</strong> {occurrence.approvedBy?.name || "—"}
           </p>
           <p>
-            <strong>Bairro:</strong> {occurrence.address?.neighborhoodName || "—"}
+            <strong>Bairro:</strong>{" "}
+            {occurrence.address?.neighborhoodName || "—"}
           </p>
           <p>
-            <strong>Endereço:</strong>{" "}
-            {occurrence.address?.street}, {occurrence.address?.number}
+            <strong>Endereço:</strong> {occurrence.address?.street},{" "}
+            {occurrence.address?.number}
           </p>
           <p>
             <strong>CEP:</strong> {occurrence.address?.zipCode}

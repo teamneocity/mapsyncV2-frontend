@@ -1,11 +1,8 @@
-// src/pages/OccurrencesT/ExpandedRowT.jsx
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { SelectField } from "./selectField";
 import { DatePicker } from "./datePicker";
-import { GoogleMaps } from "@/components/googleMaps";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { useState } from "react";
+import { MediaMapSection } from "@/components/MediaMapSection";
 
 import ThumbsUp from "@/assets/icons/thumbs-up.svg?react";
 import ThumbsDown from "@/assets/icons/thumbs-down.svg?react";
@@ -17,26 +14,26 @@ export function ExpandedRowT({
   selectOptions,
   onGenerateOS,
   onOpenReturnModal,
-  onDeleteImage,
 }) {
   const values = selectedValues[occurrence.id] || {};
-  const [photoOpen, setPhotoOpen] = useState(false);
-  const [mapOpen, setMapOpen] = useState(false);
-
-  const photoUrl = occurrence?.photos?.[0]?.url || occurrence?.photos?.[0]; // ajuste conforme estrutura
   const lat = parseFloat(occurrence.address?.latitude || 0);
   const lng = parseFloat(occurrence.address?.longitude || 0);
 
+  const firstInitialPhoto = occurrence?.photos?.initial?.[0];
+  const photoUrl = firstInitialPhoto
+    ? `https://mapsync-media.s3.sa-east-1.amazonaws.com/${firstInitialPhoto}`
+    : null;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 bg-[#F7F7F7] rounded-lg text-sm">
-      {/* Coluna 1 - Info */}
+      {/* Coluna 1 - Informações */}
       <div className="flex flex-col bg-[#F7F7F7] justify-between space-y-4 h-full">
-        <div className="space-y-3 bg-[#F7F7F7] pr-2">
+        <div className="space-y-3 pr-2">
           <h3 className="font-semibold text-[#787891] text-base mb-2 pb-1">
             Informações sobre a ocorrência
           </h3>
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div className="flex flex-col items-start justify-between space-y-2 flex-1">
+            <div className="flex flex-col items-start space-y-2 flex-1">
               <p>
                 <span className="font-bold">Enviado por:</span>{" "}
                 {occurrence.author.name || "—"}
@@ -46,17 +43,18 @@ export function ExpandedRowT({
                 {format(new Date(occurrence.createdAt), "dd/MM/yyyy HH:mm")}
               </p>
             </div>
-            <div className="flex flex-col items-start justify-between space-y-2 flex-1">
+            <div className="flex flex-col items-start space-y-2 flex-1">
               <p>
                 <span className="font-bold">Ocorrência:</span>{" "}
                 {occurrence.type || "—"}
               </p>
               <p>
                 <span className="font-bold">Aprovado por:</span>{" "}
-                {occurrence.approvedBy.name || "—"}
+                {occurrence.approvedBy?.name || "—"}
               </p>
             </div>
           </div>
+
           <p>
             <span className="font-bold">Descrição:</span>{" "}
             {occurrence.description || "—"}
@@ -65,15 +63,15 @@ export function ExpandedRowT({
             <span className="font-bold">Endereço:</span>{" "}
             {occurrence.address?.street || "—"}
           </p>
-
           <p>
             <span className="font-bold">Bairro:</span>{" "}
             {occurrence.address?.neighborhoodName || "—"}
           </p>
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div className="lex-col items-start justify-between space-y-2 flex-1">
+
+          <div className="flex flex-col md:flex-row justify-between gap-4">
+            <div className="flex flex-col space-y-2 flex-1">
               <p>
-                <span className="font-bold">CEP:</span>
+                <span className="font-bold">CEP:</span>{" "}
                 {occurrence.address?.zipCode || "—"}
               </p>
               <p>
@@ -81,10 +79,10 @@ export function ExpandedRowT({
                 {occurrence.address.latitude}
               </p>
             </div>
-            <div className="lex-col items-start justify-between space-y-2 flex-1">
+            <div className="flex flex-col space-y-2 flex-1">
               <p>
-                <span className="font-bold">Região: </span>
-                {occurrence.address?.state || "Não informada"}
+                <span className="font-bold">Região:</span>{" "}
+                {occurrence.address?.state || "—"}
               </p>
               <p>
                 <span className="font-bold">Longitude:</span>{" "}
@@ -92,12 +90,13 @@ export function ExpandedRowT({
               </p>
             </div>
           </div>
+
           <p>
             <span className="font-bold">Setor atual:</span>{" "}
-            {occurrence.sector?.name || "Não informado"}
+            {occurrence.sector?.name || "—"}
           </p>
         </div>
-        {/* Botão para abrir modal */}
+
         {occurrence.status !== "os_gerada" && (
           <Button
             className="w-full h-12 bg-[#FFE8E8] hover:bg-red-200 text-[#9D0000]"
@@ -109,58 +108,10 @@ export function ExpandedRowT({
         )}
       </div>
 
-      {/* Coluna 2 */}
+      {/* Coluna 2 - Geração de OS */}
       <div className="flex flex-col justify-between space-y-4 h-full">
         <div className="space-y-2 h-full">
-          {occurrence.status === "os_gerada" ? (
-            <>
-              {/* Imagem */}
-              <Dialog open={photoOpen} onOpenChange={setPhotoOpen}>
-                <DialogTrigger asChild>
-                  <div className="h-64 w-full md:h-full">
-                    {photoUrl ? (
-                      <img
-                        src={photoUrl}
-                        alt="Imagem da ocorrência"
-                        className="rounded-md border h-full w-full object-cover cursor-pointer"
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-gray-100 rounded-md flex items-center justify-center text-gray-400">
-                        Sem imagem
-                      </div>
-                    )}
-                  </div>
-                </DialogTrigger>
-                {photoUrl && (
-                  <DialogContent className="max-w-4xl w-full">
-                    <img
-                      src={photoUrl}
-                      alt="Imagem expandida"
-                      className="w-full max-h-[80vh] object-contain"
-                    />
-                  </DialogContent>
-                )}
-              </Dialog>
-
-              {/* Mapa - só exibe no mobile, no desktop ele vai pra coluna 3 */}
-              <div className="block lg:hidden">
-                <Dialog open={mapOpen} onOpenChange={setMapOpen}>
-                  <DialogTrigger asChild>
-                    <div className="cursor-pointer h-64 w-full rounded-md border overflow-hidden">
-                      <GoogleMaps position={{ lat, lng }} label="ocorrencia" />
-                    </div>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-5xl w-full h-[80vh]">
-                    <GoogleMaps
-                      position={{ lat, lng }}
-                      fullHeight
-                      label="ocorrencia"
-                    />
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </>
-          ) : (
+          {occurrence.status !== "os_gerada" ? (
             <>
               <h3 className="font-semibold text-[#787891] text-base mb-2 pb-1">
                 Programar e gerar O.S
@@ -236,10 +187,13 @@ export function ExpandedRowT({
                 }
               />
             </>
+          ) : (
+            <p className="text-gray-500 italic">
+              Esta ocorrência já possui uma O.S. gerada.
+            </p>
           )}
         </div>
 
-        {/* Botão só aparece se OS ainda não foi gerada */}
         {occurrence.status !== "os_gerada" && (
           <Button
             className="w-full h-12 bg-[#C9F2E9] hover:bg-green-200 text-[#1C7551] items-center justify-center"
@@ -251,102 +205,8 @@ export function ExpandedRowT({
         )}
       </div>
 
-      {/* Mobile: mostrar imagem e mapa quando OS ainda não foi gerada */}
-      {occurrence.status !== "os_gerada" && (
-        <div className="lg:hidden flex flex-col gap-4">
-          {/* Imagem */}
-          <Dialog open={photoOpen} onOpenChange={setPhotoOpen}>
-            <DialogTrigger asChild>
-              <div className="w-full h-52 rounded-md border overflow-hidden">
-                {photoUrl ? (
-                  <img
-                    src={photoUrl}
-                    alt="Imagem da ocorrência"
-                    className="w-full h-full object-cover cursor-pointer"
-                  />
-                ) : (
-                  <div className="h-full w-full bg-gray-100 flex items-center justify-center text-gray-400">
-                    Sem imagem
-                  </div>
-                )}
-              </div>
-            </DialogTrigger>
-            {photoUrl && (
-              <DialogContent className="max-w-4xl w-full">
-                <img
-                  src={photoUrl}
-                  alt="Imagem expandida"
-                  className="w-full max-h-[80vh] object-contain"
-                />
-              </DialogContent>
-            )}
-          </Dialog>
-
-          {/* Mapa */}
-          <Dialog open={mapOpen} onOpenChange={setMapOpen}>
-            <DialogTrigger asChild>
-              <div className="w-full h-52 rounded-md border overflow-hidden">
-                <GoogleMaps position={{ lat, lng }} label="ocorrencia" />
-              </div>
-            </DialogTrigger>
-            <DialogContent className="max-w-5xl w-full h-[80vh]">
-              <GoogleMaps
-                position={{ lat, lng }}
-                fullHeight
-                label="ocorrencia"
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
-      )}
-
-      {/* Coluna 3 - Imagem + Mapa  */}
-      <div
-        className={`h-full w-full ${
-          occurrence.status !== "os_gerada" ? "grid md:grid-cols-2 gap-4" : ""
-        }`}
-      >
-        {occurrence.status !== "os_gerada" && (
-          <div className="hidden lg:block">
-            <Dialog open={photoOpen} onOpenChange={setPhotoOpen}>
-              <DialogTrigger asChild>
-                {photoUrl ? (
-                  <img
-                    src={photoUrl}
-                    alt="Imagem da ocorrência"
-                    className="rounded-md border h-full w-full object-cover cursor-pointer"
-                  />
-                ) : (
-                  <div className="h-full w-full bg-gray-100 rounded-md flex items-center justify-center text-gray-400">
-                    Sem imagem
-                  </div>
-                )}
-              </DialogTrigger>
-              {photoUrl && (
-                <DialogContent className="max-w-4xl w-full">
-                  <img
-                    src={photoUrl}
-                    alt="Imagem expandida"
-                    className="w-full max-h-[80vh] object-contain"
-                  />
-                </DialogContent>
-              )}
-            </Dialog>
-          </div>
-        )}
-
-        {/* Mapa - sempre aparece */}
-        <Dialog open={mapOpen} onOpenChange={setMapOpen}>
-          <DialogTrigger asChild>
-            <div className="cursor-pointer h-full w-full rounded-md border overflow-hidden">
-              <GoogleMaps position={{ lat, lng }} label="ocorrencia" />
-            </div>
-          </DialogTrigger>
-          <DialogContent className="max-w-5xl w-full h-[80vh]">
-            <GoogleMaps position={{ lat, lng }} fullHeight label="ocorrencia" />
-          </DialogContent>
-        </Dialog>
-      </div>
+      {/* Coluna 3 - Imagem e Mapa */}
+      <MediaMapSection photoUrl={photoUrl} lat={lat} lng={lng} />
     </div>
   );
 }

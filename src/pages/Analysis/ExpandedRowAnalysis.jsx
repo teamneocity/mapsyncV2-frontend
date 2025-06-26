@@ -4,10 +4,10 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { GoogleMaps } from "@/components/googleMaps";
-import { ImageCarousel } from "@/pages/OccurrencesT/imagecarousel";
 import { api } from "@/services/api";
-import { oc } from "date-fns/locale";
+import { MediaMapSection } from "@/components/MediaMapSection";
 
+import { oc } from "date-fns/locale";
 
 export function ExpandedRowAnalysis({
   occurrence,
@@ -24,19 +24,18 @@ export function ExpandedRowAnalysis({
   const [sectors, setSectors] = useState([]);
 
   useEffect(() => {
-  async function fetchSectors() {
-    try {
-      const response = await api.get("/sectors/names");
-      console.log("Setores carregados:", response.data.sectors);
-      setSectors(response.data.sectors);
-    } catch (error) {
-      console.error("Erro ao buscar setores:", error);
+    async function fetchSectors() {
+      try {
+        const response = await api.get("/sectors/names");
+        console.log("Setores carregados:", response.data.sectors);
+        setSectors(response.data.sectors);
+      } catch (error) {
+        console.error("Erro ao buscar setores:", error);
+      }
     }
-  }
 
-  fetchSectors();
-}, []);
-
+    fetchSectors();
+  }, []);
 
   const createdAt = occurrence.createdAt
     ? format(new Date(occurrence.createdAt), "dd/MM/yyyy HH:mm")
@@ -49,7 +48,7 @@ export function ExpandedRowAnalysis({
     : "Endereço não informado";
 
   const zip = occurrence.address?.zipCode || "Não informado";
-  const bairro = occurrence.address?.neighborhoodName|| "Não informado";
+  const bairro = occurrence.address?.neighborhoodName || "Não informado";
   const regiao = occurrence.address?.state || "Não informado";
 
   return (
@@ -87,7 +86,6 @@ export function ExpandedRowAnalysis({
             <span className="text-gray-500 font-medium">Longitude:</span>{" "}
             {occurrence.address.longitude}
           </p>
-          
         </div>
         <Button
           className="w-full bg-[#FFE8E8] hover:bg-red-200 flex items-center justify-center gap-2"
@@ -147,26 +145,15 @@ export function ExpandedRowAnalysis({
       </div>
 
       {/* Coluna 3 - Imagem e Mapa */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
-        <div className="h-full rounded-lg overflow-hidden shadow bg-white flex items-center justify-center">
-          <div className="w-full h-full">
-            <ImageCarousel
-              occurrence={occurrence}
-              onDeleteImage={(img) => handleDeleteImage(img, occurrence.id)}
-            />
-          </div>
-        </div>
-        <div className="h-full rounded-lg overflow-hidden shadow bg-white flex items-center justify-center">
-          <div className="w-full h-full">
-            <GoogleMaps
-              position={{
-                lat: Number.parseFloat(occurrence.address?.latitude),
-                lng: Number.parseFloat(occurrence.address?.longitude),
-              }}
-            />
-          </div>
-        </div>
-      </div>
+      <MediaMapSection
+        photoUrl={
+          occurrence.photos?.initial?.[0]
+            ? `https://mapsync-media.s3.sa-east-1.amazonaws.com/${occurrence.photos.initial[0]}`
+            : null
+        }
+        lat={parseFloat(occurrence.address?.latitude || 0)}
+        lng={parseFloat(occurrence.address?.longitude || 0)}
+      />
     </div>
   );
 }

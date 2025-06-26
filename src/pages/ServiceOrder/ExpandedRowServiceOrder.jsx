@@ -8,6 +8,7 @@ import CloudShare from "@/assets/icons/cloudShare.svg?react";
 import FilePdf from "@/assets/icons/filePdf.svg?react";
 import Vector from "@/assets/icons/vector.svg?react";
 import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
+import { MediaMapSection } from "@/components/MediaMapSection";
 
 export function ExpandedRowServiceOrder({ occurrence }) {
   const timeline = [
@@ -139,45 +140,15 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       </div>
 
       {/* Coluna 3 - Imagem e mapa com modal */}
-      <div className="col-span-1 h-full grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Imagem */}
-        <Dialog open={photoOpen} onOpenChange={setPhotoOpen}>
-          <DialogTrigger asChild>
-            {photoUrl ? (
-              <img
-                src={photoUrl}
-                alt="Imagem da O.S."
-                className="rounded-md border h-full w-full object-cover cursor-pointer"
-              />
-            ) : (
-              <div className="h-full w-full bg-gray-100 rounded-md flex items-center justify-center text-gray-400">
-                Sem imagem
-              </div>
-            )}
-          </DialogTrigger>
-          {photoUrl && (
-            <DialogContent className="max-w-4xl w-full">
-              <img
-                src={photoUrl}
-                alt="Imagem expandida"
-                className="w-full max-h-[80vh] object-contain"
-              />
-            </DialogContent>
-          )}
-        </Dialog>
-
-        {/* Mapa */}
-        <Dialog open={mapOpen} onOpenChange={setMapOpen}>
-          <DialogTrigger asChild>
-            <div className="cursor-pointer h-full w-full rounded-md border overflow-hidden">
-              <GoogleMaps position={{ lat, lng }} />
-            </div>
-          </DialogTrigger>
-          <DialogContent className="max-w-5xl w-full h-[80vh]">
-            <GoogleMaps position={{ lat, lng }} fullHeight />
-          </DialogContent>
-        </Dialog>
-      </div>
+      <MediaMapSection
+        photoUrl={
+          occurrence?.occurrence?.photos?.initial?.[0]
+            ? `https://mapsync-media.s3.sa-east-1.amazonaws.com/${occurrence.occurrence.photos.initial[0]}`
+            : null
+        }
+        lat={parseFloat(occurrence.occurrence?.address?.latitude ?? 0)}
+        lng={parseFloat(occurrence.occurrence?.address?.longitude ?? 0)}
+      />
     </div>
   );
 }
