@@ -40,7 +40,7 @@ export function Sidebar() {
   return (
     <div className="flex">
       {/* Sidebar Desktop */}
-      <aside className="fixed inset-y-0 left-0 z-10 hidden w-[250px] sm:flex bg-[#EBEBEB] text-[#787891] flex-col font-inter">
+      <aside className="fixed inset-y-0 left-0 z-10 hidden w-[250px] sm:flex bg-[#EBEBEB] text-[#787891] flex-col font-inter max-h-screen overflow-y-auto">
         <div className="px-4 py-5">
           <Link to="/">
             <img
