@@ -40,11 +40,7 @@ export function OccurrencesT() {
   const [selectedOccurrenceId, setSelectedOccurrenceId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
-  useEffect(() => {
-    if (!isAdmin && !isSupervisor && !isInspector) {
-      window.location.href = "/";
-    }
-  }, [isAdmin, isSupervisor, isInspector]);
+
 
   useEffect(() => {
   fetchOccurrences(1); // apenas carrega a página 1 inicialmente

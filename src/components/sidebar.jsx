@@ -14,7 +14,7 @@ import PeopleLine from "@/assets/icons/peopleLine.svg?react";
 import SettingsWindow from "@/assets/icons/settingsWindow.svg?react";
 import IconUsers from "@/assets/icons/iconUsers.svg?react";
 import TaskChecklist from "@/assets/icons/TaskChecklist.svg?react";
-import IconFeedback from "@/assets/icons/IconFeedback.svg?react"
+import IconFeedback from "@/assets/icons/IconFeedback.svg?react";
 import { Icon, PanelLeftClose } from "lucide-react";
 
 import { Link } from "react-router-dom";
@@ -32,7 +32,8 @@ export function Sidebar() {
   const [name] = useState(user.name);
   const userInitials = getInicials(user.name);
 
-  const { isAdmin, isSupervisor, isAnalyst, isInspector } = usePermissions();
+  const { isAdmin, isSupervisor, isAnalyst, isInspector, isChief } =
+    usePermissions();
   const canSeeAll = isAdmin || isSupervisor;
 
   return (
@@ -55,7 +56,7 @@ export function Sidebar() {
               Workspace
             </p>
             <div className="flex flex-col gap-1 text-[#787891] border-b pb-3">
-              {canSeeAll && (
+              {(canSeeAll || isChief) && (
                 <>
                   <Link
                     to="/"
@@ -66,7 +67,7 @@ export function Sidebar() {
                 </>
               )}
 
-              {isSupervisor && (
+              {(canSeeAll || isChief) && (
                 <Link
                   to="/sectorAdmin"
                   className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
@@ -74,7 +75,7 @@ export function Sidebar() {
                   <PeopleLine className="w-5 h-5 shrink-0" /> Setor
                 </Link>
               )}
-              {isAnalyst && (
+              {(isAnalyst || isAdmin || isChief) && (
                 <Link
                   to="/analysis"
                   className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
@@ -82,7 +83,7 @@ export function Sidebar() {
                   <AlertIcon className="w-5 h-5 shrink-0" /> Análises
                 </Link>
               )}
-              {(canSeeAll || isInspector) && (
+              {(canSeeAll || isInspector || isChief) && (
                 <>
                   <Link
                     to="/occurrencesa"
@@ -99,7 +100,7 @@ export function Sidebar() {
                   </Link>
                 </>
               )}
-              {canSeeAll && (
+              {(canSeeAll || isChief) && (
                 <>
                   <Link
                     to="/serviceorder"
@@ -143,12 +144,13 @@ export function Sidebar() {
             <p className="text-base font-normal mb-2 text-[#4B4B62]">Ajustes</p>
             <div className="flex flex-col gap-1 text-[#787891]">
               <Link
-                to="/dashboard"
+                to="/userprofile"
                 className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
               >
                 <SettingsWindow className="w-5 h-5 shrink-0" /> Configurações
               </Link>
-              {canSeeAll && (
+
+              {(isAdmin || isChief) && (
                 <>
                   <Link
                     to="/userManagement"
@@ -161,17 +163,17 @@ export function Sidebar() {
             </div>
           </div>
 
-          {canSeeAll && (
+          {(canSeeAll || isChief) && (
             <div className="mt-3 w-full">
               <p className="text-base font-normal mb-2 text-[#4B4B62]">
                 Suporte
               </p>
               <Link
-                    to="/feedback"
-                    className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900 text-md"
-                  >
-                    <IconFeedback className="w-5 h-5 shrink-0" /> Feedback
-                  </Link>
+                to="/feedback"
+                className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900 text-md"
+              >
+                <IconFeedback className="w-5 h-5 shrink-0" /> Feedback
+              </Link>
             </div>
           )}
         </nav>
@@ -210,7 +212,7 @@ export function Sidebar() {
             >
               <nav className="grid text-sm font-small">
                 <div className="flex flex-col gap-1 text-[#787891] border-b pb-5">
-                  {canSeeAll && (
+                  {(canSeeAll || isChief) && (
                     <Link
                       to="/"
                       className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
@@ -218,7 +220,7 @@ export function Sidebar() {
                       <HouseCheckIcon className="w-5 h-5 shrink-0" /> Dashboard
                     </Link>
                   )}
-                  {isSupervisor && (
+                  {(isSupervisor || isChief) && (
                     <Link
                       to="/sectorAdmin"
                       className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
@@ -226,7 +228,7 @@ export function Sidebar() {
                       <PeopleLine className="w-5 h-5 shrink-0" /> Setor
                     </Link>
                   )}
-                  {isAnalyst && (
+                  {(isAnalyst || isChief) && (
                     <Link
                       to="/analysis"
                       className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
@@ -234,7 +236,7 @@ export function Sidebar() {
                       <AlertIcon className="w-5 h-5 shrink-0" /> Análises
                     </Link>
                   )}
-                  {(canSeeAll || isInspector) && (
+                  {(canSeeAll || isInspector || isChief) && (
                     <>
                       <Link
                         to="/occurrencesa"
@@ -252,7 +254,7 @@ export function Sidebar() {
                       </Link>
                     </>
                   )}
-                  {canSeeAll && (
+                  {(canSeeAll || isChief) && (
                     <>
                       <Link
                         to="/serviceorder"
@@ -290,7 +292,7 @@ export function Sidebar() {
                     <SettingsWindow className="w-5 h-5 shrink-0" />{" "}
                     Configurações
                   </Link>
-                  {canSeeAll && (
+                  {(canSeeAll || isChief) && (
                     <>
                       <Link
                         to="/userManagement"

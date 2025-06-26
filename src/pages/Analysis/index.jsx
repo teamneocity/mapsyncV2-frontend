@@ -59,13 +59,6 @@ export function Analysis() {
   const [isIgnoreOcurrenceModalOpen, setIsIgnoreOcurrenceModalOpen] =
     useState(false);
 
-  useEffect(() => {
-    if (!isAnalyst) navigate("/");
-  }, [isAnalyst, navigate]);
-
-  // useEffect(() => {
-  //   api.get("/sectors").then((res) => setAllSectors(res.data.data));
-  // }, []);
 
   useEffect(() => {
     fetchOccurrences(currentPage);

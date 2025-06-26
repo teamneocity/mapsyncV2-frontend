@@ -11,7 +11,6 @@ import { Reports } from "@/pages/Reports"
 import { UserProfile } from "@/pages/UserProfile"
 import { Notifications } from "@/pages/Notifications"
 import { Analysis } from "@/pages/Analysis"
-import { useAuth } from "@/hooks/auth"
 import { TeamManagement } from "@/pages/TeamManagement"
 import { AuditLogs } from "@/pages/AuditLogs"
 import { CreateOccurrencePage } from "@/pages/Pilot"
@@ -24,10 +23,14 @@ import { ServicePlanning } from "@/pages/ServicePlanning"
 import { Feedback } from "@/pages/Feedback"
 import NeighborhoodOccurrences from "@/pages/LiveAction"
 
+import { useAuth } from "@/hooks/auth"
+import { usePermissions } from "@/hooks/usePermissions"
+
 export function AppRoutes() {
   const { user } = useAuth()
+  const { isAdmin, isSupervisor, isAnalyst, isInspector, isChief } = usePermissions()
+  const canSeeAll = isAdmin || isSupervisor
 
-  // Acesso exclusivo para pilotos
   if (user.role === "pilotoa") {
     return (
       <Routes>
@@ -53,32 +56,117 @@ export function AppRoutes() {
         path="/"
         element={
           ["admin", "gestor", "supervisor"].includes(user.role) ? (
-            <Dashboard /> // agora é o dashboard unificado
+            <Dashboard />
           ) : (
             <Navigate to="/userprofile" />
           )
         }
       />
 
-      {/* Rotas comuns */}
-      <Route path="/occurrencest" element={<OccurrencesT />} />
-      <Route path="/occurrencesa" element={<OccurrencesA />} />
-      <Route path="/serviceorder" element={<ServiceOrder />} />
+      {/* Rota: /sectorAdmin */}
+      <Route
+        path="/sectorAdmin"
+        element={
+          canSeeAll || isChief ? <SectorAdmin /> : <Navigate to="/" />
+        }
+      />
+
+      {/* Rota: /analysis */}
+      <Route
+        path="/analysis"
+        element={
+          isAnalyst || isAdmin || isChief ? <Analysis /> : <Navigate to="/" />
+        }
+      />
+
+      {/* Rota: /occurrencesa */}
+      <Route
+        path="/occurrencesa"
+        element={
+          canSeeAll || isInspector || isChief ? (
+            <OccurrencesA />
+          ) : (
+            <Navigate to="/" />
+          )
+        }
+      />
+
+      {/* Rota: /occurrencest */}
+      <Route
+        path="/occurrencest"
+        element={
+          canSeeAll || isInspector || isChief ? (
+            <OccurrencesT />
+          ) : (
+            <Navigate to="/" />
+          )
+        }
+      />
+
+      {/* Rota: /serviceorder */}
+      <Route
+        path="/serviceorder"
+        element={
+          canSeeAll || isChief ? <ServiceOrder /> : <Navigate to="/" />
+        }
+      />
+
+      {/* Rota: /servicePlanning */}
+      <Route
+        path="/servicePlanning"
+        element={
+          canSeeAll || isChief ? <ServicePlanning /> : <Navigate to="/" />
+        }
+      />
+
+      {/* Rota: /inspection */}
+      <Route
+        path="/inspection"
+        element={
+          canSeeAll || isChief ? <Inspection /> : <Navigate to="/" />
+        }
+      />
+
+      {/* Rota: /map */}
+      <Route
+        path="/map"
+        element={
+          canSeeAll || isChief ? <Map /> : <Navigate to="/" />
+        }
+      />
+
+      {/* Rota: /reports */}
+      <Route
+        path="/reports"
+        element={
+          canSeeAll || isChief ? <Reports /> : <Navigate to="/" />
+        }
+      />
+
+      {/* Rota: /userManagement */}
+      <Route
+        path="/userManagement"
+        element={
+          isAdmin || isChief ? <UserManagement /> : <Navigate to="/" />
+        }
+      />
+
+      {/* Rota: /feedback */}
+      <Route
+        path="/feedback"
+        element={
+          canSeeAll || isChief ? <Feedback /> : <Navigate to="/" />
+        }
+      />
+
+      {/* Rotas livres (não aparecem na Sidebar) */}
       <Route path="/routemap" element={<RouteMap />} />
       <Route path="/activities" element={<Activities />} />
-      <Route path="/reports" element={<Reports />} />
       <Route path="/userprofile" element={<UserProfile />} />
       <Route path="/notifications" element={<Notifications />} />
-      <Route path="/analysis" element={<Analysis />} />
-      <Route path="/inspection" element={<Inspection />} />
-      <Route path="/sectorAdmin" element={<SectorAdmin/>}/>
-      <Route path="/userManagement" element={<UserManagement/>} />
-      <Route path="/map" element={<Map />} />
-      <Route path="/servicePlanning" element={<ServicePlanning />} />
-      <Route path="/feedback" element={<Feedback />} />
+      <Route path="/dashboard" element={<Dashboard />} /> {/* ajuste leve */}
 
-
-      {/* Admin/Gestor */}
+      {/* Admin/Gestor apenas */}
       {["admin", "gestor"].includes(user.role) ? (
         <>
           <Route path="/teammanagement" element={<TeamManagement />} />

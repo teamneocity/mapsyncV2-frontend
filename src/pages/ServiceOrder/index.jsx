@@ -34,12 +34,6 @@ export function ServiceOrder() {
   const [hasNextPage, setHasNextPage] = useState(false);
 
   useEffect(() => {
-    if (!isAdmin && !isSupervisor) {
-      window.location.href = "/";
-    }
-  }, [isAdmin, isSupervisor]);
-
-  useEffect(() => {
     fetchServiceOrders(1); // apenas carrega a página 1 inicialmente
   }, []);
 

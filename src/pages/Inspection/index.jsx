@@ -29,11 +29,6 @@ export function Inspection() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
 
-  useEffect(() => {
-    if (!isAdmin && !isSupervisor) {
-      window.location.href = "/";
-    }
-  }, [isAdmin, isSupervisor]);
 
   useEffect(() => {
     fetchServiceOrders(1);
