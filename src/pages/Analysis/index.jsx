@@ -146,24 +146,23 @@ export function Analysis() {
   };
 
   const handleNotValidatePhoto = async (reason) => {
-    try {
-      await api.delete(`/land-occurrences/refuse`, {
-        data: {
-          id: selectedOccurrenceId,
-          reason: reason,
-        },
-      });
+  try {
+    await api.post(`/occurrences/reject`, {
+      occurrenceId: selectedOccurrenceId,
+      reason: reason,
+    });
 
-      toast({ title: "Ocorrência Apagada com sucesso!" });
-      fetchOccurrences(currentPage);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro ao Apagar Ocorrência",
-        description: error.message,
-      });
-    }
-  };
+    toast({ title: "Ocorrência apagada com sucesso!" });
+    fetchOccurrences(currentPage);
+  } catch (error) {
+    toast({
+      variant: "destructive",
+      title: "Erro ao apagar ocorrência",
+      description: error.message,
+    });
+  }
+};
+
 
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
