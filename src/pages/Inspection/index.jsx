@@ -9,6 +9,7 @@ import { InspectionCard } from "./inspectionCard";
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/usePermissions";
 import { api } from "@/services/api";
+import { TopHeader } from "@/components/topHeader";
 import { Link } from "react-router-dom";
 import emurb from "../../assets/emurb.svg";
 
@@ -79,19 +80,7 @@ export function Inspection() {
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
 
-      {/* HEADER */}
-      <header className="flex justify-between items-center py-4 px-4 sm:px-8 bg-[#EBEBEB] sticky top-0 z-10">
-        <div className="px-2 py-2">
-          <Link to="/">
-            <img
-              src={emurb}
-              alt="Logo EMURB"
-              className="h-16 w-auto rounded-md"
-            />
-          </Link>
-        </div>
-        <LiveActionButton />
-      </header>
+      <TopHeader />
 
       {/* FILTROS */}
       <div className="sticky top-[88px] z-10 bg-[#EBEBEB] px-4 py-4 sm:py-6">
@@ -115,7 +104,9 @@ export function Inspection() {
       {/* LISTA DE CARDS */}
       <div className="px-4 py-2 bg-[#EBEBEB]">
         <div className="w-full p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-4 gap-y-6 place-items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-4 gap-y-6 place-items-center [&>div]:min-h-[600px] [&>div]:w-full">
+
+
             {occurrences.map((order) => (
               <InspectionCard key={order.id} serviceorder={order} />
             ))}

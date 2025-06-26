@@ -30,9 +30,10 @@ export function InspectionCard({ serviceorder }) {
     started: serviceorder.startedAt,
     finished: serviceorder.finishedAt,
   };
+  
 
   return (
-    <div className="bg-[#F7F7F7] rounded-xl shadow-sm overflow-hidden flex-shrink-0 w-full max-w-[525px] border border-gray-200">
+    <div className="bg-[#F7F7F7] rounded-xl shadow-sm overflow-hidden flex-shrink-0 w-full max-w-[525px] border border-gray-200 min-h-[650px] sm:min-h-[auto]">
       <div className="relative">
         <img
           src={imageUrl}
@@ -52,7 +53,7 @@ export function InspectionCard({ serviceorder }) {
         </span>
       </div>
 
-      <div className="px-4 pb-4 text-sm text-[#787891] grid grid-cols-12 gap-2">
+      <div className="px-4 pb-4 text-sm text-[#787891] grid grid-cols-12 gap-2 min-h-[400px] sm:min-h-[auto]">
         <div className="col-span-7 space-y-1">
           <p>
             <strong>O.S.:</strong> {serviceorder.protocolNumber}
