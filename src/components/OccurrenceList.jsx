@@ -28,6 +28,9 @@ export function OccurrenceList({
       aprovada: "bg-[#FFF4D6] text-[#986F00]",
       os_gerada: "bg-[#f0ddee] text-[#733B73]",
       aguardando_execucao: "bg-[#FFE4B5] text-[#CD853F]",
+      pendente : "bg-[#E8F7FF] text-[#33CFFF]",
+      aceita : "bg-[#FFF4D6] text-[#986F00]",
+      verificada : "bg-[#DDF2EE] text-[#40C4AA]"
     };
 
     return map[status] || "bg-gray-100 text-gray-600";
