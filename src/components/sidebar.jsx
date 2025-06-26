@@ -16,6 +16,7 @@ import IconUsers from "@/assets/icons/iconUsers.svg?react";
 import TaskChecklist from "@/assets/icons/TaskChecklist.svg?react";
 import IconFeedback from "@/assets/icons/IconFeedback.svg?react";
 import { Icon, PanelLeftClose } from "lucide-react";
+import PurpleCheck from "@/assets/icons/PurpleCheck.svg?react";
 
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -178,21 +179,65 @@ export function Sidebar() {
           )}
         </nav>
 
-        <div className="mt-auto flex items-center px-4 py-3 justify-between">
-          <div className="flex gap-4 items-center">
-            <Avatar className="h-8 w-8">
-              <AvatarImage
-                src={`${api.defaults.baseURL}/avatar/${user.avatar}`}
-              />
-              <AvatarFallback>{userInitials}</AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-medium text-gray-900">{name}</p>
-              <p className="text-[10px] text-gray-600">{email}</p>
+        <div className="mt-auto w-full">
+          {/* Nível de Usuário */}
+          <div className="px-4 pb-3">
+            <p className="text-sm text-gray-700 font-medium mb-1">
+              Nível de usuário{" "}
+              <span className="bg-[#003DF6] text-white text-xs font-semibold px-2 py-0.5 rounded-full ml-2">
+                {{
+                  CHIEF: "Master",
+                  ADMIN: "Avançado",
+                  SECTOR_CHIEF: "Médio",
+                  ANALYST: "Básico",
+                  INSPECTOR: "Básico",
+                  FIELD_AGENT: "Básico",
+                }[user?.role] || "Desconhecido"}
+              </span>
+            </p>
+            <div className="w-full h-[6px] bg-gray-200 rounded-full">
+              <div
+                className="h-[6px] rounded-full transition-all duration-300"
+                style={{
+                  width: `${
+                    {
+                      CHIEF: 100,
+                      ADMIN: 80,
+                      SECTOR_CHIEF: 60,
+                      ANALYST: 40,
+                      INSPECTOR: 40,
+                      FIELD_AGENT: 40,
+                    }[user?.role] || 0
+                  }%`,
+                  backgroundColor: "#003DF6",
+                }}
+              ></div>
             </div>
           </div>
-          <Link to="/userprofile">
-            <AngleSmallRight className="w-5 h-5 shrink-0" />
+
+          {/* Card de perfil */}
+          <Link
+            to="/userprofile"
+            className="mx-4 mb-5 bg-white rounded-xl p-3 flex items-center justify-between shadow-sm hover:shadow-md transition"
+          >
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10">
+                <AvatarImage
+                  src={`${api.defaults.baseURL}/avatar/${user.avatar}`}
+                />
+                <AvatarFallback>{userInitials}</AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1">
+                  <span className="font-semibold text-sm text-gray-900">
+                    {name}
+                  </span>
+                  <PurpleCheck className="w-4 h-4 shrink-0" />
+                </div>
+                <span className="text-xs text-gray-500">{email}</span>
+              </div>
+            </div>
+            <AngleSmallRight className="w-4 h-4 text-gray-400" />
           </Link>
         </div>
       </aside>
@@ -220,7 +265,7 @@ export function Sidebar() {
                       <HouseCheckIcon className="w-5 h-5 shrink-0" /> Dashboard
                     </Link>
                   )}
-                  {(isSupervisor || isChief) && (
+                  {(canSeeAll || isChief) && (
                     <Link
                       to="/sectorAdmin"
                       className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
@@ -228,7 +273,7 @@ export function Sidebar() {
                       <PeopleLine className="w-5 h-5 shrink-0" /> Setor
                     </Link>
                   )}
-                  {(isAnalyst || isChief) && (
+                  {(isAnalyst || canSeeAll || isChief) && (
                     <Link
                       to="/analysis"
                       className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
@@ -302,22 +347,41 @@ export function Sidebar() {
                       </Link>
                     </>
                   )}
+                  {(canSeeAll || isChief) && (
+                    <Link
+                      to="/feedback"
+                      className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900 text-md"
+                    >
+                      <IconFeedback className="w-5 h-5 shrink-0" /> Feedback
+                    </Link>
+                  )}
                 </div>
               </nav>
 
-              <div className="mt-auto flex items-center justify-between px-4 py-6 gap-3">
-                <Avatar>
-                  <AvatarImage
-                    src={`${api.defaults.baseURL}/avatar/${user.avatar}`}
-                  />
-                  <AvatarFallback>{userInitials}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{name}</p>
-                  <p className="text-[8px] text-gray-600">{email}</p>
-                </div>
-                <Link to="/userprofile">
-                  <AngleSmallRight className="w-5 h-5 shrink-0" />
+              <div className="mt-auto w-full">
+                {/* Card de perfil */}
+                <Link
+                  to="/userprofile"
+                  className="mx-4 mb-5 bg-white rounded-xl p-3 flex items-center justify-between shadow-sm hover:shadow-md transition"
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage
+                        src={`${api.defaults.baseURL}/avatar/${user.avatar}`}
+                      />
+                      <AvatarFallback>{userInitials}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1">
+                        <span className="font-semibold text-sm text-gray-900">
+                          {name}
+                        </span>
+                        <PurpleCheck className="w-4 h-4 shrink-0" />
+                      </div>
+                      <span className="text-xs text-gray-500">{email}</span>
+                    </div>
+                  </div>
+                  <AngleSmallRight className="w-4 h-4 text-gray-400" />
                 </Link>
               </div>
             </SheetContent>

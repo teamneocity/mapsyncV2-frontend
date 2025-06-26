@@ -35,6 +35,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.5.2",
+    "framer-motion": "^12.19.1",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.4",
     "jwt-decode": "^4.0.0",

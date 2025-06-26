@@ -125,8 +125,17 @@ function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
+  async function resetPassword(email) {
+  try {
+    await api.post("/employees/password/forgot", { email });
+  } catch (error) {
+    console.error("Erro ao enviar solicitação de senha:", error);
+    throw error;
+  }
+}
+
   return (
-    <AuthContext.Provider value={{ signIn, signOut, updateProfile, user: data.user }}>
+    <AuthContext.Provider value={{ signIn, signOut, updateProfile, resetPassword, user: data.user }}>
       {loading ? null : children}
     </AuthContext.Provider>
   );
