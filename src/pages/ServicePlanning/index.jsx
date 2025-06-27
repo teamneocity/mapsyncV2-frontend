@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
 import { Filters } from "@/components/filters";
-import { OccurrenceList } from "@/components/OccurrenceList"; // ajuste conforme o nome real
+import { OccurrenceList } from "@/components/OccurrenceList"; 
 import { api } from "@/services/api";
 import { format } from "date-fns";
 
 import { pdf } from "@react-pdf/renderer";
 
 import Printer from "@/assets/icons/Printer.svg?react";
-import FilePdf from "@/assets/icons/FilePdf.svg?react";
+import FilePdf from "@/assets/icons/filePdf.svg?react";
 
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { DailyPlanningPDF } from "./DailyPlanningPDF";
