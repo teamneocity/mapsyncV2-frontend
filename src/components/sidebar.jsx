@@ -145,7 +145,7 @@ export function Sidebar() {
             <p className="text-base font-normal mb-2 text-[#4B4B62]">Ajustes</p>
             <div className="flex flex-col gap-1 text-[#787891]">
               <Link
-                to="/userprofile"
+                to="/settings"
                 className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
               >
                 <SettingsWindow className="w-5 h-5 shrink-0" /> Configurações

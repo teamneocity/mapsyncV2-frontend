@@ -21,6 +21,7 @@ import { UserManagement } from "@/pages/UserManagement"
 import { Map } from "@/pages/Map"
 import { ServicePlanning } from "@/pages/ServicePlanning"
 import { Feedback } from "@/pages/Feedback"
+import { Settings } from "@/pages/Settings"
 import NeighborhoodOccurrences from "@/pages/LiveAction"
 
 import { useAuth } from "@/hooks/auth"
@@ -165,6 +166,8 @@ export function AppRoutes() {
       <Route path="/userprofile" element={<UserProfile />} />
       <Route path="/notifications" element={<Notifications />} />
       <Route path="/dashboard" element={<Dashboard />} /> {/* ajuste leve */}
+      <Route path="/settings" element={<Settings />} />
+
 
       {/* Admin/Gestor apenas */}
       {["admin", "gestor"].includes(user.role) ? (
