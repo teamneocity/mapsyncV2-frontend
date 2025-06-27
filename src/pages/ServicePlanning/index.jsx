@@ -8,38 +8,78 @@ import { OccurrenceList } from "@/components/OccurrenceList"; // ajuste conforme
 import { api } from "@/services/api";
 import { format } from "date-fns";
 
+import { pdf } from "@react-pdf/renderer";
+
+import Printer from "@/assets/icons/Printer.svg?react";
+import FilePdf from "@/assets/icons/FilePdf.svg?react";
+
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { DailyPlanningPDF } from "./DailyPlanningPDF";
+
+import { format as formatTz } from "date-fns-tz";
+
 export function ServicePlanning() {
   const [serviceOrders, setServiceOrders] = useState([]);
   const [date, setDate] = useState(new Date());
 
+  const handlePrint = async () => {
+    const blob = await pdf(
+      <DailyPlanningPDF
+        data={serviceOrders}
+        formattedDate={date.toLocaleDateString("pt-BR")}
+      />
+    ).toBlob();
+
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank");
+  };
+
   const fetchPlanning = async (selectedDate) => {
     try {
-      const formatted = format(selectedDate, "yyyy-MM-dd");
+      const formatted = formatTz(selectedDate, "yyyy-MM-dd", {
+        timeZone: "America/Maceio", // ou "America/Sao_Paulo"
+      });
+
       const response = await api.get(
         `/service-orders/daily-planning?date=${formatted}`
       );
 
-      // Mapeando para estrutura compatível com OccurrenceList
-      const formattedData = response.data.map((order) => {
+      const formattedData = response.data.map((order, index) => {
         const occ = order.occurrence || {};
         const address = occ.address || {};
 
         return {
+          // para uso na tela
           id: order.id,
           createdAt: order.createdAt,
           protocol: order.protocolNumber,
-          origin: "Plataforma", // ou outra fonte se disponível
+          origin: "Plataforma",
           type: occ.type,
           status: order.status,
           address: {
             street: address.street,
             number: address.number,
-            city: "Aracaju", // ou use address.city se existir
+            city: "Aracaju",
             neighborhoodName: address.neighborhoodName,
           },
           author: occ.author,
           approvedBy: occ.approvedBy,
           pilot: order.inspector,
+
+          // para o PDF
+          ordem: index + 1,
+          scheduledDate: order.scheduledDate,
+          inspector: order.inspector,
+          foreman: order.foreman,
+          team: order.team,
+          serviceNature: order.serviceNature,
+          fullOccurrence: {
+            address: {
+              street: address.street,
+              number: address.number,
+              neighborhoodName: address.neighborhoodName,
+            },
+          },
         };
       });
 
@@ -59,8 +99,6 @@ export function ServicePlanning() {
       <TopHeader />
 
       <div className="px-6 py-4 sm:py-6">
-        
-
         <Filters
           title="Planejamento & execução "
           subtitle="de ordem de serviço"
@@ -76,6 +114,32 @@ export function ServicePlanning() {
       </div>
 
       <OccurrenceList occurrences={serviceOrders} />
+      <div className="flex justify-end gap-3 px-6 pb-10 mt-4">
+        <button
+          onClick={handlePrint}
+          className="flex h-[55px] items-center gap-2 bg-white text-sm text-[#4B4B62] px-4 py-2 rounded-xl shadow-sm border hover:shadow-md transition"
+        >
+          Imprimir
+          <Printer className="w-5 h-5" />
+        </button>
+
+        <PDFDownloadLink
+          document={
+            <DailyPlanningPDF
+              data={serviceOrders}
+              formattedDate={date.toLocaleDateString("pt-BR")}
+            />
+          }
+          fileName={`planejamento-${format(date, "dd-MM-yyyy")}.pdf`}
+        >
+          {({ loading }) => (
+            <button className="flex items-center h-[55px] gap-2 bg-white text-sm text-[#4B4B62] px-4 py-2 rounded-xl shadow-sm border hover:shadow-md transition">
+              {loading ? "Gerando..." : "Exportar PDF"}
+              <FilePdf className="w-5 h-5" />
+            </button>
+          )}
+        </PDFDownloadLink>
+      </div>
     </div>
   );
 }
