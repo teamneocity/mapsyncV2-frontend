@@ -14,6 +14,12 @@ import {
 export function DateRange({ selectedRange, onDateRangeChange }) {
   const [date, setDate] = React.useState(selectedRange);
 
+  // Atualiza o componente quando o filtro externo mudar
+  React.useEffect(() => {
+    setDate(selectedRange);
+  }, [selectedRange]);
+
+  // Envia a seleção para o pai sempre que mudar internamente
   React.useEffect(() => {
     if (onDateRangeChange) {
       onDateRangeChange(date);
@@ -28,7 +34,6 @@ export function DateRange({ selectedRange, onDateRangeChange }) {
             id="date"
             variant="outline"
             className="w-[250px] rounded-xl justify-between text-left font-normal h-12 !text-[#4B4B62]"
-
           >
             {date?.from ? (
               date.to ? (

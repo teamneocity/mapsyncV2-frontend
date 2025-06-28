@@ -64,37 +64,38 @@ export function Analysis() {
   }, [currentPage]);
 
   const fetchOccurrences = async (page = 1) => {
-    try {
-      const params = {
-        search: searchTerm,
-        recent: filterRecent,
-        type: filterType,
-        neighborhood: filterNeighborhood,
-        startDate: filterDateRange.startDate
-          ? format(filterDateRange.startDate, "yyyy-MM-dd")
-          : null,
-        endDate: filterDateRange.endDate
-          ? format(filterDateRange.endDate, "yyyy-MM-dd")
-          : null,
-        page,
-        limit: 6,
-      };
+  try {
+    const params = {
+      page,
+      limit: 6,
+      districtId: filterNeighborhood, // bairro
+      street: searchTerm,             // rua
+      type: filterType,
+      orderBy: filterRecent,          // 'recent' ou 'oldest'
+      startDate: filterDateRange.startDate
+        ? format(filterDateRange.startDate, "yyyy-MM-dd")
+        : undefined,
+      endDate: filterDateRange.endDate
+        ? format(filterDateRange.endDate, "yyyy-MM-dd")
+        : undefined,
+    };
 
-      const res = await api.get("/occurrences/in-analysis", { params });
-      const allOccurrences = res.data.occurrences || [];
+    const res = await api.get("/occurrences/in-analysis", { params });
+    const allOccurrences = res.data.occurrences || [];
 
-      setOccurrences(allOccurrences);
-      setCurrentPage(res.data.currentPage || 1);
-      setTotalPages(res.data.totalPages || 1);
-    } catch (error) {
-      console.error("❌ Erro ao buscar ocorrências:", error);
-      toast({
-        variant: "destructive",
-        title: "Erro ao buscar ocorrências",
-        description: error.message,
-      });
-    }
-  };
+    setOccurrences(allOccurrences);
+    setCurrentPage(res.data.currentPage || 1);
+    setTotalPages(res.data.totalPages || 1);
+  } catch (error) {
+    console.error("❌ Erro ao buscar ocorrências:", error);
+    toast({
+      variant: "destructive",
+      title: "Erro ao buscar ocorrências",
+      description: error.message,
+    });
+  }
+};
+
 
   const handleForwardOccurrence = async (occurrenceId, isEmergencial) => {
     try {

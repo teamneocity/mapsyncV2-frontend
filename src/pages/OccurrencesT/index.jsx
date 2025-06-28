@@ -34,6 +34,8 @@ export function OccurrencesT() {
     startDate: null,
     endDate: null,
   });
+  const [filterStatus, setFilterStatus] = useState(null);
+
 
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
   const [returnReason, setReturnReason] = useState("");
@@ -41,55 +43,52 @@ export function OccurrencesT() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
 
-
   useEffect(() => {
-  fetchOccurrences(1); // apenas carrega a página 1 inicialmente
-}, []);
-
-
+    fetchOccurrences(1); // apenas carrega a página 1 inicialmente
+  }, []);
 
   const handleApplyFilters = () => {
     fetchOccurrences(1);
   };
 
   const fetchOccurrences = async (page = 1) => {
-  try {
-    const response = await api.get("/occurrences", {
-      params: {
-        page,
-        search: searchTerm,
-        recent: filterRecent,
-        type: filterType,
-        neighborhood: filterNeighborhood,
-        startDate: filterDateRange.startDate
-          ? format(filterDateRange.startDate, "yyyy-MM-dd")
-          : null,
-        endDate: filterDateRange.endDate
-          ? format(filterDateRange.endDate, "yyyy-MM-dd")
-          : null,
-      },
-    });
+    try {
+      const response = await api.get("/occurrences", {
+        params: {
+          page,
+          districtId: filterNeighborhood, // bairro
+          street: searchTerm, // rua
+          type: filterType,
+          orderBy: filterRecent, // 'recent' ou 'oldest'
+          startDate: filterDateRange.startDate
+            ? format(filterDateRange.startDate, "yyyy-MM-dd")
+            : null,
+          endDate: filterDateRange.endDate
+            ? format(filterDateRange.endDate, "yyyy-MM-dd")
+            : null,
+          status: filterStatus, // <-- aqui
+        },
+      });
 
-    const allOccurrences = response.data.occurrences || [];
+      const allOccurrences = response.data.occurrences || [];
 
-    const filteredOccurrences = allOccurrences.filter(
-      (occ) => occ.status !== "em_analise"
-    );
+      const filteredOccurrences = allOccurrences.filter(
+        (occ) => occ.status !== "em_analise"
+      );
 
-    setOccurrences(filteredOccurrences);
-    setCurrentPage(page);
-    setHasNextPage(allOccurrences.length > 0);
-  } catch (error) {
-    toast({
-      variant: "destructive",
-      title: "Erro ao buscar ocorrências",
-      description: error.message,
-    });
-    setOccurrences([]);
-    setHasNextPage(false);
-  }
-};
-
+      setOccurrences(filteredOccurrences);
+      setCurrentPage(page);
+      setHasNextPage(allOccurrences.length > 0);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao buscar ocorrências",
+        description: error.message,
+      });
+      setOccurrences([]);
+      setHasNextPage(false);
+    }
+  };
 
   const handleReturnOccurrence = async () => {
     if (!returnReason.trim()) {
@@ -192,8 +191,12 @@ export function OccurrencesT() {
     if (!occurrence || !occurrence.sector?.id) return;
 
     try {
-      const res = await api.get(`/sectors/${occurrence.sector.id}/details`);
-      const sectorData = res.data.sector;
+      const res = await api.get("/sectors/details");
+      const allSectors = res.data.sectors || [];
+
+      const sectorData = allSectors.find((s) => s.id === occurrence.sector.id);
+
+      if (!sectorData) return; // setor não encontrado para essa ocorrência
 
       setSelectOptions((prev) => ({
         ...prev,
@@ -230,6 +233,7 @@ export function OccurrencesT() {
             setFilterNeighborhood(neighborhood)
           }
           onFilterDateRange={(range) => setFilterDateRange(range)}
+          onFilterStatus={(status) => setFilterStatus(status)} // <-- aqui
           handleApplyFilters={handleApplyFilters}
         />
       </div>
@@ -256,9 +260,10 @@ export function OccurrencesT() {
 
       <footer className="bg-[#EBEBEB] p-4 mt-auto">
         <div className="max-w-full mx-auto">
-          <Pagination onPageChange={fetchOccurrences} hasNextPage={hasNextPage} />
-
-
+          <Pagination
+            onPageChange={fetchOccurrences}
+            hasNextPage={hasNextPage}
+          />
         </div>
       </footer>
 

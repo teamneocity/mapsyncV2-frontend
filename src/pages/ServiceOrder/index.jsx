@@ -41,16 +41,17 @@ export function ServiceOrder() {
       const response = await api.get("/service-orders", {
         params: {
           page,
-          search: searchTerm,
-          recent: filterRecent,
+          limit: 6,
+          street: searchTerm, // rua
+          districtId: filterNeighborhood, // bairro
           type: filterType,
-          neighborhood: filterNeighborhood,
+          orderBy: filterRecent, // 'recent' ou 'oldest'
           startDate: filterDateRange.startDate
             ? format(filterDateRange.startDate, "yyyy-MM-dd")
-            : null,
+            : undefined,
           endDate: filterDateRange.endDate
             ? format(filterDateRange.endDate, "yyyy-MM-dd")
-            : null,
+            : undefined,
         },
       });
 
@@ -72,7 +73,7 @@ export function ServiceOrder() {
 
       setOccurrences(flattened);
       setCurrentPage(page);
-      setHasNextPage(result.serviceorders?.length > 0); 
+      setHasNextPage(result.serviceorders?.length > 0);
     } catch (error) {
       toast({
         variant: "destructive",
