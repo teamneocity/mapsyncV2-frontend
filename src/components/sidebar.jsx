@@ -123,7 +123,7 @@ export function Sidebar() {
                     <AssessmentIcon className="w-5 h-5 shrink-0" /> Fiscalização
                   </Link>
                   <Link
-                    to="/map"
+                    to="/PilotMap"
                     className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                   >
                     <RoadmapIcon className="w-5 h-5 shrink-0" /> Mapa de
@@ -315,7 +315,7 @@ export function Sidebar() {
                         Fiscalização
                       </Link>
                       <Link
-                        to="/map"
+                        to="/PilotMap"
                         className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                       >
                         <RoadmapIcon className="w-5 h-5 shrink-0" /> Mapa de

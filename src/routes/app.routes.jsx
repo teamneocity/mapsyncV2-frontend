@@ -1,36 +1,37 @@
-import { Routes, Route, Navigate } from "react-router-dom"
+import { Routes, Route, Navigate } from "react-router-dom";
 
-import { Dashboard } from "@/pages/Dashboard" 
-import { SignIn } from "@/pages/SignIn"
-import { OccurrencesT } from "@/pages/OccurrencesT"
-import { OccurrencesA } from "@/pages/OccurrencesA"
-import { ServiceOrder } from "@/pages/ServiceOrder"
-import { RouteMap } from "@/pages/RouteMap"
-import { Activities } from "@/pages/Activities"
-import { Reports } from "@/pages/Reports"
-import { UserProfile } from "@/pages/UserProfile"
-import { Notifications } from "@/pages/Notifications"
-import { Analysis } from "@/pages/Analysis"
-import { TeamManagement } from "@/pages/TeamManagement"
-import { AuditLogs } from "@/pages/AuditLogs"
-import { CreateOccurrencePage } from "@/pages/Pilot"
-import { CreateOccurrenceTPage } from "@/pages/PilotT"
-import { Inspection } from "@/pages/Inspection"
-import { SectorAdmin } from "@/pages/SectorAdmin"
-import { UserManagement } from "@/pages/UserManagement"
-import { Map } from "@/pages/Map"
-import { ServicePlanning } from "@/pages/ServicePlanning"
-import { Feedback } from "@/pages/Feedback"
-import { Settings } from "@/pages/Settings"
-import NeighborhoodOccurrences from "@/pages/LiveAction"
+import { Dashboard } from "@/pages/Dashboard";
+import { SignIn } from "@/pages/SignIn";
+import { OccurrencesT } from "@/pages/OccurrencesT";
+import { OccurrencesA } from "@/pages/OccurrencesA";
+import { ServiceOrder } from "@/pages/ServiceOrder";
+import { RouteMap } from "@/pages/RouteMap";
+import { Activities } from "@/pages/Activities";
+import { Reports } from "@/pages/Reports";
+import { UserProfile } from "@/pages/UserProfile";
+import { Notifications } from "@/pages/Notifications";
+import { Analysis } from "@/pages/Analysis";
+import { TeamManagement } from "@/pages/TeamManagement";
+import { AuditLogs } from "@/pages/AuditLogs";
+import { CreateOccurrencePage } from "@/pages/Pilot";
+import { CreateOccurrenceTPage } from "@/pages/PilotT";
+import { Inspection } from "@/pages/Inspection";
+import { SectorAdmin } from "@/pages/SectorAdmin";
+import { UserManagement } from "@/pages/UserManagement";
+import { PilotMap } from "@/pages/PilotMap";
+import { ServicePlanning } from "@/pages/ServicePlanning";
+import { Feedback } from "@/pages/Feedback";
+import { Settings } from "@/pages/Settings";
+import NeighborhoodOccurrences from "@/pages/LiveAction";
 
-import { useAuth } from "@/hooks/auth"
-import { usePermissions } from "@/hooks/usePermissions"
+import { useAuth } from "@/hooks/auth";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export function AppRoutes() {
-  const { user } = useAuth()
-  const { isAdmin, isSupervisor, isAnalyst, isInspector, isChief } = usePermissions()
-  const canSeeAll = isAdmin || isSupervisor
+  const { user } = useAuth();
+  const { isAdmin, isSupervisor, isAnalyst, isInspector, isChief } =
+    usePermissions();
+  const canSeeAll = isAdmin || isSupervisor;
 
   if (user.role === "pilotoa") {
     return (
@@ -38,7 +39,7 @@ export function AppRoutes() {
         <Route path="/" element={<CreateOccurrencePage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-    )
+    );
   }
 
   if (user.role === "pilotot") {
@@ -47,7 +48,7 @@ export function AppRoutes() {
         <Route path="/" element={<CreateOccurrenceTPage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-    )
+    );
   }
 
   return (
@@ -63,15 +64,11 @@ export function AppRoutes() {
           )
         }
       />
-
       {/* Rota: /sectorAdmin */}
       <Route
         path="/sectorAdmin"
-        element={
-          canSeeAll || isChief ? <SectorAdmin /> : <Navigate to="/" />
-        }
+        element={canSeeAll || isChief ? <SectorAdmin /> : <Navigate to="/" />}
       />
-
       {/* Rota: /analysis */}
       <Route
         path="/analysis"
@@ -79,7 +76,6 @@ export function AppRoutes() {
           isAnalyst || isAdmin || isChief ? <Analysis /> : <Navigate to="/" />
         }
       />
-
       {/* Rota: /occurrencesa */}
       <Route
         path="/occurrencesa"
@@ -91,7 +87,6 @@ export function AppRoutes() {
           )
         }
       />
-
       {/* Rota: /occurrencest */}
       <Route
         path="/occurrencest"
@@ -103,15 +98,11 @@ export function AppRoutes() {
           )
         }
       />
-
       {/* Rota: /serviceorder */}
       <Route
         path="/serviceorder"
-        element={
-          canSeeAll || isChief ? <ServiceOrder /> : <Navigate to="/" />
-        }
+        element={canSeeAll || isChief ? <ServiceOrder /> : <Navigate to="/" />}
       />
-
       {/* Rota: /servicePlanning */}
       <Route
         path="/servicePlanning"
@@ -119,47 +110,30 @@ export function AppRoutes() {
           canSeeAll || isChief ? <ServicePlanning /> : <Navigate to="/" />
         }
       />
-
       {/* Rota: /inspection */}
       <Route
         path="/inspection"
-        element={
-          canSeeAll || isChief ? <Inspection /> : <Navigate to="/" />
-        }
+        element={canSeeAll || isChief ? <Inspection /> : <Navigate to="/" />}
       />
-
-      {/* Rota: /map */}
       <Route
-        path="/map"
-        element={
-          canSeeAll || isChief ? <Map /> : <Navigate to="/" />
-        }
+        path="/PilotMap"
+        element={canSeeAll || isChief ? <PilotMap /> : <Navigate to="/" />}
       />
-
       {/* Rota: /reports */}
       <Route
         path="/reports"
-        element={
-          canSeeAll || isChief ? <Reports /> : <Navigate to="/" />
-        }
+        element={canSeeAll || isChief ? <Reports /> : <Navigate to="/" />}
       />
-
       {/* Rota: /userManagement */}
       <Route
         path="/userManagement"
-        element={
-          isAdmin || isChief ? <UserManagement /> : <Navigate to="/" />
-        }
+        element={isAdmin || isChief ? <UserManagement /> : <Navigate to="/" />}
       />
-
       {/* Rota: /feedback */}
       <Route
         path="/feedback"
-        element={
-          canSeeAll || isChief ? <Feedback /> : <Navigate to="/" />
-        }
+        element={canSeeAll || isChief ? <Feedback /> : <Navigate to="/" />}
       />
-
       {/* Rotas livres (não aparecem na Sidebar) */}
       <Route path="/routemap" element={<RouteMap />} />
       <Route path="/activities" element={<Activities />} />
@@ -167,8 +141,6 @@ export function AppRoutes() {
       <Route path="/notifications" element={<Notifications />} />
       <Route path="/dashboard" element={<Dashboard />} /> {/* ajuste leve */}
       <Route path="/settings" element={<Settings />} />
-
-
       {/* Admin/Gestor apenas */}
       {["admin", "gestor"].includes(user.role) ? (
         <>
@@ -183,9 +155,8 @@ export function AppRoutes() {
           <Route path="/liveaction" element={<Navigate to="/" />} />
         </>
       )}
-
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
-  )
+  );
 }

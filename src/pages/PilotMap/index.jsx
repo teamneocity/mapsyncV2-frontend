@@ -8,10 +8,11 @@ import { TrendingUp } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { GoogleMaps } from "@/components/googleMaps";
 import { api } from "@/services/api";
+import { format } from "date-fns";
 
 import Bars from "@/assets/icons/Bars.svg?react";
 
-export function Map() {
+export function PilotMap() {
   const [pilots, setPilots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mapOpenId, setMapOpenId] = useState(null);
@@ -19,33 +20,71 @@ export function Map() {
   useEffect(() => {
     async function fetchPilots() {
       try {
-        const response = await api.get("/shifts/pilot/?date=2025-06-27");
+        const shiftsRes = await api.get(
+          `/shifts/pilot/?date=${format(new Date(), "yyyy-MM-dd")}`
+        );
 
-        const mapped = response.data.shifts.map((pilot) => {
-          const latestShift = pilot.shifts[pilot.shifts.length - 1];
-          const lastPoint =
-            latestShift?.locationPoints?.[latestShift.locationPoints.length - 1];
+        const pilotsWithStats = await Promise.all(
+          shiftsRes.data.shifts.map(async (pilot) => {
+            const latestShift = pilot.shifts[pilot.shifts.length - 1];
+            const lastPoint =
+              latestShift?.locationPoints?.[
+                latestShift.locationPoints.length - 1
+              ];
+            const pilotId = pilot.pilotId;
 
-          return {
-            id: pilot.pilotId,
-            name: pilot.pilotName,
-            latitude: lastPoint?.latitude,
-            longitude: lastPoint?.longitude,
-            data: new Date(latestShift.startedAt).toLocaleDateString("pt-BR"),
-            endereco: "Localização dinâmica",
-            bairro: "Desconhecido",
-            cep: "----",
-            zona: "----",
-            stats: {
-              tempo: "----",
-              km: "----",
+            let distance = "----";
+            let duration = "----";
+
+            if (pilotId) {
+              try {
+                const statsRes = await api.get(
+                  `/shifts/${pilotId}/stats?date=${format(
+                    new Date(),
+                    "yyyy-MM-dd"
+                  )}`
+                );
+                const stats = statsRes.data;
+                distance = `${stats.distance.toFixed(2)} km`;
+                duration = `${(stats.duration * 60).toFixed(1)} min`;
+              } catch (err) {
+                console.error("Erro ao buscar stats do piloto:", err);
+              }
+            }
+
+            // valor estático sem métrica (por enquanto)
+            const pilotMetrics = {
               ocorrencias: 0,
               resolvidos: 0,
-            },
-          };
-        });
+              diffOcorrencias: 0,
+              diffResolvidos: 0,
+            };
 
-        setPilots(mapped);
+            return {
+              id: pilotId,
+              name: pilot.pilotName,
+              latitude: lastPoint?.latitude,
+              longitude: lastPoint?.longitude,
+              data: new Date(latestShift?.startedAt).toLocaleDateString(
+                "pt-BR"
+              ),
+              endereco: "Localização dinâmica",
+              bairro: "Desconhecido",
+              cep: "----",
+              zona: "----",
+              stats: {
+                tempo: duration,
+                km: distance,
+                ocorrencias: pilotMetrics.ocorrencias,
+                resolvidos: pilotMetrics.resolvidos,
+                diffOcorrencias: pilotMetrics.diffOcorrencias,
+                diffResolvidos: pilotMetrics.diffResolvidos,
+              },
+            };
+          })
+        );
+
+        setPilots(pilotsWithStats);
       } catch (error) {
         console.error("Erro ao buscar pilotos:", error);
       } finally {
@@ -55,6 +94,46 @@ export function Map() {
 
     fetchPilots();
   }, []);
+
+  useEffect(() => {
+  async function fetchMetrics() {
+    try {
+      const res = await api.get("/metrics/pilots/occurrences");
+      const metricsMap = new Map();
+      res.data.metrics.forEach((m) => {
+        metricsMap.set(m.pilotId, {
+          ocorrencias: m.createdOccurrences.currentMonth,
+          resolvidos: m.finalizedOccurrences.currentMonth,
+          diffOcorrencias: m.createdOccurrences.difference,
+          diffResolvidos: m.finalizedOccurrences.difference,
+        });
+      });
+
+      setPilots((prev) =>
+        prev.map((pilot) => {
+          const metric = metricsMap.get(pilot.id);
+          if (!metric) return pilot;
+
+          return {
+            ...pilot,
+            stats: {
+              ...pilot.stats,
+              ...metric,
+            },
+          };
+        })
+      );
+    } catch (err) {
+      console.error("Erro ao buscar métricas dos pilotos:", err);
+    }
+  }
+
+  if (loading === false) {
+    fetchMetrics();
+  }
+}, [loading]);
+
+
 
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
@@ -90,10 +169,17 @@ export function Map() {
             >
               {/* MAPA */}
               <div className="relative w-full h-[315px] p-2">
-                <Dialog open={isOpen} onOpenChange={(open) => setMapOpenId(open ? item.id : null)}>
+                <Dialog
+                  open={isOpen}
+                  onOpenChange={(open) => setMapOpenId(open ? item.id : null)}
+                >
                   <DialogTrigger asChild>
                     <div className="relative w-full h-full rounded-xl overflow-hidden cursor-pointer border">
-                      <GoogleMaps position={position} label={item.name} hideControls />
+                      <GoogleMaps
+                        position={position}
+                        label={item.name}
+                        hideControls
+                      />
                       <div className="absolute left-1/2 top-1/2 w-5 h-5 bg-blue-500 rounded-full border-2 border-white transform -translate-x-1/2 -translate-y-1/2 z-10 shadow-lg" />
                       <div className="absolute bottom-2 left-2 bg-white text-sm px-3 py-1 rounded-full shadow text-gray-600 z-20">
                         Por rua: {item.endereco}
@@ -116,19 +202,37 @@ export function Map() {
               <div className="px-2 pb-4 h-[315px] flex flex-col lg:flex-row gap-6 items-stretch">
                 {/* Info piloto */}
                 <div className="bg-white p-3 rounded-xl w-full max-w-[320px] text-[#787891] text-sm space-y-1">
-                  <p><strong>Piloto:</strong> {item.name}</p>
-                  <p><strong>Telefone:</strong> Não informado</p>
-                  <p><strong>Data:</strong> {item.data}</p>
-                  <p><strong>Bairro:</strong> {item.bairro}</p>
-                  <p><strong>Endereço:</strong> {item.endereco}</p>
+                  <p>
+                    <strong>Piloto:</strong> {item.name}
+                  </p>
+                  <p>
+                    <strong>Telefone:</strong> Não informado
+                  </p>
+                  <p>
+                    <strong>Data:</strong> {item.data}
+                  </p>
+                  <p>
+                    <strong>Bairro:</strong> {item.bairro}
+                  </p>
+                  <p>
+                    <strong>Endereço:</strong> {item.endereco}
+                  </p>
                   <p>
                     <strong>CEP:</strong> {item.cep}
                     <strong className="ml-4">Zona:</strong> {item.zona}
                   </p>
-                  <p><strong>Longitude:</strong> {item.longitude}</p>
-                  <p><strong>Latitude:</strong> {item.latitude}</p>
-                  <p><strong>Tempo de percurso:</strong> {item.stats.tempo}</p>
-                  <p><strong>Km percorrido:</strong> {item.stats.km}</p>
+                  <p>
+                    <strong>Longitude:</strong> {item.longitude}
+                  </p>
+                  <p>
+                    <strong>Latitude:</strong> {item.latitude}
+                  </p>
+                  <p>
+                    <strong>Tempo de percurso:</strong> {item.stats.tempo}
+                  </p>
+                  <p>
+                    <strong>Km percorrido:</strong> {item.stats.km}
+                  </p>
                 </div>
 
                 {/* Indicadores */}
@@ -147,14 +251,18 @@ export function Map() {
                         {item.stats.ocorrencias}
                       </p>
                       <span className="text-xs font-semibold text-white bg-[#5D5FEF] px-2 py-[2px] rounded-full">
-                        +5%
+                        {item.stats.diffOcorrencias > 0 ? "+" : ""}
+                        {item.stats.diffOcorrencias}%
                       </span>
                     </div>
 
                     <div className="border-t border-gray-200 mt-3 pt-2 flex items-center justify-between text-xs text-gray-500">
                       <div className="flex items-center gap-1 text-[#5D5FEF]">
                         <TrendingUp className="w-3 h-3" />
-                        <span className="font-semibold">+27.5%</span>
+                        <span className="font-semibold">
+                          {item.stats.diffOcorrencias > 0 ? "+" : ""}
+                          {item.stats.diffOcorrencias}%
+                        </span>
                       </div>
                       <div className="flex items-center gap-1">
                         <span className="text-gray-500">Do mês passado</span>
@@ -177,14 +285,18 @@ export function Map() {
                         {item.stats.resolvidos}
                       </p>
                       <span className="text-xs font-semibold text-white bg-[#5D5FEF] px-2 py-[2px] rounded-full">
-                        +5%
+                        {item.stats.diffResolvidos > 0 ? "+" : ""}
+                        {item.stats.diffResolvidos}%
                       </span>
                     </div>
 
                     <div className="border-t border-gray-200 mt-3 pt-2 flex items-center justify-between text-xs text-gray-500">
                       <div className="flex items-center gap-1 text-[#5D5FEF]">
                         <TrendingUp className="w-3 h-3" />
-                        <span className="font-semibold">+27.5%</span>
+                        <span className="font-semibold">
+                          {item.stats.diffResolvidos > 0 ? "+" : ""}
+                          {item.stats.diffResolvidos}%
+                        </span>
                       </div>
                       <div className="flex items-center gap-1">
                         <span className="text-gray-500">Do mês passado</span>

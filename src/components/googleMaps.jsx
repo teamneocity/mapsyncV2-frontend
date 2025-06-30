@@ -1,16 +1,16 @@
-import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api'
+import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 
 export function GoogleMaps({ position, label }) {
   const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: 'AIzaSyBXrFDOX3QgRHeisAfz1v77UFhipej7yOM',
-  })
+    id: "google-map-script",
+    googleMapsApiKey: "AIzaSyBXrFDOX3QgRHeisAfz1v77UFhipej7yOM",
+  });
 
   return (
     <div className="w-full h-full">
       {isLoaded ? (
         <GoogleMap
-          mapContainerStyle={{ width: '100%', height: '100%' }}
+          mapContainerStyle={{ width: "100%", height: "100%" }}
           center={position}
           zoom={15}
           options={{
@@ -24,12 +24,13 @@ export function GoogleMaps({ position, label }) {
             options={{
               label: {
                 text: label,
-                className: 'mt-[-30px]',
+                fontSize: "14px",
+                color: "#000",
               },
             }}
           />
         </GoogleMap>
       ) : null}
     </div>
-  )
+  );
 }
