@@ -39,16 +39,17 @@ export function Inspection() {
       const response = await api.get("/service-orders", {
         params: {
           page,
-          search: searchTerm,
-          recent: filterRecent,
+          limit: 6,
+          street: searchTerm, // padronizado com ServiceOrder
+          districtId: filterNeighborhood,
           type: filterType,
-          neighborhood: filterNeighborhood,
+          orderBy: filterRecent,
           startDate: filterDateRange.startDate
             ? format(filterDateRange.startDate, "yyyy-MM-dd")
-            : null,
+            : undefined,
           endDate: filterDateRange.endDate
             ? format(filterDateRange.endDate, "yyyy-MM-dd")
-            : null,
+            : undefined,
         },
       });
 
