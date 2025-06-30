@@ -17,6 +17,9 @@ import Mapa2 from "@/assets/Mapa2.svg";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+import Ponto from "@/assets/icons/Ponto.svg?react";
+import Pc from "@/assets/icons/Pc.svg?react";
+
 export function UserProfile() {
   const { signOut, user, updateProfile } = useAuth();
 
@@ -216,17 +219,24 @@ export function UserProfile() {
                     key={i}
                     className="bg-white min-h-[80px] rounded-lg p-3 flex justify-between items-center"
                   >
-                    <div>
+                    {/* Ícone Pc à esquerda */}
+                    <Pc className="w-6 h-6 text-zinc-600" />
+
+                    {/* Conteúdo central */}
+                    <div className="flex-1 px-4">
                       <div className="font-semibold text-zinc-800">
-                        {access.os || "Sistema desconhecido"}
+                        Último login em {access.os || "Sistema desconhecido"}
                       </div>
                       <div className="text-zinc-600 text-sm">
-                        Último login em {dataFormatada}
+                        {dataFormatada}
                       </div>
                       <div className="text-zinc-500 text-xs">
                         {access.location || "Localização não identificada"}
                       </div>
                     </div>
+
+                    {/* Ícone Ponto à direita */}
+                    <Ponto className="w-5 h-5 text-zinc-500" />
                   </li>
                 );
               })}
