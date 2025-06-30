@@ -12,6 +12,7 @@ import { api } from "@/services/api";
 import { TopHeader } from "@/components/topHeader";
 import { Link } from "react-router-dom";
 import emurb from "../../assets/emurb.svg";
+import { format } from "date-fns";
 
 export function Inspection() {
   const { toast } = useToast();
@@ -28,7 +29,6 @@ export function Inspection() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
-
 
   useEffect(() => {
     fetchServiceOrders(1);
@@ -74,43 +74,43 @@ export function Inspection() {
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
-
       <TopHeader />
 
-      {/* FILTROS */}
-      <div className="sticky top-[88px] z-10 bg-[#EBEBEB] px-4 py-4 sm:py-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:hidden">
-          Fiscalização de O.S.
-        </h1>
-        <Filters
-          title="Fiscalização de"
-          subtitle="Ordens de serviço"
-          onSearch={(input) => setSearchTerm(input)}
-          onFilterType={(type) => setFilterType(type)}
-          onFilterRecent={(order) => setFilterRecent(order)}
-          onFilterNeighborhood={(neighborhood) =>
-            setFilterNeighborhood(neighborhood)
-          }
-          onFilterDateRange={(range) => setFilterDateRange(range)}
-          handleApplyFilters={handleApplyFilters}
-        />
-      </div>
+      {/* CONTEÚDO PRINCIPAL COM FLEX-1 */}
+      <div className="flex-1">
+        {/* FILTROS */}
+        <div className="sticky top-[88px] z-10 bg-[#EBEBEB] px-4 py-4 sm:py-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:hidden">
+            Fiscalização de O.S.
+          </h1>
+          <Filters
+            title="Fiscalização de"
+            subtitle="Ordens de serviço"
+            onSearch={(input) => setSearchTerm(input)}
+            onFilterType={(type) => setFilterType(type)}
+            onFilterRecent={(order) => setFilterRecent(order)}
+            onFilterNeighborhood={(neighborhood) =>
+              setFilterNeighborhood(neighborhood)
+            }
+            onFilterDateRange={(range) => setFilterDateRange(range)}
+            handleApplyFilters={handleApplyFilters}
+          />
+        </div>
 
-      {/* LISTA DE CARDS */}
-      <div className="px-4 py-2 bg-[#EBEBEB]">
-        <div className="w-full p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-4 gap-y-6 place-items-center [&>div]:min-h-[600px] [&>div]:w-full">
-
-
-            {occurrences.map((order) => (
-              <InspectionCard key={order.id} serviceorder={order} />
-            ))}
+        {/* LISTA DE CARDS */}
+        <div className="px-4 py-2 bg-[#EBEBEB]">
+          <div className="w-full p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-4 gap-y-6 place-items-center [&>div]:min-h-[600px] [&>div]:w-full">
+              {occurrences.map((order) => (
+                <InspectionCard key={order.id} serviceorder={order} />
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* PAGINAÇÃO */}
-      <footer className="sticky bottom-0 z-10 bg-[#EBEBEB] p-4 ">
+      {/* PAGINAÇÃO FIXA */}
+      <footer className=" bottom-0 z-10 bg-[#EBEBEB] p-4 ">
         <div className="max-w-full mx-auto">
           <Pagination
             onPageChange={fetchServiceOrders}
