@@ -3,7 +3,7 @@
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
 import { TutorialCard } from "@/pages/Dashboard/tutorialCard.jsx";
-import { StatBox } from "./StatBox";
+import { StatBox } from "./statBox";
 import { LineRaceChart } from "./LineRaceChart";
 import { PiePadAngleChart } from "./PiePadAngleChart";
 
