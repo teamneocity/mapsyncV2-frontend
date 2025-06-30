@@ -60,6 +60,11 @@ export function SectorAdmin() {
   const [selectedSectorId, setSelectedSectorId] = useState(null);
   const sectorData = allSectors.find((s) => s.id === selectedSectorId);
 
+  const [isAddInspectorDialogOpen, setIsAddInspectorDialogOpen] =
+    useState(false);
+  const [availableInspectors, setAvailableInspectors] = useState([]);
+  const [selectedInspectorId, setSelectedInspectorId] = useState("");
+
   useEffect(() => {
     async function fetchSector() {
       try {
@@ -81,6 +86,24 @@ export function SectorAdmin() {
 
     fetchSector();
   }, []);
+
+  //Adicionar inspetor
+  async function handleAddInspector() {
+    try {
+      await api.post("/sectors/add-inspectors", {
+        sectorId: sectorData.id,
+        inspectorIds: [selectedInspectorId],
+      });
+
+      setIsAddInspectorDialogOpen(false);
+      setSelectedInspectorId("");
+      const response = await api.get("/sectors/details");
+      setAllSectors(response.data.sectors);
+    } catch (error) {
+      console.error("Erro ao adicionar fiscal:", error);
+      alert("Erro ao adicionar fiscal");
+    }
+  }
 
   // Adiciona equipe
   const handleAddTeam = async () => {
@@ -242,6 +265,11 @@ export function SectorAdmin() {
                       await api.post("/sectors/remove-foreman", {
                         sectorId: sectorData.id,
                         foremanId: itemToDelete.foremanId,
+                      });
+                    } else if (itemToDelete?.type === "inspector") {
+                      await api.post("/sectors/remove-inspectors", {
+                        sectorId: sectorData.id,
+                        inspectorIds: [itemToDelete.inspectorId],
                       });
                     }
 
@@ -541,19 +569,81 @@ export function SectorAdmin() {
               <TabsContent value="inspectors" className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                       <div>
                         <CardTitle>Fiscais do Setor</CardTitle>
                         <CardDescription>
                           Gerencie os fiscais responsáveis pela fiscalização
                         </CardDescription>
                       </div>
-                      <Button>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Adicionar Fiscal
-                      </Button>
+                      <Dialog
+                        open={isAddInspectorDialogOpen}
+                        onOpenChange={setIsAddInspectorDialogOpen}
+                      >
+                        <DialogTrigger asChild>
+                          <Button
+                            onClick={async () => {
+                              setIsAddInspectorDialogOpen(true);
+                              try {
+                                const res = await api.get(
+                                  "/employees/inspectors-without-a-sector"
+                                );
+                                setAvailableInspectors(res.data.inspectors);
+                              } catch (err) {
+                                console.error("Erro ao buscar fiscais:", err);
+                              }
+                            }}
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Adicionar Fiscal
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Novo Fiscal</DialogTitle>
+                            <DialogDescription>
+                              Selecione o fiscal que deseja adicionar ao setor
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <Label htmlFor="inspectorSelect">Fiscal</Label>
+                            <select
+                              id="inspectorSelect"
+                              className="w-full border rounded-md h-10 px-3 text-sm text-[#4B4B62] bg-[#EBEBEB]"
+                              value={selectedInspectorId}
+                              onChange={(e) =>
+                                setSelectedInspectorId(e.target.value)
+                              }
+                            >
+                              <option value="">Selecione</option>
+                              {availableInspectors.map((insp) => (
+                                <option key={insp.id} value={insp.id}>
+                                  {insp.name}
+                                </option>
+                              ))}
+                            </select>
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="outline"
+                                onClick={() =>
+                                  setIsAddInspectorDialogOpen(false)
+                                }
+                              >
+                                Cancelar
+                              </Button>
+                              <Button
+                                onClick={handleAddInspector}
+                                disabled={!selectedInspectorId}
+                              >
+                                Confirmar
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </CardHeader>
+
                   <CardContent>
                     <div className="space-y-4">
                       {sectorData.inspectors.map((inspector) => (
@@ -579,11 +669,19 @@ export function SectorAdmin() {
                             >
                               Fiscal
                             </Badge>
-                            <Button variant="ghost" size="sm">
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Trash2 className="w-4 h-4" />
+
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setItemToDelete({
+                                  type: "inspector",
+                                  inspectorId: inspector.id,
+                                });
+                                setConfirmDeleteOpen(true);
+                              }}
+                            >
+                              <Trash className="w-4 h-4 text-red-500" />
                             </Button>
                           </div>
                         </div>
