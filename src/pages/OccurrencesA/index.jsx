@@ -14,20 +14,46 @@ export function OccurrencesA() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    const fetchInspections = async () => {
-      try {
-        const response = await api.get("/aerial-inspections/");
-        const data = Object.values(response.data);
-        setOccurrences(data);
-        setTotalPages(1); // ajustar se houver paginação futura
-      } catch (error) {
-        console.error("Erro ao buscar inspeções:", error);
-      }
-    };
+  const [street, setStreet] = useState("");
+  const [neighborhoodId, setNeighborhoodId] = useState("");
+  const [order, setOrder] = useState("");
+  const [type, setType] = useState("");
+  const [status, setStatus] = useState("");
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
-    fetchInspections();
-  }, [currentPage]);
+  const fetchInspections = async () => {
+  try {
+    const queryParams = new URLSearchParams({
+      page: currentPage.toString(),
+      ...(street && { street }),
+      ...(neighborhoodId && { neighborhoodId }),
+      ...(order && { order }),
+      ...(type && { type }),
+      ...(status && { status }),
+      ...(startDate && {
+        startDate: startDate.toISOString().split("T")[0],
+      }),
+      ...(endDate && { endDate: endDate.toISOString().split("T")[0] }),
+    });
+
+    const response = await api.get(
+      `/aerial-inspections?${queryParams.toString()}`
+    );
+
+    const { inspections, totalCount } = response.data;
+    setOccurrences(inspections);
+    setTotalPages(Math.ceil(totalCount / 10));
+  } catch (error) {
+    console.error("Erro ao buscar inspeções:", error);
+  }
+};
+
+useEffect(() => {
+  fetchInspections(currentPage);
+}, [currentPage]);
+
+
 
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
@@ -40,14 +66,21 @@ export function OccurrencesA() {
         </h1>
 
         <Filters
-          title="Ocorrências" 
+          title="Ocorrências"
           subtitle="Aéreas"
-          onSearch={() => {}}
-          onFilterType={() => {}}
-          onFilterRecent={() => {}}
-          onFilterNeighborhood={() => {}}
-          onFilterDateRange={() => {}}
-          handleApplyFilters={() => {}}
+          onSearch={(value) => setStreet(value)}
+          onFilterType={(value) => setType(value)}
+          onFilterRecent={(value) => setOrder(value)}
+          onFilterNeighborhood={(value) => setNeighborhoodId(value)}
+          onFilterDateRange={(range) => {
+            setStartDate(range?.startDate || null);
+            setEndDate(range?.endDate || null);
+          }}
+          onFilterStatus={(value) => setStatus(value)} // se tiver disponível no componente
+          handleApplyFilters={() => {
+            setCurrentPage(1);
+            fetchInspections();
+          }}
         />
       </div>
 

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
 import { Filters } from "@/components/filters";
-import { OccurrenceList } from "@/components/OccurrenceList"; 
+import { OccurrenceList } from "@/components/OccurrenceList";
 import { api } from "@/services/api";
 import { format } from "date-fns";
 
@@ -21,6 +21,12 @@ import { format as formatTz } from "date-fns-tz";
 export function ServicePlanning() {
   const [serviceOrders, setServiceOrders] = useState([]);
   const [date, setDate] = useState(new Date());
+
+  const [street, setStreet] = useState("");
+  const [neighborhoodId, setNeighborhoodId] = useState("");
+  const [occurrenceType, setOccurrenceType] = useState("");
+  const [status, setStatus] = useState("");
+  const [sectorId, setSectorId] = useState("");
 
   const handlePrint = async () => {
     const blob = await pdf(
@@ -40,8 +46,18 @@ export function ServicePlanning() {
         timeZone: "America/Maceio", // ou "America/Sao_Paulo"
       });
 
+      // monta os parâmetros da URL com base nos filtros
+      const queryParams = new URLSearchParams({
+        date: formatted,
+        ...(street && { street }),
+        ...(neighborhoodId && { neighborhoodId }),
+        ...(occurrenceType && { occurrenceType }),
+        ...(status && { status }),
+        ...(sectorId && { sectorId }),
+      });
+
       const response = await api.get(
-        `/service-orders/daily-planning?date=${formatted}`
+        `/service-orders/daily-planning?${queryParams.toString()}`
       );
 
       const formattedData = response.data.map((order, index) => {
@@ -102,10 +118,11 @@ export function ServicePlanning() {
         <Filters
           title="Planejamento & execução "
           subtitle="de ordem de serviço"
-          onSearch={() => {}}
-          onFilterType={() => {}}
-          onFilterRecent={() => {}}
-          onFilterNeighborhood={() => {}}
+          onSearch={(value) => setStreet(value)}
+          onFilterType={(value) => setOccurrenceType(value)}
+          onFilterRecent={(value) => setStatus(value)}
+          onFilterNeighborhood={(value) => setNeighborhoodId(value)}
+          onFilterSector={(value) => setSectorId(value)} // novo filtro
           onFilterDateRange={(range) => {
             if (range?.startDate) setDate(range.startDate);
           }}

@@ -190,7 +190,13 @@ export function Filters({
               variant="outline"
               className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm text-[#4B4B62]"
             >
-              {selectedStatus === "aprovada"
+              {selectedStatus === "pendente"
+                ? "Pendente"
+                : selectedStatus === "aceita"
+                ? "Aceita"
+                : selectedStatus === "finalizada"
+                ? "Finalizada"
+                : selectedStatus === "aprovada"
                 ? "Aprovadas"
                 : selectedStatus === "os_gerada"
                 ? "OS Gerada"
@@ -201,6 +207,15 @@ export function Filters({
           <DropdownMenuContent>
             <DropdownMenuItem onClick={() => handleStatusFilter(null)}>
               Todos
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleStatusFilter("pendente")}>
+              Pendente
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleStatusFilter("aceita")}>
+              Aceita
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleStatusFilter("finalizada")}>
+              Finalizada
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleStatusFilter("aprovada")}>
               Aprovadas
