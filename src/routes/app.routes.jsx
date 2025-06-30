@@ -60,7 +60,7 @@ export function AppRoutes() {
           ["admin", "gestor", "supervisor"].includes(user.role) ? (
             <Dashboard />
           ) : (
-            <Navigate to="/userprofile" />
+            <Navigate to="/dashboard" />
           )
         }
       />

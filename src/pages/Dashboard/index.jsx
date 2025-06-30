@@ -1,123 +1,91 @@
-import { Sidebar } from "@/components/sidebar"
-import { StatsCard } from "@/components/statsCard"
-import { LinearChart } from "@/pages/Dashboard/linearChart"
-import { PerformanceChart } from "@/pages/Dashboard/performanceChart"
-import { StaticCards } from "@/pages/Dashboard/staticCards"
-import { TutorialCard } from "@/pages/Dashboard/tutorialCard"
-import { useDashboardData } from "@/hooks/useDashboardData"
-import { LiveActionButton } from "@/components/live-action-button"
-import { useUserSector } from "@/hooks/useUserSector"
-import { useAuth } from "@/hooks/auth"
-import { SectorDashboard } from "@/pages/Dashboard/SectorDashboard"
+"use client";
+
+import { Sidebar } from "@/components/sidebar";
+import { TopHeader } from "@/components/topHeader";
+import { TutorialCard } from "@/pages/Dashboard/tutorialCard.jsx";
+import { StatBox } from "./StatBox";
+import { LineRaceChart } from "./LineRaceChart";
+import { PiePadAngleChart } from "./PiePadAngleChart";
+
+import Bars from "@/assets/icons/Bars.svg?react";
+import { BookText } from "lucide-react";
 
 export function Dashboard() {
-  const { user } = useAuth()
-  const { data, isLoading } = useDashboardData()
-  const { setor, loading: setorLoading } = useUserSector()
-
-  const normalize = (str) =>
-    str?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-
-  if (!user || !["admin", "gestor", "supervisor"].includes(user.role)) {
-    return (
-      <div className="flex items-center justify-center h-full text-gray-600">
-        Acesso restrito: apenas usuários autorizados podem ver este painel.
+  // Componente BlogBox local
+  const BlogBox = () => (
+    <div className="flex items-start gap-4 bg-white rounded-2xl shadow px-4 py-2 w-full h-full">
+      <div className="w-10 h-10 rounded-full bg-[#F4F4F5] flex items-center justify-center">
+        <BookText className="w-5 h-5 text-zinc-600" />
       </div>
-    );
-  }
-
-  if (isLoading || (user.role === "supervisor" && (setorLoading || !setor || !data))) {
-    return (
-      <div className="flex items-center justify-center h-full text-gray-600">
-        Carregando informações do dashboard...
+      <div>
+        <h3 className="text-sm font-semibold text-zinc-900">Blog</h3>
+        <p className="text-sm text-zinc-500 leading-tight mt-1">
+          Explore o sistema passo a passo ou entre em contato com o suporte para
+          lhe ajudar.
+        </p>
       </div>
-    )
-  }
-  // Dashboard por setor (supervisor)
-  if (user.role === "supervisor") {
-    const setorInfo = data.occurrencesBySector?.find(
-      (s) => normalize(s.sectorName) === normalize(setor.name)
-    )
-    const setorTotal = setorInfo?.currentMonth || 0
-    const porcentagem = Number.parseFloat(setorInfo?.differencePercentage) || 0
-    const totalGeral = data.totalOccurrences || 0
-
-    return (
-      <div className="bg-white sm:ml-[270px] font-inter">
-        <Sidebar />
-        <main className="p-6">
-          <SectorDashboard
-            setor={setor.name}
-            setorTotal={setorTotal}
-            totalGeral={totalGeral}
-            porcentagem={porcentagem}
-          />
-        </main>
-      </div>
-    )
-  }
-
-  // Dashboard Geral (admin / gestor)
-  const drains = data?.occurrencesBySector?.find(s => s.sectorName === 'DRENAGEM')?.currentMonth || 0;
-  const sewerCleaning = data?.occurrencesBySector?.find(s => s.sectorName === 'LIMPA FOSSA')?.currentMonth || 0;
-  const paving = data?.occurrencesBySector?.find(s => s.sectorName === 'PAVIMENTACAO')?.currentMonth || 0;
-  const earthwork = data?.occurrencesBySector?.find(s => s.sectorName === 'TERRAPLANAGEM')?.currentMonth || 0;
-
-  const drainsPercentage = Number.parseFloat(data?.occurrencesBySector?.find(s => s.sectorName === 'DRENAGEM')?.differencePercentage) || 0;
-  const sewerCleaningPercentage = Number.parseFloat(data?.occurrencesBySector?.find(s => s.sectorName === 'LIMPA FOSSA')?.differencePercentage) || 0;
-  const pavingPercentage = Number.parseFloat(data?.occurrencesBySector?.find(s => s.sectorName === 'PAVIMENTACAO')?.differencePercentage) || 0;
-  const earthworkPercentage = Number.parseFloat(data?.occurrencesBySector?.find(s => s.sectorName === 'TERRAPLANAGEM')?.differencePercentage) || 0;
-
-  const totalOccurrences = data?.totalOccurrences || 0;
-  const underReview = data?.occurrencesByStatus?.find(s => s.status === 'EmAnalise')?.total || 0;
-  const resolved = data?.occurrencesByStatus?.find(s => s.status === 'Resolvido')?.total || 0;
-  const pending = data?.occurrencesByStatus?.find(s => s.status === 'Pendente')?.total || 0;
-  const inQueue = data?.occurrencesByStatus?.find(s => s.status === 'EmFila')?.total || 0;
-  const inProgress = data?.occurrencesByStatus?.find(s => s.status === 'EmAndamento')?.total || 0;
+    </div>
+  );
 
   return (
-    <div className="bg-white sm:ml-[270px] font-inter">
+    <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
-      <main className="">
-        <header className="hidden sm:flex sm:justify-between sm:items-center border-b py-6 px-0">
-          <img src="/logoAju.png" alt="Logo" className="h-16 object-contain ml-8" />
-          <div className="mr-8">
-            <LiveActionButton />
-          </div>
-        </header>
+      <TopHeader />
 
-        <div className="py-4 px-8 flex flex-col">
-          <div className="mb-8">
-            <p className="text-lg font-medium">Guia de Ajuda Rápida</p>
-          </div>
-
-          <div className="flex justify-between flex-col gap-5 md:gap-9 lg:flex-row">
-            <TutorialCard />
-            <StaticCards />
-          </div>
-
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-3">
-            <StatsCard text="Pavimentação" number={paving} statistics={pavingPercentage} status={pavingPercentage >= 0} />
-            <StatsCard text="Limpa Fossa" number={sewerCleaning} statistics={sewerCleaningPercentage} status={sewerCleaningPercentage >= 0} />
-            <StatsCard text="Drenagem" number={drains} statistics={drainsPercentage} status={drainsPercentage >= 0} />
-            <StatsCard text="Terraplanagem" number={earthwork} statistics={earthworkPercentage} status={earthworkPercentage >= 0} />
-          </section>
-
-          <section className="flex flex-col xl:flex-row gap-6 mt-6">
-
-
-            <LinearChart />
-            <PerformanceChart
-              occurrences={totalOccurrences}
-              underReview={underReview}
-              resolved={resolved}
-              pending={pending}
-              inProgress={inProgress}
-              inQueue={inQueue}
-            />
-          </section>
+      <div className="flex-1">
+        {/* Título */}
+        <div className="px-4 py-4">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
+            Dashboard 
+          </h1>
         </div>
-      </main>
+
+        {/* Tutorial + Blog */}
+        <div className="flex flex-col xl:flex-row gap-4 w-full px-4 mb-6">
+  <div className="flex-[3]">
+    <TutorialCard />
+  </div>
+  <div className="flex-[1] h-full">
+    <BlogBox />
+  </div>
+</div>
+
+
+        {/* Cards de resumo */}
+        <div className="px-4 pb-6">
+          <h2 className="text-lg font-semibold mb-4 text-gray-700">
+            Resumo da Operação
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+            <StatBox
+              title="Ocorrências"
+              value={42}
+              percentage={12}
+              icon={Bars}
+            />
+            <StatBox title="Resolvidos" value={30} percentage={8} icon={Bars} />
+            <StatBox title="Em aberto" value={5} percentage={-3} icon={Bars} />
+            <StatBox title="Cancelados" value={2} percentage={0} icon={Bars} />
+            <StatBox title="Atrasados" value={3} percentage={1} icon={Bars} />
+            <StatBox
+              title="Em andamento"
+              value={12}
+              percentage={6}
+              icon={Bars}
+            />
+          </div>
+        </div>
+
+        {/* Gráficos */}
+        <div className="px-4 pb-10 mt-6 grid grid-cols-1 xl:grid-cols-3 gap-4">
+          <div className="bg-white rounded-2xl shadow px-4 pt-4 pb-2 xl:col-span-2">
+            <LineRaceChart />
+          </div>
+          <div className="bg-white rounded-2xl shadow px-4 pt-2 pb-2 xl:col-span-1">
+            <PiePadAngleChart />
+          </div>
+        </div>
+      </div>
     </div>
-  )
+  );
 }

@@ -65,6 +65,9 @@ export function SectorAdmin() {
   const [availableInspectors, setAvailableInspectors] = useState([]);
   const [selectedInspectorId, setSelectedInspectorId] = useState("");
 
+  const [availableChiefs, setAvailableChiefs] = useState([]);
+  const [selectedChiefId, setSelectedChiefId] = useState("");
+
   useEffect(() => {
     async function fetchSector() {
       try {
@@ -212,6 +215,24 @@ export function SectorAdmin() {
       console.error("Erro ao remover encarregado:", error);
     }
   };
+
+  //Adicionar chefe de setor
+  async function handleAddChief() {
+    try {
+      await api.post("/sectors/add-chiefs", {
+        sectorId: sectorData.id,
+        chiefIds: [selectedChiefId],
+      });
+
+      setIsAddDialogOpen(false);
+      setSelectedChiefId("");
+      const response = await api.get("/sectors/details");
+      setAllSectors(response.data.sectors);
+    } catch (error) {
+      console.error("Erro ao adicionar chefe:", error);
+      alert("Erro ao adicionar chefe");
+    }
+  }
 
   if (!sectorData) {
     return (
@@ -485,7 +506,22 @@ export function SectorAdmin() {
                         onOpenChange={setIsAddDialogOpen}
                       >
                         <DialogTrigger asChild>
-                          <Button onClick={() => setSelectedRole("chief")}>
+                          <Button
+                            onClick={async () => {
+                              setIsAddDialogOpen(true);
+                              try {
+                                const res = await api.get(
+                                  "/employees/sector-chiefs-without-a-sector"
+                                );
+                                setAvailableChiefs(res.data.sectorChiefs); // <- corrigido aqui
+                              } catch (err) {
+                                console.error(
+                                  "Erro ao buscar chefes disponíveis:",
+                                  err
+                                );
+                              }
+                            }}
+                          >
                             <Plus className="w-4 h-4 mr-2" />
                             Adicionar Chefe
                           </Button>
@@ -494,25 +530,29 @@ export function SectorAdmin() {
                           <DialogHeader>
                             <DialogTitle>Adicionar Novo Chefe</DialogTitle>
                             <DialogDescription>
-                              Preencha as informações do novo chefe do setor
+                              Selecione um chefe disponível para adicionar ao
+                              setor
                             </DialogDescription>
                           </DialogHeader>
+
                           <div className="space-y-4">
-                            <div>
-                              <Label htmlFor="name">Nome Completo</Label>
-                              <Input
-                                id="name"
-                                placeholder="Digite o nome completo"
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="email">E-mail Corporativo</Label>
-                              <Input
-                                id="email"
-                                type="email"
-                                placeholder="email@neocity.com.br"
-                              />
-                            </div>
+                            <Label htmlFor="chiefSelect">Chefe</Label>
+                            <select
+                              id="chiefSelect"
+                              className="w-full border rounded-md h-10 px-3 text-sm text-[#4B4B62] bg-[#EBEBEB]"
+                              value={selectedChiefId}
+                              onChange={(e) =>
+                                setSelectedChiefId(e.target.value)
+                              }
+                            >
+                              <option value="">Selecione</option>
+                              {availableChiefs.map((chief) => (
+                                <option key={chief.id} value={chief.id}>
+                                  {chief.name}
+                                </option>
+                              ))}
+                            </select>
+
                             <div className="flex justify-end gap-2">
                               <Button
                                 variant="outline"
@@ -520,7 +560,12 @@ export function SectorAdmin() {
                               >
                                 Cancelar
                               </Button>
-                              <Button>Cadastrar</Button>
+                              <Button
+                                onClick={handleAddChief}
+                                disabled={!selectedChiefId}
+                              >
+                                Confirmar
+                              </Button>
                             </div>
                           </div>
                         </DialogContent>

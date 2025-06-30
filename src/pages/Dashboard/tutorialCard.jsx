@@ -8,7 +8,10 @@ export function TutorialCard() {
   const [emblaRef, embla] = useEmblaCarousel({ align: 'start', loop: true });
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 py-6 bg-[#F7F7F7] rounded-2xl shadow-md relative">
+    <div className="w-full px-4 py-6 bg-[#F7F7F7] rounded-2xl shadow-md relative">
+
+
+
       {/* Setas no mobile */}
       {embla && (
         <>
