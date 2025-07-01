@@ -3,7 +3,7 @@ import { Sheet, SheetTrigger, SheetContent } from "./ui/sheet";
 import { Button } from "./ui/button";
 import AssessmentIcon from "@/assets/icons/assessment.svg?react";
 import CalendarIcon from "@/assets/icons/calendar.svg?react";
-import AlertIcon from "@/assets/icons/diamond-exclamation.svg?react";
+import AlertIcon from "@/assets/icons/Alert.svg?react";
 import DroneIcon from "@/assets/icons/drone.svg?react";
 import HouseCheckIcon from "@/assets/icons/house-circle-check.svg?react";
 import NewsIcon from "@/assets/icons/newspaper.svg?react";
