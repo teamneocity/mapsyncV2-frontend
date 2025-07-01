@@ -68,6 +68,7 @@ useEffect(() => {
         <Filters
           title="Ocorrências"
           subtitle="Aéreas"
+          contextType="aerea"
           onSearch={(value) => setStreet(value)}
           onFilterType={(value) => setType(value)}
           onFilterRecent={(value) => setOrder(value)}

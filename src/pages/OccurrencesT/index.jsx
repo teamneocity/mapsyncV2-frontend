@@ -226,6 +226,7 @@ export function OccurrencesT() {
         <Filters
           title="Ocorrências"
           subtitle="Terrestres"
+          contextType="mapeamento"
           onSearch={(input) => setSearchTerm(input)}
           onFilterType={(type) => setFilterType(type)}
           onFilterRecent={(order) => setFilterRecent(order)}

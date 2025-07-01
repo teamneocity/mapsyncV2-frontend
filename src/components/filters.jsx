@@ -25,6 +25,7 @@ export function Filters({
   onSearch,
   title = "Análises de ocorrências",
   subtitle = "Via aplicativo",
+  contextType = "padrao", // ← nova prop
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRecent, setSelectedRecent] = useState(null);
@@ -75,6 +76,25 @@ export function Filters({
       onFilterDateRange({ startDate: range.from, endDate: range.to });
     }
   };
+
+  const statusOptions = {
+    padrao: [
+      { value: "pendente", label: "Pendente" },
+      { value: "aceita", label: "Aceita" },
+      { value: "finalizada", label: "Finalizada" },
+    ],
+    mapeamento: [
+      { value: "os_gerada", label: "OS Gerada" },
+      { value: "aprovada", label: "Aprovadas" },
+    ],
+    aerea: [
+      {value: "aceita", label: "Aceita" },
+      {value: "pendente", label: "Pendente"},
+      {value: "verificada", label: "Verificada"}
+    ]
+  };
+
+  const currentStatusList = statusOptions[contextType] || statusOptions.padrao;
 
   return (
     <header className="w-full bg-[#EBEBEB] px-1 py-1">
@@ -194,8 +214,8 @@ export function Filters({
                 ? "Pendente"
                 : selectedStatus === "aceita"
                 ? "Aceita"
-                : selectedStatus === "finalizada"
-                ? "Finalizada"
+                : selectedStatus === "verificada"
+                ? "Verificada"
                 : selectedStatus === "aprovada"
                 ? "Aprovadas"
                 : selectedStatus === "os_gerada"
@@ -208,21 +228,14 @@ export function Filters({
             <DropdownMenuItem onClick={() => handleStatusFilter(null)}>
               Todos
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusFilter("pendente")}>
-              Pendente
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusFilter("aceita")}>
-              Aceita
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusFilter("finalizada")}>
-              Finalizada
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusFilter("aprovada")}>
-              Aprovadas
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusFilter("os_gerada")}>
-              OS Gerada
-            </DropdownMenuItem>
+            {currentStatusList.map((status) => (
+              <DropdownMenuItem
+                key={status.value}
+                onClick={() => handleStatusFilter(status.value)}
+              >
+                {status.label}
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
 
