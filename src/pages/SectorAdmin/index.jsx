@@ -218,14 +218,17 @@ export function SectorAdmin() {
 
   //Adicionar chefe de setor
   async function handleAddChief() {
+    if (!selectedChiefId) return;
+
     try {
-      await api.post("/sectors/add-chiefs", {
+      await api.post("/sectors/add-sector-chiefs", {
         sectorId: sectorData.id,
         chiefIds: [selectedChiefId],
       });
 
       setIsAddDialogOpen(false);
       setSelectedChiefId("");
+
       const response = await api.get("/sectors/details");
       setAllSectors(response.data.sectors);
     } catch (error) {
