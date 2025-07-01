@@ -13,7 +13,6 @@ import { TopHeader } from "@/components/topHeader";
 import ImgUsers from "@/assets/icons/imgUsers.svg";
 import Trash from "@/assets/icons/trash.svg?react";
 
-
 export function UserManagement() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -260,103 +259,109 @@ export function UserManagement() {
             </div>
           </div>
 
-          {users.map((user) => (
-            <div
-              key={user.id}
-              className="bg-white border border-gray-200 rounded-xl overflow-hidden"
-            >
-              <div className="hover:bg-gray-50 transition cursor-pointer">
-                <div className="xl:hidden p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1 space-y-3 text-sm">
-                      <div className="grid grid-cols-2 gap-3 text-sm text-gray-600">
-                        <div>
-                          <span className="text-xs font-medium text-gray-400 block">
-                            Nome
-                          </span>
-                          {user.name}
-                        </div>
-                        <div>
-                          <span className="text-xs font-medium text-gray-400 block">
-                            Email
-                          </span>
-                          {user.email}
-                        </div>
-                        <div>
-                          <span className="text-xs font-medium text-gray-400 block">
-                            Perfil
-                          </span>
-                          {user.role}
-                        </div>
-                        <div>
-                          <span className="text-xs font-medium text-gray-400 block">
-                            Ações
-                          </span>
-                          <div className="flex gap-2">
-                            <button className="text-blue-600 hover:underline text-xs">
-                              Editar
-                            </button>
-                            <button className="text-red-500 hover:underline text-xs">
-                              Remover
-                            </button>
+          {users.map((user) => {
+            const status = user.deletedAt ? "bloqueado" : "ativo";
+
+            return (
+              <div
+                key={user.id}
+                className="bg-white border border-gray-200 rounded-xl overflow-hidden"
+              >
+                <div className="hover:bg-gray-50 transition cursor-pointer">
+                  {/* MOBILE */}
+                  <div className="xl:hidden p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1 space-y-3 text-sm">
+                        <div className="grid grid-cols-2 gap-3 text-sm text-gray-600">
+                          <div>
+                            <span className="text-xs font-medium text-gray-400 block">
+                              Nome
+                            </span>
+                            {user.name}
                           </div>
-                        </div>
-                        <div className="col-span-2">
-                          <span className="text-xs font-medium text-gray-400 block">
-                            Status
-                          </span>
-                          <span
-                            className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                              user.status === "ativo"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-600"
-                            }`}
-                          >
-                            {user.status}
-                          </span>
+                          <div>
+                            <span className="text-xs font-medium text-gray-400 block">
+                              Email
+                            </span>
+                            {user.email}
+                          </div>
+                          <div>
+                            <span className="text-xs font-medium text-gray-400 block">
+                              Perfil
+                            </span>
+                            {user.role}
+                          </div>
+                          <div>
+                            <span className="text-xs font-medium text-gray-400 block">
+                              Ações
+                            </span>
+                            <div className="flex gap-2">
+                              <button className="text-blue-600 hover:underline text-xs">
+                                Editar
+                              </button>
+                              <button className="text-red-500 hover:underline text-xs">
+                                Remover
+                              </button>
+                            </div>
+                          </div>
+                          <div className="col-span-2">
+                            <span className="text-xs font-medium text-gray-400 block">
+                              Status
+                            </span>
+                            <span
+                              className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                                status === "ativo"
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-600"
+                              }`}
+                            >
+                              {status.charAt(0).toUpperCase() + status.slice(1)}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="hidden xl:block p-4">
-                  <div className="grid grid-cols-12 gap-4 items-center text-[#787891] text-sm">
-                    <div className="col-span-3 flex items-center gap-2">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
-                        {getInicials(user.name)}
-                      </span>
-                      <span className="text-sm truncate">{user.name}</span>
-                    </div>
-                    <div className="col-span-3">{user.email}</div>
-                    <div className="col-span-2">{user.role}</div>
-                    <div className="col-span-2 flex gap-2">
-                      <button
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setRemoveModalOpen(true);
-                        }}
-                        className="p-1 hover:bg-zinc-100 rounded"
-                      >
-                        <Trash className="w-4 h-4 text-red-500" />
-                      </button>
-                    </div>
-                    <div className="col-span-2 flex justify-end">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          user.status === "ativo"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-600"
-                        }`}
-                      >
-                        {user.status}
-                      </span>
+                  {/* DESKTOP */}
+                  <div className="hidden xl:block p-4">
+                    <div className="grid grid-cols-12 gap-4 items-center text-[#787891] text-sm">
+                      <div className="col-span-3 flex items-center gap-2">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
+                          {getInicials(user.name)}
+                        </span>
+                        <span className="text-sm truncate">{user.name}</span>
+                      </div>
+                      <div className="col-span-3">{user.email}</div>
+                      <div className="col-span-2">{user.role}</div>
+                      <div className="col-span-2 flex gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setRemoveModalOpen(true);
+                          }}
+                          className="p-1 hover:bg-zinc-100 rounded"
+                        >
+                          <Trash className="w-4 h-4 text-red-500" />
+                        </button>
+                      </div>
+                      <div className="col-span-2 flex justify-end">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            status === "ativo"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-600"
+                          }`}
+                        >
+                          {status.charAt(0).toUpperCase() + status.slice(1)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </section>
 
         {/* PAGINAÇÃO */}

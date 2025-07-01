@@ -87,7 +87,7 @@ export function ExpandedRowAnalysis({
           </p>
         </div>
         <Button
-          className="w-full bg-[#FFE8E8] hover:bg-red-200 flex items-center justify-center gap-2"
+          className="w-full bg-[#FFE8E8] hover:bg-red-200 h-[64px] flex items-center justify-center gap-2"
           style={{ color: "#9D0000" }}
           onClick={() => {
             setSelectedOccurrenceId(occurrence.id);
@@ -153,7 +153,7 @@ export function ExpandedRowAnalysis({
           </div>
         </div>
         <Button
-          className="w-full bg-[#FFF0E6] hover:bg-orange-200 text-[#FF7A21] flex items-center justify-center gap-2"
+          className="w-full bg-[#FFF0E6] h-[64px] hover:bg-orange-200 text-[#FF7A21] flex items-center justify-center gap-2"
           onClick={() =>
             handleForwardOccurrence(occurrence.id, isEmergencialSelection)
           }
