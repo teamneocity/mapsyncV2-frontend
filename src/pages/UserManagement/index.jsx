@@ -135,9 +135,12 @@ export function UserManagement() {
         <section className="max-w-[1500px] w-full mx-auto bg-white rounded-xl p-2 flex flex-col xl:flex-row justify-between items-center gap-6">
           <div className="flex-1">
             <p className="text-sm text-zinc-800">
+              <span className="font-semibold">Opções de gerenciamente de usuários .</span>
               Opções de gerenciamento de usuários. Saiba quais funções cada
               usuário pode desempenhar e quais permissões são atribuídas a cada
-              perfil.
+              perfil. Garantimos segurança, organização e personalização de
+              acessos, respeitando o nível de responsabilidade e a função de
+              cada colaborador ou equipe.
             </p>
           </div>
           <div className="flex-1 max-w-md w-full">
