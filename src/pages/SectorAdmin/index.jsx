@@ -237,6 +237,22 @@ export function SectorAdmin() {
     }
   }
 
+  //Remove chefe de setor
+  const handleRemoveChief = async (chiefId) => {
+    try {
+      await api.post("/sectors/remove-sector-chiefs", {
+        sectorId: sectorData.id,
+        chiefIds: [chiefId],
+      });
+
+      const updated = await api.get("/sectors/details");
+      setAllSectors(updated.data.sectors);
+    } catch (error) {
+      console.error("Erro ao remover chefe:", error);
+      alert("Erro ao remover chefe");
+    }
+  };
+
   if (!sectorData) {
     return (
       <div className="sm:ml-[250px] p-6 text-gray-600">
@@ -294,6 +310,11 @@ export function SectorAdmin() {
                       await api.post("/sectors/remove-inspectors", {
                         sectorId: sectorData.id,
                         inspectorIds: [itemToDelete.inspectorId],
+                      });
+                    } else if (itemToDelete?.type === "chief") {
+                      await api.post("/sectors/remove-sector-chiefs", {
+                        sectorId: sectorData.id,
+                        chiefIds: [itemToDelete.chiefId],
                       });
                     }
 
@@ -516,7 +537,7 @@ export function SectorAdmin() {
                                 const res = await api.get(
                                   "/employees/sector-chiefs-without-a-sector"
                                 );
-                                setAvailableChiefs(res.data.sectorChiefs); // <- corrigido aqui
+                                setAvailableChiefs(res.data.sectorChiefs);
                               } catch (err) {
                                 console.error(
                                   "Erro ao buscar chefes disponíveis:",
@@ -575,6 +596,7 @@ export function SectorAdmin() {
                       </Dialog>
                     </div>
                   </CardHeader>
+
                   <CardContent>
                     <div className="space-y-4">
                       {sectorData.chiefs.map((chief) => (
@@ -600,11 +622,18 @@ export function SectorAdmin() {
                           </div>
                           <div className="flex items-center gap-2">
                             <Badge variant="secondary">Chefe</Badge>
-                            <Button variant="ghost" size="sm">
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Trash2 className="w-4 h-4" />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setItemToDelete({
+                                  type: "chief",
+                                  chiefId: chief.id,
+                                });
+                                setConfirmDeleteOpen(true);
+                              }}
+                            >
+                              <Trash className="w-4 h-4 text-red-500" />
                             </Button>
                           </div>
                         </div>
