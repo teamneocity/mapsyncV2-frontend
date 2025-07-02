@@ -18,42 +18,52 @@ export function PilotMap() {
   const [mapOpenId, setMapOpenId] = useState(null);
 
   useEffect(() => {
-    async function fetchPilots() {
+    async function fetchPilotsWithStatusAndMetrics() {
       try {
+        // 1. Buscar métricas (ocorrências)
+        const metricsRes = await api.get("/metrics/pilots/occurrences");
+        const metricsMap = new Map();
+        metricsRes.data.metrics.forEach((m) => {
+          metricsMap.set(m.pilotId, {
+            ocorrencias: m.createdOccurrences.currentMonth,
+            resolvidos: m.finalizedOccurrences.currentMonth,
+            diffOcorrencias: m.createdOccurrences.difference,
+            diffResolvidos: m.finalizedOccurrences.difference,
+          });
+        });
+
+        // 2. Buscar shifts de hoje
         const shiftsRes = await api.get(
           `/shifts/pilot/?date=${format(new Date(), "yyyy-MM-dd")}`
         );
 
-        const pilotsWithStats = await Promise.all(
+        // 3. Montar lista com status de turno
+        const pilotList = await Promise.all(
           shiftsRes.data.shifts.map(async (pilot) => {
             const latestShift = pilot.shifts[pilot.shifts.length - 1];
             const lastPoint =
               latestShift?.locationPoints?.[
                 latestShift.locationPoints.length - 1
               ];
-            const pilotId = pilot.pilotId;
 
             let distance = "----";
             let duration = "----";
 
-            if (pilotId) {
-              try {
-                const statsRes = await api.get(
-                  `/shifts/${pilotId}/stats?date=${format(
-                    new Date(),
-                    "yyyy-MM-dd"
-                  )}`
-                );
-                const stats = statsRes.data;
-                distance = `${stats.distance.toFixed(2)} km`;
-                duration = `${(stats.duration * 60).toFixed(1)} min`;
-              } catch (err) {
-                console.error("Erro ao buscar stats do piloto:", err);
-              }
+            try {
+              const statsRes = await api.get(
+                `/shifts/${pilot.pilotId}/stats?date=${format(
+                  new Date(),
+                  "yyyy-MM-dd"
+                )}`
+              );
+              const stats = statsRes.data;
+              distance = `${stats.distance.toFixed(2)} km`;
+              duration = `${(stats.duration * 60).toFixed(1)} min`;
+            } catch (err) {
+              console.warn("Stats não encontrados para:", pilot.pilotId);
             }
 
-            // valor estático sem métrica (por enquanto)
-            const pilotMetrics = {
+            const metric = metricsMap.get(pilot.pilotId) || {
               ocorrencias: 0,
               resolvidos: 0,
               diffOcorrencias: 0,
@@ -61,10 +71,10 @@ export function PilotMap() {
             };
 
             return {
-              id: pilotId,
+              id: pilot.pilotId,
               name: pilot.pilotName,
-              latitude: lastPoint?.latitude,
-              longitude: lastPoint?.longitude,
+              latitude: lastPoint?.latitude ?? "----",
+              longitude: lastPoint?.longitude ?? "----",
               data: new Date(latestShift?.startedAt).toLocaleDateString(
                 "pt-BR"
               ),
@@ -72,68 +82,28 @@ export function PilotMap() {
               bairro: "Desconhecido",
               cep: "----",
               zona: "----",
+              shiftStatus: latestShift.endedAt
+                ? "Turno finalizado"
+                : "Turno em andamento",
               stats: {
                 tempo: duration,
                 km: distance,
-                ocorrencias: pilotMetrics.ocorrencias,
-                resolvidos: pilotMetrics.resolvidos,
-                diffOcorrencias: pilotMetrics.diffOcorrencias,
-                diffResolvidos: pilotMetrics.diffResolvidos,
+                ...metric,
               },
             };
           })
         );
 
-        setPilots(pilotsWithStats);
-      } catch (error) {
-        console.error("Erro ao buscar pilotos:", error);
+        setPilots(pilotList);
+      } catch (err) {
+        console.error("Erro ao buscar dados dos pilotos:", err);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchPilots();
+    fetchPilotsWithStatusAndMetrics();
   }, []);
-
-  useEffect(() => {
-  async function fetchMetrics() {
-    try {
-      const res = await api.get("/metrics/pilots/occurrences");
-      const metricsMap = new Map();
-      res.data.metrics.forEach((m) => {
-        metricsMap.set(m.pilotId, {
-          ocorrencias: m.createdOccurrences.currentMonth,
-          resolvidos: m.finalizedOccurrences.currentMonth,
-          diffOcorrencias: m.createdOccurrences.difference,
-          diffResolvidos: m.finalizedOccurrences.difference,
-        });
-      });
-
-      setPilots((prev) =>
-        prev.map((pilot) => {
-          const metric = metricsMap.get(pilot.id);
-          if (!metric) return pilot;
-
-          return {
-            ...pilot,
-            stats: {
-              ...pilot.stats,
-              ...metric,
-            },
-          };
-        })
-      );
-    } catch (err) {
-      console.error("Erro ao buscar métricas dos pilotos:", err);
-    }
-  }
-
-  if (loading === false) {
-    fetchMetrics();
-  }
-}, [loading]);
-
-
 
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
@@ -157,7 +127,7 @@ export function PilotMap() {
         />
       </div>
 
-      <div className="px-6 pb-10 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-4 gap-y-6">
+      <div className="px-6 pb-10 grid grid-cols-1 sm:[grid-template-columns:repeat(auto-fit,_minmax(384px,_1fr))] gap-x-4 gap-y-6">
         {pilots.map((item, index) => {
           const isOpen = mapOpenId === item.id;
           const position = { lat: item.latitude, lng: item.longitude };
@@ -203,6 +173,19 @@ export function PilotMap() {
                 {/* Info piloto */}
                 <div className="bg-white p-3 rounded-xl w-full max-w-[320px] text-[#787891] text-sm space-y-1">
                   <p>
+                    <strong>Status:</strong>{" "}
+                    <span
+                      className={`px-2 py-[2px] rounded-full text-xs font-semibold ${
+                        item.shiftStatus === "Turno em andamento"
+                          ? "bg-green-100 text-green-600"
+                          : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {item.shiftStatus}
+                    </span>
+                  </p>
+
+                  <p>
                     <strong>Piloto:</strong> {item.name}
                   </p>
                   <p>
@@ -214,13 +197,16 @@ export function PilotMap() {
                   <p>
                     <strong>Bairro:</strong> {item.bairro}
                   </p>
-                  <p>
-                    <strong>Endereço:</strong> {item.endereco}
-                  </p>
+
                   <p>
                     <strong>CEP:</strong> {item.cep}
                     <strong className="ml-4">Zona:</strong> {item.zona}
                   </p>
+                  <p>
+                    <strong>Endereço:</strong>
+                    {item.endereco}
+                  </p>
+
                   <p>
                     <strong>Longitude:</strong> {item.longitude}
                   </p>
