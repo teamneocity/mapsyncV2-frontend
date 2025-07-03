@@ -73,7 +73,7 @@ export function AppRoutes() {
       <Route
         path="/analysis"
         element={
-          isAnalyst || isAdmin || isChief ? <Analysis /> : <Navigate to="/" />
+          isAnalyst || isAdmin || isChief || isSupervisor ? <Analysis /> : <Navigate to="/" />
         }
       />
       {/* Rota: /occurrencesa */}

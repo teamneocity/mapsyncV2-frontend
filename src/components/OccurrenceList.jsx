@@ -12,20 +12,21 @@ export function OccurrenceList({
   showEmergencialStatus = false,
 }) {
   const [expandedRows, setExpandedRows] = useState(new Set());
-  
-  const dataToRender = serviceorders?.length > 0
-  ? serviceorders.map((s) => ({
-      ...s.occurrence,
-      isEmergencial: s.occurrence?.isEmergencial // garante que venha
-    }))
-  : occurrences;
 
-if (serviceorders?.length > 0) {
-  console.log("isEmergencial da primeira OS:", serviceorders[0].occurrence?.isEmergencial);
-}
+  const dataToRender =
+    serviceorders?.length > 0
+      ? serviceorders.map((s) => ({
+          ...s.occurrence,
+          isEmergencial: s.occurrence?.isEmergencial, // garante que venha
+        }))
+      : occurrences;
 
-
-
+  if (serviceorders?.length > 0) {
+    console.log(
+      "isEmergencial da primeira OS:",
+      serviceorders[0].occurrence?.isEmergencial
+    );
+  }
 
   const toggleRow = (id) => {
     setExpandedRows((prev) => {
@@ -48,6 +49,24 @@ if (serviceorders?.length > 0) {
     };
 
     return map[status] || "bg-gray-100 text-gray-600";
+  };
+
+  const statusLabels = {
+    em_analise: "Em análise",
+    emergencial: "Emergencial",
+    aprovada: "Aprovada",
+    os_gerada: "O.S. gerada",
+    aguardando_execucao: "Aguardando execução",
+    pendente: "Pendente",
+    aceita: "Aceita",
+    verificada: "Verificada",
+  };
+
+  const typeLabels = {
+    BURACO_NA_RUA: "Buraco na rua",
+    DRENAGEM: "Drenagem",
+    TERRAPLANAGEM: "Terraplanagem",
+    LIMPA_FOSSA: "Limpa fossa",
   };
 
   return (
@@ -124,13 +143,11 @@ if (serviceorders?.length > 0) {
                       </div>
                       <div className="flex items-center gap-2">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusClasses(
+                          className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${getStatusClasses(
                             occ.status
                           )}`}
                         >
-                          {occ.status
-                            .replace("_", " ")
-                            .replace(/^\w/, (c) => c.toUpperCase())}
+                          {statusLabels[occ.status] || occ.status}
                         </span>
 
                         {occ.isEmergencial && (
@@ -153,7 +170,7 @@ if (serviceorders?.length > 0) {
                         <span className="text-xs font-medium text-gray-400 block">
                           Tipo
                         </span>
-                        {occ.type || "—"}
+                        {typeLabels[occ.type] || occ.type || "—"}
                       </div>
                       <div>
                         <span className="text-xs font-medium text-gray-400 block">
@@ -250,18 +267,16 @@ if (serviceorders?.length > 0) {
                   </div>
 
                   <div className="col-span-2 text-sm truncate">
-                    {occ.type || "—"}
+                    {typeLabels[occ.type] || occ.type || "—"}
                   </div>
 
                   <div className="col-span-1 flex justify-center items-center gap-2">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusClasses(
+                      className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${getStatusClasses(
                         occ.status
                       )}`}
                     >
-                      {occ.status
-                        .replace("_", " ")
-                        .replace(/^\w/, (c) => c.toUpperCase())}
+                      {statusLabels[occ.status] || occ.status}
                     </span>
 
                     {occ.isEmergencial && (

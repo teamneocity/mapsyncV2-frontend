@@ -76,7 +76,7 @@ export function Sidebar() {
                   <PeopleLine className="w-5 h-5 shrink-0" /> Setor
                 </Link>
               )}
-              {(isAnalyst || isAdmin || isChief) && (
+              {(canSeeAll || isAnalyst || isChief) && (
                 <Link
                   to="/analysis"
                   className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
