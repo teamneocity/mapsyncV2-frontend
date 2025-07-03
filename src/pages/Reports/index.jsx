@@ -1,8 +1,6 @@
-// src/pages/Reports/index.jsx
-
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -27,11 +25,39 @@ export function Reports() {
 
   const [showHint, setShowHint] = useState(true);
   const [message, setMessage] = useState("");
+  const [lastQuestion, setLastQuestion] = useState("");
+  const [response, setResponse] = useState(null);
+  const [hasAsked, setHasAsked] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSend = () => {
+  useEffect(() => {
+    if (message.length > 0 && !hasAsked) {
+      setHasAsked(true);
+    }
+  }, [message]);
+
+  const handleSend = async () => {
     if (message.trim()) {
-      console.log("Mensagem enviada:", message);
-      setMessage("");
+      setLastQuestion(message);
+      setIsLoading(true);
+      try {
+        const res = await fetch("https://chatbot.mapsync.com.br/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ question: message }),
+        });
+
+        const data = await res.json();
+        setResponse(data?.resposta || "Sem resposta.");
+      } catch (error) {
+        console.error("Erro ao enviar pergunta:", error);
+        setResponse("Erro ao consultar o chatbot.");
+      } finally {
+        setIsLoading(false);
+        setMessage("");
+      }
     }
   };
 
@@ -71,110 +97,127 @@ export function Reports() {
             Não sabe por onde começar?
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Card 1 - Bairros */}
-            <div className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition">
-              <div
-                className="w-10 h-10 rounded-md flex items-center justify-center"
-                style={{ backgroundColor: "#F9FAFC" }}
-              >
-                <License className="w-6 h-6 text-blue-500" />
-              </div>
-              <h3 className="font-semibold text-sm text-gray-800">Bairros</h3>
-              <p className="text-xs text-gray-500">
-                Create compelling text for ads, emails, and more.
-              </p>
-            </div>
+          <div className="w-full min-h-[300px]">
+            {!hasAsked ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Card 1 - Bairros */}
+                <div className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition">
+                  <div
+                    className="w-10 h-10 rounded-md flex items-center justify-center"
+                    style={{ backgroundColor: "#F9FAFC" }}
+                  >
+                    <License className="w-6 h-6 text-blue-500" />
+                  </div>
+                  <h3 className="font-semibold text-sm text-gray-800">
+                    Bairros
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Create compelling text for ads, emails, and more.
+                  </p>
+                </div>
 
-            {/* Card 2 - Por Ocorrências */}
-            <div className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition">
-              <div
-                className="w-10 h-10 rounded-md flex items-center justify-center"
-                style={{ backgroundColor: "#F9FAFC" }}
-              >
-                <AiImage className="w-6 h-6 text-indigo-500" />
-              </div>
-              <h3 className="font-semibold text-sm text-gray-800">
-                Por ocorrências
-              </h3>
-              <p className="text-xs text-gray-500">
-                Design custom visuals with AI.
-              </p>
-            </div>
+                {/* Card 2 - Por Ocorrências */}
+                <div className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition">
+                  <div
+                    className="w-10 h-10 rounded-md flex items-center justify-center"
+                    style={{ backgroundColor: "#F9FAFC" }}
+                  >
+                    <AiImage className="w-6 h-6 text-indigo-500" />
+                  </div>
+                  <h3 className="font-semibold text-sm text-gray-800">
+                    Por ocorrências
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Design custom visuals with AI.
+                  </p>
+                </div>
 
-            {/* Card 3 - Research */}
-            <div className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition">
-              <div
-                className="w-10 h-10 rounded-md flex items-center justify-center"
-                style={{ backgroundColor: "#F9FAFC" }}
-              >
-                <AiSearch className="w-6 h-6 text-purple-500" />
-              </div>
-              <h3 className="font-semibold text-sm text-gray-800">Research</h3>
-              <p className="text-xs text-gray-500">
-                Quickly gather and summarize info.
-              </p>
-            </div>
+                {/* Card 3 - Research */}
+                <div className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition">
+                  <div
+                    className="w-10 h-10 rounded-md flex items-center justify-center"
+                    style={{ backgroundColor: "#F9FAFC" }}
+                  >
+                    <AiSearch className="w-6 h-6 text-purple-500" />
+                  </div>
+                  <h3 className="font-semibold text-sm text-gray-800">
+                    Research
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Quickly gather and summarize info.
+                  </p>
+                </div>
 
-            {/* Card 4 - Generate Article */}
-            <div className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition">
-              <div
-                className="w-10 h-10 rounded-md flex items-center justify-center"
-                style={{ backgroundColor: "#F9FAFC" }}
-              >
-                <DocumentValidation className="w-6 h-6 text-orange-500" />
-              </div>
-              <h3 className="font-semibold text-sm text-gray-800">
-                Generate Article
-              </h3>
-              <p className="text-xs text-gray-500">
-                Write articles on any topic instantly.
-              </p>
-            </div>
+                {/* Card 4 - Generate Article */}
+                <div className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition">
+                  <div
+                    className="w-10 h-10 rounded-md flex items-center justify-center"
+                    style={{ backgroundColor: "#F9FAFC" }}
+                  >
+                    <DocumentValidation className="w-6 h-6 text-orange-500" />
+                  </div>
+                  <h3 className="font-semibold text-sm text-gray-800">
+                    Generate Article
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Write articles on any topic instantly.
+                  </p>
+                </div>
 
-            {/* Card 5 - Data Analytics */}
-            <div className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition">
-              <div
-                className="w-10 h-10 rounded-md flex items-center justify-center"
-                style={{ backgroundColor: "#F9FAFC" }}
-              >
-                <PieChart className="w-6 h-6 text-yellow-500" />
-              </div>
-              <h3 className="font-semibold text-sm text-gray-800">
-                Data Analytics
-              </h3>
-              <p className="text-xs text-gray-500">
-                Analyze data with AI-driven insights.
-              </p>
-            </div>
+                {/* Card 5 - Data Analytics */}
+                <div className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition">
+                  <div
+                    className="w-10 h-10 rounded-md flex items-center justify-center"
+                    style={{ backgroundColor: "#F9FAFC" }}
+                  >
+                    <PieChart className="w-6 h-6 text-yellow-500" />
+                  </div>
+                  <h3 className="font-semibold text-sm text-gray-800">
+                    Data Analytics
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Analyze data with AI-driven insights.
+                  </p>
+                </div>
 
-            {/* Card 6 - Generate Code */}
-            <div className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition">
-              <div
-                className="w-10 h-10 rounded-md flex items-center justify-center"
-                style={{ backgroundColor: "#F9FAFC" }}
-              >
-                <Code className="w-6 h-6 text-rose-500" />
+                {/* Card 6 - Generate Code */}
+                <div className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition">
+                  <div
+                    className="w-10 h-10 rounded-md flex items-center justify-center"
+                    style={{ backgroundColor: "#F9FAFC" }}
+                  >
+                    <Code className="w-6 h-6 text-rose-500" />
+                  </div>
+                  <h3 className="font-semibold text-sm text-gray-800">
+                    Generate Code
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Produce accurate code fast.
+                  </p>
+                </div>
               </div>
-              <h3 className="font-semibold text-sm text-gray-800">
-                Generate Code
-              </h3>
-              <p className="text-xs text-gray-500">
-                Produce accurate code fast.
-              </p>
-            </div>
+            ) : (
+              <div className="bg-[#EBEBEB] min-h-[300px] p-6 rounded-xl flex flex-col gap-4 shadow-inner">
+                {lastQuestion && (
+                  <div className="self-end max-w-[75%] bg-[#D1D9FB] text-sm text-gray-800 p-3 rounded-xl rounded-tr-sm shadow">
+                    {lastQuestion}
+                  </div>
+                )}
+
+                <div className="self-start max-w-[75%] bg-white text-sm text-gray-800 p-3 rounded-xl rounded-tl-sm shadow">
+                  {isLoading ? "..." : response}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Caixa de mensagem  */}
           <div className="mt-8">
             {showHint && (
               <div className="bg-[#EDF1FD] text-xs text-[#4F6BED] px-3 py-2 rounded-t-xl flex items-center justify-between">
-                <div className="flex items-center gap-1">
-                  <span>
-                    Ao selecionar um recurso, você alcançará seu objetivo
-                    facilmente
-                  </span>
-                </div>
+                <span>
+                  Ao selecionar um recurso, você alcançará seu objetivo
+                  facilmente
+                </span>
                 <button
                   className="text-gray-400 hover:text-gray-600 text-sm"
                   onClick={() => setShowHint(false)}
