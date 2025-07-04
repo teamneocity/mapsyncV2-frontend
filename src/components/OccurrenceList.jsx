@@ -69,6 +69,39 @@ export function OccurrenceList({
     LIMPA_FOSSA: "Limpa fossa",
   };
 
+  function StatusBadge({ status, isEmergencial }) {
+    const [hovering, setHovering] = useState(false);
+
+    const statusLabels = {
+      em_analise: "Em análise",
+      emergencial: "Emergencial",
+      aprovada: "Aprovada",
+      os_gerada: "O.S. gerada",
+      aguardando_execucao: "Aguardando execução",
+      pendente: "Pendente",
+      aceita: "Aceita",
+      verificada: "Verificada",
+    };
+
+    const isHoveringEmergencial = isEmergencial && hovering;
+
+    const baseClass = isHoveringEmergencial
+      ? "bg-[#FFE8E8] text-[#FF2222]"
+      : getStatusClasses(status);
+
+    const borderClass = isEmergencial ? "border border-red-500" : "";
+
+    return (
+      <span
+        className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold text-center whitespace-nowrap ${baseClass} ${borderClass}`}
+        onMouseEnter={() => isEmergencial && setHovering(true)}
+        onMouseLeave={() => isEmergencial && setHovering(false)}
+      >
+        {isHoveringEmergencial ? "Emergencial" : statusLabels[status] || status}
+      </span>
+    );
+  }
+
   return (
     <div className="w-full mx-auto px-6">
       {/* Header apenas para desktop */}
@@ -142,20 +175,10 @@ export function OccurrenceList({
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${getStatusClasses(
-                            occ.status
-                          )}`}
-                        >
-                          {statusLabels[occ.status] || occ.status}
-                        </span>
-
-                        {occ.isEmergencial && (
-                          <div
-                            title="EMERGENCIAL"
-                            className="w-3.5 h-3.5 rounded-full bg-[#FFE8E8] border border-red-500"
-                          />
-                        )}
+                        <StatusBadge
+                          status={occ.status}
+                          isEmergencial={occ.isEmergencial}
+                        />
                       </div>
                     </div>
 
@@ -271,20 +294,10 @@ export function OccurrenceList({
                   </div>
 
                   <div className="col-span-1 flex justify-center items-center gap-2">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${getStatusClasses(
-                        occ.status
-                      )}`}
-                    >
-                      {statusLabels[occ.status] || occ.status}
-                    </span>
-
-                    {occ.isEmergencial && (
-                      <div
-                        title="EMERGENCIAL"
-                        className="w-3.5 h-3.5 rounded-full bg-[#FFE8E8] border border-red-500"
-                      />
-                    )}
+                    <StatusBadge
+                      status={occ.status}
+                      isEmergencial={occ.isEmergencial}
+                    />
                   </div>
                 </div>
               </div>
