@@ -19,6 +19,8 @@ import Vector from "@/assets/IconsReport/Vector.svg?react";
 import Voice from "@/assets/IconsReport/voice.svg?react";
 import Zsh from "@/assets/IconsReport/zsh.svg?react";
 
+import MapaDeCalor from "./MapaDeCalor";
+
 export function Reports() {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -37,27 +39,36 @@ export function Reports() {
   }, [message]);
 
   const handleSend = async () => {
-    if (message.trim()) {
-      setLastQuestion(message);
-      setIsLoading(true);
-      try {
-        const res = await fetch("https://chatbot.mapsync.com.br/api/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ question: message }),
-        });
+    if (!message.trim()) return;
 
-        const data = await res.json();
-        setResponse(data?.resposta || "Sem resposta.");
-      } catch (error) {
-        console.error("Erro ao enviar pergunta:", error);
-        setResponse("Erro ao consultar o chatbot.");
-      } finally {
-        setIsLoading(false);
-        setMessage("");
-      }
+    const lowerMsg = message.toLowerCase();
+    setLastQuestion(message);
+    setHasAsked(true); // mostra resposta
+
+    // Se a mensagem contém "mapa", mostra o mapa direto e não chama o chatbot
+    if (lowerMsg.includes("mapa")) {
+      setResponse("#MAPA"); // usamos isso como gatilho no JSX
+      setMessage("");
+      return;
+    }
+
+    // Caso contrário, chama o chatbot normalmente
+    setIsLoading(true);
+    try {
+      const res = await fetch("https://chatbot.mapsync.com.br/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: message }),
+      });
+
+      const data = await res.json();
+      setResponse(data?.resposta || "Sem resposta.");
+    } catch (error) {
+      console.error("Erro ao enviar pergunta:", error);
+      setResponse("Erro ao consultar o chatbot.");
+    } finally {
+      setIsLoading(false);
+      setMessage("");
     }
   };
 
@@ -204,9 +215,20 @@ export function Reports() {
                   </div>
                 )}
 
-                <div className="self-start max-w-[75%] bg-white text-sm text-gray-800 p-3 rounded-xl rounded-tl-sm shadow">
-                  {isLoading ? "..." : response}
-                </div>
+                {isLoading ? (
+                  <div className="self-start max-w-[75%] bg-white text-sm text-gray-800 p-3 rounded-xl rounded-tl-sm shadow">
+                    ...
+                  </div>
+                ) : response === "#MAPA" ? (
+                  <div className="w-full mt-4 rounded-xl overflow-hidden">
+                    {/* O mapa ocupa a largura inteira, fora do estilo de "mensagem" */}
+                    <MapaDeCalor />
+                  </div>
+                ) : (
+                  <div className="self-start max-w-[75%] bg-white text-sm text-gray-800 p-3 rounded-xl rounded-tl-sm shadow">
+                    {response}
+                  </div>
+                )}
               </div>
             )}
           </div>
