@@ -9,10 +9,8 @@ import { RouteMap } from "@/pages/RouteMap";
 import { Activities } from "@/pages/Activities";
 import { Reports } from "@/pages/Reports";
 import { UserProfile } from "@/pages/UserProfile";
-import { Notifications } from "@/pages/Notifications";
 import { Analysis } from "@/pages/Analysis";
 import { TeamManagement } from "@/pages/TeamManagement";
-import { AuditLogs } from "@/pages/AuditLogs";
 import { CreateOccurrencePage } from "@/pages/Pilot";
 import { CreateOccurrenceTPage } from "@/pages/PilotT";
 import { Inspection } from "@/pages/Inspection";
@@ -138,20 +136,17 @@ export function AppRoutes() {
       <Route path="/routemap" element={<RouteMap />} />
       <Route path="/activities" element={<Activities />} />
       <Route path="/userprofile" element={<UserProfile />} />
-      <Route path="/notifications" element={<Notifications />} />
-      <Route path="/dashboard" element={<Dashboard />} /> {/* ajuste leve */}
+      <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/settings" element={<Settings />} />
       {/* Admin/Gestor apenas */}
       {["admin", "gestor"].includes(user.role) ? (
         <>
           <Route path="/teammanagement" element={<TeamManagement />} />
-          <Route path="/logs" element={<AuditLogs />} />
           <Route path="/liveaction" element={<NeighborhoodOccurrences />} />
         </>
       ) : (
         <>
           <Route path="/teammanagement" element={<Navigate to="/" />} />
-          <Route path="/logs" element={<Navigate to="/" />} />
           <Route path="/liveaction" element={<Navigate to="/" />} />
         </>
       )}
