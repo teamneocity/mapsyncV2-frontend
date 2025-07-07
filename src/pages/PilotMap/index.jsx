@@ -1,16 +1,23 @@
 "use client";
 
+// React e bibliotecas externas
 import { useState, useEffect } from "react";
+import { format } from "date-fns";
+import { TrendingUp } from "lucide-react";
+
+// Componentes globais
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
 import { Filters } from "@/components/filters";
-import { TrendingUp } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { GoogleMaps } from "@/components/googleMaps";
-import { api } from "@/services/api";
-import { format } from "date-fns";
 
+// Serviços e utilitários
+import { api } from "@/services/api";
+
+// Assets
 import Bars from "@/assets/icons/Bars.svg?react";
+
 
 export function PilotMap() {
   const [pilots, setPilots] = useState([]);
@@ -20,75 +27,69 @@ export function PilotMap() {
   useEffect(() => {
     async function fetchPilotsWithStatusAndMetrics() {
       try {
-        // 1. Buscar métricas (ocorrências)
+        // 1. Buscar métricas (todos os pilotos)
         const metricsRes = await api.get("/metrics/pilots/occurrences");
-        const metricsMap = new Map();
-        metricsRes.data.metrics.forEach((m) => {
-          metricsMap.set(m.pilotId, {
-            ocorrencias: m.createdOccurrences.currentMonth,
-            resolvidos: m.finalizedOccurrences.currentMonth,
-            diffOcorrencias: m.createdOccurrences.difference,
-            diffResolvidos: m.finalizedOccurrences.difference,
-          });
-        });
+        const metricsData = metricsRes.data.metrics;
 
-        // 2. Buscar shifts de hoje
+        // 2. Buscar turnos de hoje (apenas quem está em turno)
         const shiftsRes = await api.get(
           `/shifts/pilot/?date=${format(new Date(), "yyyy-MM-dd")}`
         );
+        const shiftsMap = new Map();
+        shiftsRes.data.shifts.forEach((pilot) => {
+          shiftsMap.set(pilot.pilotId, pilot);
+        });
 
-        // 3. Montar lista com status de turno
+        // 3. Montar lista final com base em TODOS os pilotos das métricas
         const pilotList = await Promise.all(
-          shiftsRes.data.shifts.map(async (pilot) => {
-            const latestShift = pilot.shifts[pilot.shifts.length - 1];
-            const lastPoint =
-              latestShift?.locationPoints?.[
-                latestShift.locationPoints.length - 1
-              ];
+          metricsData.map(async (m) => {
+            const shiftPilot = shiftsMap.get(m.pilotId);
+            const latestShift = shiftPilot?.shifts?.at(-1);
+            const lastPoint = latestShift?.locationPoints?.at(-1);
 
             let distance = "----";
             let duration = "----";
 
-            try {
-              const statsRes = await api.get(
-                `/shifts/${pilot.pilotId}/stats?date=${format(
-                  new Date(),
-                  "yyyy-MM-dd"
-                )}`
-              );
-              const stats = statsRes.data;
-              distance = `${stats.distance.toFixed(2)} km`;
-              duration = `${(stats.duration * 60).toFixed(1)} min`;
-            } catch (err) {
-              console.warn("Stats não encontrados para:", pilot.pilotId);
+            if (latestShift) {
+              try {
+                const statsRes = await api.get(
+                  `/shifts/${m.pilotId}/stats?date=${format(
+                    new Date(),
+                    "yyyy-MM-dd"
+                  )}`
+                );
+                const stats = statsRes.data;
+                distance = `${stats.distance.toFixed(2)} km`;
+                duration = `${(stats.duration * 60).toFixed(1)} min`;
+              } catch (err) {
+                console.warn("Stats não encontrados para:", m.pilotId);
+              }
             }
 
-            const metric = metricsMap.get(pilot.pilotId) || {
-              ocorrencias: 0,
-              resolvidos: 0,
-              diffOcorrencias: 0,
-              diffResolvidos: 0,
-            };
-
             return {
-              id: pilot.pilotId,
-              name: pilot.pilotName,
+              id: m.pilotId,
+              name: m.pilotName,
               latitude: lastPoint?.latitude ?? "----",
               longitude: lastPoint?.longitude ?? "----",
-              data: new Date(latestShift?.startedAt).toLocaleDateString(
-                "pt-BR"
-              ),
+              data: latestShift
+                ? new Date(latestShift.startedAt).toLocaleDateString("pt-BR")
+                : "----",
               endereco: "Localização dinâmica",
               bairro: "Desconhecido",
               cep: "----",
               zona: "----",
-              shiftStatus: latestShift.endedAt
-                ? "Turno finalizado"
-                : "Turno em andamento",
+              shiftStatus: latestShift
+                ? latestShift.endedAt
+                  ? "Turno finalizado"
+                  : "Turno em andamento"
+                : "Sem turno",
               stats: {
                 tempo: duration,
                 km: distance,
-                ...metric,
+                ocorrencias: m.createdOccurrences.currentMonth,
+                resolvidos: m.finalizedOccurrences.currentMonth,
+                diffOcorrencias: m.createdOccurrences.difference,
+                diffResolvidos: m.finalizedOccurrences.difference,
               },
             };
           })
