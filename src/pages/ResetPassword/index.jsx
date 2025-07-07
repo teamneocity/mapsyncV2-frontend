@@ -1,10 +1,17 @@
+// React e bibliotecas externas
 import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+// Hooks customizados
+import { useToast } from "@/hooks/use-toast";
+
+// Componentes globais
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+
+// Serviços e utilitários
 import { api } from "@/services/api";
-import { Link } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast"
-import { useNavigate } from "react-router-dom";
+
 
 
 export function ResetPassword() {

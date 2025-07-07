@@ -1,22 +1,27 @@
 "use client";
 
+// React e bibliotecas externas
 import { useEffect, useState } from "react";
+import { format } from "date-fns";
+import { format as formatTz } from "date-fns-tz";
+import { pdf, PDFDownloadLink } from "@react-pdf/renderer";
+
+// Componentes globais
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
 import { Filters } from "@/components/filters";
 import { OccurrenceList } from "@/components/OccurrenceList";
+
+// Componentes locais
+import { DailyPlanningPDF } from "./DailyPlanningPDF";
+
+// Serviços e utilitários
 import { api } from "@/services/api";
-import { format } from "date-fns";
 
-import { pdf } from "@react-pdf/renderer";
-
+// Assets
 import Printer from "@/assets/icons/Printer.svg?react";
 import FilePdf from "@/assets/icons/filePdf.svg?react";
 
-import { PDFDownloadLink } from "@react-pdf/renderer";
-import { DailyPlanningPDF } from "./DailyPlanningPDF";
-
-import { format as formatTz } from "date-fns-tz";
 
 export function ServicePlanning() {
   const [serviceOrders, setServiceOrders] = useState([]);

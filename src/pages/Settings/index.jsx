@@ -1,13 +1,18 @@
 "use client";
 
+// React e bibliotecas externas
 import { useState } from "react";
+
+// Componentes globais
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
-import Mapa from "@/assets/Mapa.svg";
 
+// Assets
+import Mapa from "@/assets/Mapa.svg";
 import SystemMode from "@/assets/Mode/SystemMode.svg?react";
 import LightMode from "@/assets/Mode/LightMode.svg?react";
 import DarkMode from "@/assets/Mode/DarkMode.svg?react";
+
 
 export function Settings() {
   const [activeTab, setActiveTab] = useState("Dashboards");

@@ -1,13 +1,19 @@
-import { Link } from "react-router-dom";
+// React e bibliotecas externas
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
+
+// Hooks customizados
 import { useAuth } from "@/hooks/auth";
 
-import logo from "../../assets/logo.png";
+// Componentes globais
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/passwordInput";
 import { Button } from "@/components/ui/button";
 
+// Assets
+import logo from "../../assets/logo.png";
 import Cell from "@/assets/icons/Cell.svg?react";
+
 
 export function SignIn() {
   const { signIn } = useAuth();

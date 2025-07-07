@@ -1,11 +1,17 @@
+// React e bibliotecas externas
+import { Star } from "lucide-react";
+
+// Componentes globais
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
-import { Star } from "lucide-react";
+
+// Assets
 import Mapa from "@/assets/Mapa.svg";
 import Mapa2 from "@/assets/Mapa2.svg";
 import NewLogo from "@/assets/icons/NewLogo.svg";
 import Clip from "@/assets/icons/Clip.svg?react";
 import Edit from "@/assets/icons/edit.svg?react";
+
 
 export function Feedback() {
   const ratings = [5, 4, 3, 2, 1, 0];

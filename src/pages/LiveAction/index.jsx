@@ -1,12 +1,17 @@
-import { useEffect, useState } from "react"
-import { io } from "socket.io-client"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
-import { Sidebar } from "@/components/sidebar"
-import { AlertCircle } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { api } from "@/services/api"
-import { LiveActionButton } from "@/components/live-action-button"
+// React e bibliotecas externas
+import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { AlertCircle } from "lucide-react";
+
+// Componentes globais
+import { Sidebar } from "@/components/sidebar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { LiveActionButton } from "@/components/live-action-button";
+
+// Serviços e utilitários
+import { api } from "@/services/api";
 
 
 export default function NeighborhoodOccurrences() {

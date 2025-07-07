@@ -1,11 +1,20 @@
 "use client";
 
+// React e bibliotecas externas
 import React, { useState, useEffect } from "react";
+
+// Hooks customizados
+import { useMediaQuery } from "@/hooks/use-media-query";
+
+// Componentes globais
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
-import { useMediaQuery } from "@/hooks/use-media-query";
-import ImgUsers from "@/assets/icons/imgUsers.svg";
 
+// Componentes locais
+import MapaDeCalor from "./MapaDeCalor";
+
+// Assets
+import ImgUsers from "@/assets/icons/imgUsers.svg";
 import License from "@/assets/IconsReport/license.svg?react";
 import AiImage from "@/assets/IconsReport/ai-image.svg?react";
 import AiSearch from "@/assets/IconsReport/ai-search-02.svg?react";
@@ -19,7 +28,6 @@ import Vector from "@/assets/IconsReport/Vector.svg?react";
 import Voice from "@/assets/IconsReport/voice.svg?react";
 import Zsh from "@/assets/IconsReport/zsh.svg?react";
 
-import MapaDeCalor from "./MapaDeCalor";
 
 export function Reports() {
   const isMobile = useMediaQuery("(max-width: 768px)");

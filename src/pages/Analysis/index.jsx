@@ -2,30 +2,37 @@
 
 "use client";
 
+// React e bibliotecas externas
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { format } from "date-fns";
+import { Menu } from "lucide-react";
+
+//  Hooks customizados
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useUserSector } from "@/hooks/useUserSector";
 import { useAuth } from "@/hooks/auth";
 
-import { Filters } from "@/components/filters";
+//  Componentes globais
 import { Sidebar } from "@/components/sidebar";
+import { TopHeader } from "@/components/topHeader";
+import { Filters } from "@/components/filters";
 import { Pagination } from "@/components/pagination";
 import { Button } from "@/components/ui/button";
 import { LiveActionButton } from "@/components/live-action-button";
-import { Menu } from "lucide-react";
-
-import { api } from "@/services/api";
-import { format } from "date-fns";
 import { OccurrenceList } from "@/components/OccurrenceList";
-import { ExpandedRowAnalysis } from "./ExpandedRowAnalysis";
 import { IgnoreOccurrenceModal } from "@/components/ignoreOccurrenceModal";
-import { Link } from "react-router-dom";
-import { TopHeader } from "@/components/topHeader";
 
-import emurb from "../../assets/emurb.svg";
+//  Componentes locais
+import { ExpandedRowAnalysis } from "./ExpandedRowAnalysis";
+
+//  Serviços
+import { api } from "@/services/api";
+
+
+
 
 export function Analysis() {
   const { user } = useAuth();

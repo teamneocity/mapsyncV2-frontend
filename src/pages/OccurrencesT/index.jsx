@@ -1,20 +1,30 @@
 "use client";
 
+// React e bibliotecas externas
 import React, { useEffect, useState } from "react";
+import { format } from "date-fns";
+
+// Hooks customizados
 import { useAuth } from "@/hooks/auth";
 import { useToast } from "@/hooks/use-toast";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { useUserSector } from "@/hooks/useUserSector";
+import { usePermissions } from "@/hooks/usePermissions";
+
+// Componentes globais
 import { Sidebar } from "@/components/sidebar";
+import { TopHeader } from "@/components/topHeader";
 import { Filters } from "@/components/filters";
 import { LiveActionButton } from "@/components/live-action-button";
 import { Pagination } from "@/components/pagination";
-import { api } from "@/services/api";
-import { format } from "date-fns";
-import { useUserSector } from "@/hooks/useUserSector";
-import { usePermissions } from "@/hooks/usePermissions";
 import { OccurrenceList } from "@/components/OccurrenceList";
+
+// Componentes locais
 import { ExpandedRowWithLoad } from "./ExpandedRowWithLoad";
-import { TopHeader } from "@/components/topHeader";
+
+// Serviços e utilitários
+import { api } from "@/services/api";
+
 
 export function OccurrencesT() {
   const { user } = useAuth();

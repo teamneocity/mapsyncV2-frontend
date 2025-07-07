@@ -1,15 +1,23 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { useAuth } from "@/hooks/auth"
-import { api } from "@/services/api"
-import { ArrowLeft, MapPin, MinusIcon, PlusIcon, Upload, User } from "lucide-react"
-import { useCallback, useEffect, useState } from "react"
+// React e bibliotecas externas
+import { useCallback, useEffect, useState } from "react";
+import { ArrowLeft, MapPin, MinusIcon, PlusIcon, Upload, User } from "lucide-react";
+
+// Hooks customizados
+import { useAuth } from "@/hooks/auth";
+
+// Componentes globais
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+
+// Serviços e utilitários
+import { api } from "@/services/api";
+
 
 const neighborhoods = [
   "Aruana",

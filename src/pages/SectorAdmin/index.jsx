@@ -1,27 +1,7 @@
 "use client";
 
-import { Sidebar } from "@/components/sidebar";
-import { TopHeader } from "@/components/topHeader";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+// React e bibliotecas externas
+import { useEffect, useState } from "react";
 import {
   Users,
   UserCog,
@@ -32,12 +12,44 @@ import {
   Shield,
 } from "lucide-react";
 
-import Trash from "@/assets/icons/trash.svg?react";
+// Hooks customizados
+import { usePermissions } from "@/hooks/usePermissions";
 
-import { useEffect, useState } from "react";
+// Componentes globais
+import { Sidebar } from "@/components/sidebar";
+import { TopHeader } from "@/components/topHeader";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+// Serviços e utilitários
 import { api } from "@/services/api";
 
-import { usePermissions } from "@/hooks/usePermissions"; // ou onde está salvo
+// Assets
+import Trash from "@/assets/icons/trash.svg?react";
+
 
 export function SectorAdmin() {
   const [activeTab, setActiveTab] = useState("overview");

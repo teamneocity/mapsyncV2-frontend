@@ -1,13 +1,21 @@
 "use client";
 
+// React e bibliotecas externas
 import { useEffect, useState } from "react";
+
+// Componentes globais
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
 import { Filters } from "@/components/filters";
 import { OccurrenceList } from "@/components/OccurrenceList";
-import { ExpandedRowA } from "./ExpandedRowA";
-import { api } from "@/services/api";
 import { Pagination } from "@/components/pagination";
+
+// Componentes locais
+import { ExpandedRowA } from "./ExpandedRowA";
+
+// Serviços e utilitários
+import { api } from "@/services/api";
+
 
 export function OccurrencesA() {
   const [occurrences, setOccurrences] = useState([]);

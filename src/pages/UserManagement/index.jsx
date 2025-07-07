@@ -1,17 +1,27 @@
+// React e bibliotecas externas
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sidebar } from "@/components/sidebar";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Pagination } from "@/components/pagination";
-import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
+
+// Hooks customizados
 import { useAuth } from "@/hooks/auth";
-import { getInicials } from "@/lib/utils";
-import { api } from "@/services/api";
+
+// Componentes globais
+import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Pagination } from "@/components/pagination";
+
+// Serviços e utilitários
+import { api } from "@/services/api";
+import { getInicials } from "@/lib/utils";
+
+// Assets
 import ImgUsers from "@/assets/icons/imgUsers.svg";
+import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
 import Trash from "@/assets/icons/trash.svg?react";
+
 
 export function UserManagement() {
   const { user } = useAuth();

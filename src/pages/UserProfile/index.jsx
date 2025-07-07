@@ -1,24 +1,35 @@
+// React e bibliotecas externas
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sidebar } from "@/components/sidebar";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { PasswordInput } from "@/components/ui/passwordInput";
-import { ProfileUpload } from "./userProfile-uploadbtn";
-import { useAuth } from "@/hooks/auth";
-import { getInicials } from "@/lib/utils";
-import { api } from "@/services/api";
-import { LiveActionButton } from "@/components/live-action-button";
-import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
-import { TopHeader } from "@/components/topHeader";
-import Mapa from "@/assets/Mapa.svg";
-import Mapa2 from "@/assets/Mapa2.svg";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+// Hooks customizados
+import { useAuth } from "@/hooks/auth";
+
+// Componentes globais
+import { Sidebar } from "@/components/sidebar";
+import { TopHeader } from "@/components/topHeader";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { PasswordInput } from "@/components/ui/passwordInput";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LiveActionButton } from "@/components/live-action-button";
+
+// Componentes locais
+import { ProfileUpload } from "./userProfile-uploadbtn";
+
+// Serviços e utilitários
+import { api } from "@/services/api";
+import { getInicials } from "@/lib/utils";
+
+// Assets
+import Mapa from "@/assets/Mapa.svg";
+import Mapa2 from "@/assets/Mapa2.svg";
+import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
 import Ponto from "@/assets/icons/Ponto.svg?react";
 import Pc from "@/assets/icons/Pc.svg?react";
+ 
 
 export function UserProfile() {
   const { signOut, user, updateProfile } = useAuth();

@@ -1,18 +1,28 @@
 "use client";
 
+// React e bibliotecas externas
 import React, { useEffect, useState } from "react";
-import { Sidebar } from "@/components/sidebar";
+import { format } from "date-fns";
+import { Link } from "react-router-dom";
+
+// Hooks customizados
 import { usePermissions } from "@/hooks/usePermissions";
 import { useToast } from "@/hooks/use-toast";
-import { api } from "@/services/api";
-import { OccurrenceList } from "@/components/OccurrenceList";
-import { ExpandedRowServiceOrder } from "./ExpandedRowServiceOrder";
+
+// Componentes globais
+import { Sidebar } from "@/components/sidebar";
+import { TopHeader } from "@/components/topHeader";
 import { Filters } from "@/components/filters";
 import { LiveActionButton } from "@/components/live-action-button";
 import { Pagination } from "@/components/pagination";
-import { format } from "date-fns";
-import { Link } from "react-router-dom";
-import { TopHeader } from "@/components/topHeader";
+import { OccurrenceList } from "@/components/OccurrenceList";
+
+// Componentes locais
+import { ExpandedRowServiceOrder } from "./ExpandedRowServiceOrder";
+
+// Serviços e utilitários
+import { api } from "@/services/api";
+
 
 export function ServiceOrder() {
   const { toast } = useToast();

@@ -1,18 +1,30 @@
 "use client";
 
+// React e bibliotecas externas
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { format } from "date-fns";
+
+// Hooks customizados
+import { useToast } from "@/hooks/use-toast";
+import { usePermissions } from "@/hooks/usePermissions";
+
+// Componentes globais
 import { Sidebar } from "@/components/sidebar";
+import { TopHeader } from "@/components/topHeader";
 import { Filters } from "@/components/filters";
 import { LiveActionButton } from "@/components/live-action-button";
 import { Pagination } from "@/components/pagination";
+
+// Componentes locais
 import { InspectionCard } from "./inspectionCard";
-import { useToast } from "@/hooks/use-toast";
-import { usePermissions } from "@/hooks/usePermissions";
+
+// Serviços e utilitários
 import { api } from "@/services/api";
-import { TopHeader } from "@/components/topHeader";
-import { Link } from "react-router-dom";
+
+// Assets
 import emurb from "../../assets/emurb.svg";
-import { format } from "date-fns";
+
 
 export function Inspection() {
   const { toast } = useToast();

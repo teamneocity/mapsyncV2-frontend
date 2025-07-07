@@ -1,19 +1,27 @@
 "use client";
 
+// React e bibliotecas externas
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { BookText } from "lucide-react";
+
+// Componentes globais
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
+
+// Componentes locais
 import { TutorialCard } from "@/pages/Dashboard/tutorialCard.jsx";
 import { StatBox } from "./statBox";
 import { LineRaceChart } from "./LineRaceChart";
 import { PiePadAngleChart } from "./PiePadAngleChart";
 
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { getInicials } from "@/lib/utils";
+// Serviços e utilitários
 import { api } from "@/services/api";
+import { getInicials } from "@/lib/utils";
 
+// Assets
 import Bars from "@/assets/icons/Bars.svg?react";
-import { BookText } from "lucide-react";
+
 
 export function Dashboard() {
   // Componente BlogBox local

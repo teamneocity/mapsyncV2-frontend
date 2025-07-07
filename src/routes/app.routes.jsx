@@ -1,26 +1,22 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import { Dashboard } from "@/pages/Dashboard";
-import { SignIn } from "@/pages/SignIn";
-import { OccurrencesT } from "@/pages/OccurrencesT";
-import { OccurrencesA } from "@/pages/OccurrencesA";
-import { ServiceOrder } from "@/pages/ServiceOrder";
-import { RouteMap } from "@/pages/RouteMap";
-import { Activities } from "@/pages/Activities";
-import { Reports } from "@/pages/Reports";
-import { UserProfile } from "@/pages/UserProfile";
-import { Analysis } from "@/pages/Analysis";
-import { TeamManagement } from "@/pages/TeamManagement";
+import { Dashboard } from "@/pages/Dashboard"; //dashboard
+import { OccurrencesT } from "@/pages/OccurrencesT"; // mapeamento terrestre
+import { OccurrencesA } from "@/pages/OccurrencesA"; // mapeamento aéreo
+import { ServiceOrder } from "@/pages/ServiceOrder"; // ordem de serviço
+import { Reports } from "@/pages/Reports"; // relatório
+import { UserProfile } from "@/pages/UserProfile"; // perfil
+import { Analysis } from "@/pages/Analysis"; // análise
 import { CreateOccurrencePage } from "@/pages/Pilot";
 import { CreateOccurrenceTPage } from "@/pages/PilotT";
-import { Inspection } from "@/pages/Inspection";
-import { SectorAdmin } from "@/pages/SectorAdmin";
-import { UserManagement } from "@/pages/UserManagement";
-import { PilotMap } from "@/pages/PilotMap";
-import { ServicePlanning } from "@/pages/ServicePlanning";
-import { Feedback } from "@/pages/Feedback";
-import { Settings } from "@/pages/Settings";
-import NeighborhoodOccurrences from "@/pages/LiveAction";
+import { Inspection } from "@/pages/Inspection"; // fiscalização
+import { SectorAdmin } from "@/pages/SectorAdmin"; // setor
+import { UserManagement } from "@/pages/UserManagement"; // usuários
+import { PilotMap } from "@/pages/PilotMap"; // mapa de percurso
+import { ServicePlanning } from "@/pages/ServicePlanning"; // planejamento
+import { Feedback } from "@/pages/Feedback"; // feedback
+import { Settings } from "@/pages/Settings"; // configurações
+import NeighborhoodOccurrences from "@/pages/LiveAction"; // LiveAction
 
 import { useAuth } from "@/hooks/auth";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -71,7 +67,11 @@ export function AppRoutes() {
       <Route
         path="/analysis"
         element={
-          isAnalyst || isAdmin || isChief || isSupervisor ? <Analysis /> : <Navigate to="/" />
+          isAnalyst || isAdmin || isChief || isSupervisor ? (
+            <Analysis />
+          ) : (
+            <Navigate to="/" />
+          )
         }
       />
       {/* Rota: /occurrencesa */}
@@ -133,20 +133,17 @@ export function AppRoutes() {
         element={canSeeAll || isChief ? <Feedback /> : <Navigate to="/" />}
       />
       {/* Rotas livres (não aparecem na Sidebar) */}
-      <Route path="/routemap" element={<RouteMap />} />
-      <Route path="/activities" element={<Activities />} />
+
       <Route path="/userprofile" element={<UserProfile />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/settings" element={<Settings />} />
       {/* Admin/Gestor apenas */}
       {["admin", "gestor"].includes(user.role) ? (
         <>
-          <Route path="/teammanagement" element={<TeamManagement />} />
           <Route path="/liveaction" element={<NeighborhoodOccurrences />} />
         </>
       ) : (
         <>
-          <Route path="/teammanagement" element={<Navigate to="/" />} />
           <Route path="/liveaction" element={<Navigate to="/" />} />
         </>
       )}
