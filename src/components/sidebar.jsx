@@ -218,7 +218,7 @@ export function Sidebar() {
           {/* Card de perfil */}
           <Link
             to="/userprofile"
-            className="mx-4 mb-5 bg-white rounded-xl p-3 flex items-center justify-between shadow-sm hover:shadow-md transition"
+            className="mx-4 mb-5 bg-[#F7F7F7] rounded-xl p-3 flex items-center justify-between shadow-sm hover:shadow-md transition"
           >
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
@@ -364,14 +364,14 @@ export function Sidebar() {
                   to="/userprofile"
                   className="mx-4 mb-5 bg-white rounded-xl p-3 flex items-center justify-between shadow-sm hover:shadow-md transition"
                 >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
+                  <div className="flex items-center gap-3 ">
+                    <Avatar className="h-10 w-10 ">
                       <AvatarImage
                         src={`${api.defaults.baseURL}/avatar/${user.avatar}`}
                       />
                       <AvatarFallback>{userInitials}</AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col ">
                       <div className="flex items-center gap-1">
                         <span className="font-semibold text-sm text-gray-900">
                           {name}
