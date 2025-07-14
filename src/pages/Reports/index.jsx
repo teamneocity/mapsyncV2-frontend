@@ -28,7 +28,6 @@ import Vector from "@/assets/IconsReport/Vector.svg?react";
 import Voice from "@/assets/IconsReport/voice.svg?react";
 import Zsh from "@/assets/IconsReport/zsh.svg?react";
 
-
 export function Reports() {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -120,7 +119,12 @@ export function Reports() {
             {!hasAsked ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Card 1 - Bairros */}
-                <div className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition">
+                <div
+                  className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition"
+                  style={{
+                    background: "linear-gradient(to bottom, #FFFFFF, #F9FAFC)",
+                  }}
+                >
                   <div
                     className="w-10 h-10 rounded-md flex items-center justify-center"
                     style={{ backgroundColor: "#F9FAFC" }}
@@ -136,7 +140,12 @@ export function Reports() {
                 </div>
 
                 {/* Card 2 - Por Ocorrências */}
-                <div className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition">
+                <div
+                  className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition"
+                  style={{
+                    background: "linear-gradient(to bottom, #FFFFFF, #F9FAFC)",
+                  }}
+                >
                   <div
                     className="w-10 h-10 rounded-md flex items-center justify-center"
                     style={{ backgroundColor: "#F9FAFC" }}
@@ -152,7 +161,12 @@ export function Reports() {
                 </div>
 
                 {/* Card 3 - Research */}
-                <div className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition">
+                <div
+                  className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition"
+                  style={{
+                    background: "linear-gradient(to bottom, #FFFFFF, #F9FAFC)",
+                  }}
+                >
                   <div
                     className="w-10 h-10 rounded-md flex items-center justify-center"
                     style={{ backgroundColor: "#F9FAFC" }}
@@ -168,7 +182,12 @@ export function Reports() {
                 </div>
 
                 {/* Card 4 - Generate Article */}
-                <div className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition">
+                <div
+                  className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition"
+                  style={{
+                    background: "linear-gradient(to bottom, #FFFFFF, #F9FAFC)",
+                  }}
+                >
                   <div
                     className="w-10 h-10 rounded-md flex items-center justify-center"
                     style={{ backgroundColor: "#F9FAFC" }}
@@ -184,7 +203,12 @@ export function Reports() {
                 </div>
 
                 {/* Card 5 - Data Analytics */}
-                <div className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition">
+                <div
+                  className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition"
+                  style={{
+                    background: "linear-gradient(to bottom, #FFFFFF, #F9FAFC)",
+                  }}
+                >
                   <div
                     className="w-10 h-10 rounded-md flex items-center justify-center"
                     style={{ backgroundColor: "#F9FAFC" }}
@@ -200,7 +224,12 @@ export function Reports() {
                 </div>
 
                 {/* Card 6 - Generate Code */}
-                <div className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition">
+                <div
+                  className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition"
+                  style={{
+                    background: "linear-gradient(to bottom, #FFFFFF, #F9FAFC)",
+                  }}
+                >
                   <div
                     className="w-10 h-10 rounded-md flex items-center justify-center"
                     style={{ backgroundColor: "#F9FAFC" }}

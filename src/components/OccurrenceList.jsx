@@ -51,17 +51,6 @@ export function OccurrenceList({
     return map[status] || "bg-gray-100 text-gray-600";
   };
 
-  const statusLabels = {
-    em_analise: "Em análise",
-    emergencial: "Emergencial",
-    aprovada: "Aprovada",
-    os_gerada: "O.S. gerada",
-    aguardando_execucao: "Aguardando execução",
-    pendente: "Pendente",
-    aceita: "Aceita",
-    verificada: "Verificada",
-  };
-
   const typeLabels = {
     BURACO_NA_RUA: "Buraco na rua",
     DRENAGEM: "Drenagem",
@@ -93,7 +82,7 @@ export function OccurrenceList({
 
     return (
       <span
-        className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold text-center whitespace-nowrap ${baseClass} ${borderClass}`}
+        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold break-words text-center ${baseClass} ${borderClass}`}
         onMouseEnter={() => isEmergencial && setHovering(true)}
         onMouseLeave={() => isEmergencial && setHovering(false)}
       >
