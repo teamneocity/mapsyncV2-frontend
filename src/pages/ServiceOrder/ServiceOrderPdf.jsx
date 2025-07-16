@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export function ServiceOrderPdf({ occurrence }) {
+export function ServiceOrderPdf({ occurrence, imageBase64 }) {
   const address = occurrence?.occurrence?.address;
   const photo = occurrence?.occurrence?.photos?.initial?.[0];
 
@@ -216,12 +216,7 @@ export function ServiceOrderPdf({ occurrence }) {
 
         {/* 4. Foto + localização */}
         <View style={styles.photoBox}>
-          {photo && (
-            <Image
-              src={`https://mapsync-media.s3.sa-east-1.amazonaws.com/${photo}`}
-              style={styles.photo}
-            />
-          )}
+          {imageBase64 && <Image src={imageBase64} style={styles.photo} />}
 
           <View style={styles.row3}>
             <Text style={styles.locationField}>

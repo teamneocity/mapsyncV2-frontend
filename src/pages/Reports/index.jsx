@@ -120,7 +120,7 @@ export function Reports() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Card 1 - Bairros */}
                 <div
-                  className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition"
+                  className="flex flex-col h-[164px] gap-2 border rounded-xl p-4 hover:shadow-md transition"
                   style={{
                     background: "linear-gradient(to bottom, #FFFFFF, #F9FAFC)",
                   }}
@@ -141,7 +141,7 @@ export function Reports() {
 
                 {/* Card 2 - Por Ocorrências */}
                 <div
-                  className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition"
+                  className="flex flex-col h-[164px] gap-2 border rounded-xl p-4 hover:shadow-md transition"
                   style={{
                     background: "linear-gradient(to bottom, #FFFFFF, #F9FAFC)",
                   }}
@@ -162,7 +162,7 @@ export function Reports() {
 
                 {/* Card 3 - Research */}
                 <div
-                  className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition"
+                  className="flex flex-col h-[164px] gap-2 border rounded-xl p-4 hover:shadow-md transition"
                   style={{
                     background: "linear-gradient(to bottom, #FFFFFF, #F9FAFC)",
                   }}
@@ -183,7 +183,7 @@ export function Reports() {
 
                 {/* Card 4 - Generate Article */}
                 <div
-                  className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition"
+                  className="flex flex-col h-[164px] gap-2 border rounded-xl p-4 hover:shadow-md transition"
                   style={{
                     background: "linear-gradient(to bottom, #FFFFFF, #F9FAFC)",
                   }}
@@ -204,7 +204,7 @@ export function Reports() {
 
                 {/* Card 5 - Data Analytics */}
                 <div
-                  className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition"
+                  className="flex flex-col h-[164px] gap-2 border rounded-xl p-4 hover:shadow-md transition"
                   style={{
                     background: "linear-gradient(to bottom, #FFFFFF, #F9FAFC)",
                   }}
@@ -225,7 +225,7 @@ export function Reports() {
 
                 {/* Card 6 - Generate Code */}
                 <div
-                  className="flex flex-col gap-2 border rounded-xl p-4 hover:shadow-md transition"
+                  className="flex flex-col h-[164px] gap-2 border rounded-xl p-4 hover:shadow-md transition"
                   style={{
                     background: "linear-gradient(to bottom, #FFFFFF, #F9FAFC)",
                   }}

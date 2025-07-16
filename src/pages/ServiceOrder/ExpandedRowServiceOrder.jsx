@@ -28,10 +28,34 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   const lng = parseFloat(occurrence.occurrence?.address?.longitude ?? 0);
 
   const handleOpenPdfInNewTab = async () => {
-    const blob = await pdf(
-      <ServiceOrderPdf occurrence={occurrence} />
+    let base64Image = null;
+
+    try {
+      const photoPath = occurrence.occurrence?.photos?.initial?.[0];
+
+      if (photoPath) {
+        const url = `https://mapsync-media.s3.sa-east-1.amazonaws.com/${photoPath}`;
+        const response = await fetch(url);
+
+        if (!response.ok) throw new Error("Erro ao buscar imagem");
+
+        const blob = await response.blob();
+        base64Image = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(blob);
+        });
+      }
+    } catch (err) {
+      console.warn("⚠️ Imagem não pôde ser carregada. Continuando sem imagem.");
+      base64Image = null;
+    }
+
+    const pdfBlob = await pdf(
+      <ServiceOrderPdf occurrence={occurrence} imageBase64={base64Image} />
     ).toBlob();
-    const url = URL.createObjectURL(blob);
+
+    const url = URL.createObjectURL(pdfBlob);
     window.open(url, "_blank");
   };
 
@@ -45,6 +69,16 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     link.download = `${occurrence.protocolNumber || "ordem-servico"}.pdf`;
     link.click();
     URL.revokeObjectURL(url);
+  };
+
+  const toBase64 = async (url) => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
   };
 
   return (
