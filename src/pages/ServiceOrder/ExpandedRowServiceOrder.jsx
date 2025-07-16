@@ -27,11 +27,18 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   const lat = parseFloat(occurrence.occurrence?.address?.latitude ?? 0);
   const lng = parseFloat(occurrence.occurrence?.address?.longitude ?? 0);
 
-  const handleGeneratePdf = async () => {
+  const handleOpenPdfInNewTab = async () => {
     const blob = await pdf(
       <ServiceOrderPdf occurrence={occurrence} />
     ).toBlob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank");
+  };
 
+  const handleDownloadPdf = async () => {
+    const blob = await pdf(
+      <ServiceOrderPdf occurrence={occurrence} />
+    ).toBlob();
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -122,7 +129,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
             </Button>
 
             <Button
-              onClick={handleGeneratePdf}
+              onClick={handleOpenPdfInNewTab}
               variant="ghost"
               className="flex flex-col items-center justify-center gap-1 h-[60px] hover:bg-[#DCDCDC] rounded-md"
             >
@@ -131,6 +138,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
             </Button>
 
             <Button
+              onClick={handleDownloadPdf}
               variant="ghost"
               className="flex flex-col items-center justify-center gap-1 h-[60px] hover:bg-[#DCDCDC] rounded-md"
             >
