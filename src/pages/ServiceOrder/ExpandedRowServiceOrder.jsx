@@ -9,6 +9,8 @@ import FilePdf from "@/assets/icons/filePdf.svg?react";
 import Vector from "@/assets/icons/vector.svg?react";
 import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
 import { MediaMapSection } from "@/components/MediaMapSection";
+import { PDFDownloadLink, pdf } from "@react-pdf/renderer";
+import { ServiceOrderPdf } from "./ServiceOrderPdf";
 
 export function ExpandedRowServiceOrder({ occurrence }) {
   const timeline = [
@@ -24,6 +26,19 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   const photoUrl = occurrence?.result?.photos?.[0]?.url;
   const lat = parseFloat(occurrence.occurrence?.address?.latitude ?? 0);
   const lng = parseFloat(occurrence.occurrence?.address?.longitude ?? 0);
+
+  const handleGeneratePdf = async () => {
+    const blob = await pdf(
+      <ServiceOrderPdf occurrence={occurrence} />
+    ).toBlob();
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${occurrence.protocolNumber || "ordem-servico"}.pdf`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-white p-4 rounded-lg shadow-sm text-sm items-stretch">
@@ -107,6 +122,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
             </Button>
 
             <Button
+              onClick={handleGeneratePdf}
               variant="ghost"
               className="flex flex-col items-center justify-center gap-1 h-[60px] hover:bg-[#DCDCDC] rounded-md"
             >
