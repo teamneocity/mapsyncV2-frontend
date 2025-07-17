@@ -12,6 +12,7 @@ import { TopHeader } from "@/components/topHeader";
 
 // Componentes locais
 import MapaDeCalor from "./MapaDeCalor";
+import GraficoDeOcorrencias from "./GraficoDeOcorrencias";
 
 // Assets
 import ImgUsers from "@/assets/icons/imgUsers.svg";
@@ -52,27 +53,31 @@ export function Reports() {
     setLastQuestion(message);
     setHasAsked(true); // mostra resposta
 
-    // Se a mensagem contém "mapa", mostra o mapa direto e não chama o chatbot
-    if (lowerMsg.includes("mapa")) {
-      setResponse("#MAPA"); // usamos isso como gatilho no JSX
-      setMessage("");
-      return;
-    }
-
-    // Caso contrário, chama o chatbot normalmente
     setIsLoading(true);
+
     try {
-      const res = await fetch("https://chatbot.mapsync.com.br/api/chat", {
+      const res = await fetch("https://chatbot.mapsync.com.br/chat/ask", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: message }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message }),
       });
 
       const data = await res.json();
-      setResponse(data?.resposta || "Sem resposta.");
+
+      setResponse({
+        type: data?.typeOfResponse || "texto",
+        text: data?.resposta || "Sem resposta.",
+        dados: data?.dados || [],
+      });
     } catch (error) {
       console.error("Erro ao enviar pergunta:", error);
-      setResponse("Erro ao consultar o chatbot.");
+      setResponse({
+        type: "texto",
+        text: "Erro ao consultar o chatbot.",
+        dados: [],
+      });
     } finally {
       setIsLoading(false);
       setMessage("");
@@ -251,21 +256,29 @@ export function Reports() {
                     {lastQuestion}
                   </div>
                 )}
-
                 {isLoading ? (
                   <div className="self-start max-w-[75%] bg-white text-sm text-gray-800 p-3 rounded-xl rounded-tl-sm shadow">
                     ...
                   </div>
-                ) : response === "#MAPA" ? (
+                ) : response?.type === "mapa_de_calor" ? (
                   <div className="w-full mt-4 rounded-xl overflow-hidden">
-                    {/* O mapa ocupa a largura inteira, fora do estilo de "mensagem" */}
-                    <MapaDeCalor />
+                    <p className="text-sm text-gray-500 mb-2">
+                      {response.text}
+                    </p>
+                    <MapaDeCalor dados={response.dados} />
                   </div>
-                ) : (
+                ) : response?.type === "grafico" ? (
+                  <div className="w-full mt-4 rounded-xl overflow-hidden">
+                    <p className="text-sm text-gray-500 mb-2">
+                      {response.text}
+                    </p>
+                    <GraficoDeOcorrencias dados={response.dados} />
+                  </div>
+                ) : response?.type === "texto" ? (
                   <div className="self-start max-w-[75%] bg-white text-sm text-gray-800 p-3 rounded-xl rounded-tl-sm shadow">
-                    {response}
+                    {response.text}
                   </div>
-                )}
+                ) : null}
               </div>
             )}
           </div>
