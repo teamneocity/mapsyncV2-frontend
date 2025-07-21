@@ -64,17 +64,24 @@ export function ExpandedRowServiceOrder({ occurrence }) {
 
     try {
       const photoPath = occurrence.occurrence?.photos?.initial?.[0];
+      console.log("📸 Caminho da imagem:", photoPath);
 
       if (photoPath) {
         const url = `https://mapsync-media.s3.sa-east-1.amazonaws.com/${photoPath}`;
+        console.log("🌐 URL da imagem:", url);
+
         const response = await fetch(url);
+        console.log("📡 Status da requisição:", response.status);
 
         if (!response.ok) throw new Error("Erro ao buscar imagem");
 
         const blob = await response.blob();
         base64Image = await new Promise((resolve) => {
           const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
+          reader.onloadend = () => {
+            console.log("✅ Base64 gerado:", reader.result?.slice(0, 100));
+            resolve(reader.result);
+          };
           reader.readAsDataURL(blob);
         });
       }
@@ -223,11 +230,26 @@ export function ExpandedRowServiceOrder({ occurrence }) {
 
       {/* Coluna 3 - Imagem e mapa com modal */}
       <MediaMapSection
-        photoUrl={
-          occurrence?.occurrence?.photos?.initial?.[0]
-            ? `https://mapsync-media.s3.sa-east-1.amazonaws.com/${occurrence.occurrence.photos.initial[0]}`
-            : null
-        }
+        photoUrls={[
+          {
+            label: "Inicial",
+            url:
+              occurrence?.occurrence?.photos?.initial?.[0] &&
+              `https://mapsync-media.s3.sa-east-1.amazonaws.com/${occurrence.occurrence.photos.initial[0]}`,
+          },
+          {
+            label: "Em andamento",
+            url:
+              occurrence?.occurrence?.photos?.progress?.[0] &&
+              `https://mapsync-media.s3.sa-east-1.amazonaws.com/${occurrence.occurrence.photos.progress[0]}`,
+          },
+          {
+            label: "Finalizada",
+            url:
+              occurrence?.occurrence?.photos?.final?.[0] &&
+              `https://mapsync-media.s3.sa-east-1.amazonaws.com/${occurrence.occurrence.photos.final[0]}`,
+          },
+        ]}
         lat={parseFloat(occurrence.occurrence?.address?.latitude ?? 0)}
         lng={parseFloat(occurrence.occurrence?.address?.longitude ?? 0)}
       />

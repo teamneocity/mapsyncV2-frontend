@@ -206,7 +206,18 @@ export function ExpandedRowT({
       </div>
 
       {/* Coluna 3 - Imagem e Mapa */}
-      <MediaMapSection photoUrl={photoUrl} lat={lat} lng={lng} />
+      <MediaMapSection
+        photoUrls={[
+          {
+            label: "Inicial",
+            url: occurrence.photos?.initial?.[0]
+              ? `https://mapsync-media.s3.sa-east-1.amazonaws.com/${occurrence.photos.initial[0]}`
+              : null,
+          },
+        ]}
+        lat={lat}
+        lng={lng}
+      />
     </div>
   );
 }

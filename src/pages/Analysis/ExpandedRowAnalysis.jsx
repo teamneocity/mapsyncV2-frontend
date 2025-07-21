@@ -121,7 +121,9 @@ export function ExpandedRowAnalysis({
             </select>
 
             <div className="mt-4">
-              <label className="font-semibold block mb-1 text-[#787891]">Classificação</label>
+              <label className="font-semibold block mb-1 text-[#787891]">
+                Classificação
+              </label>
               <select
                 value={isEmergencialSelection ? "true" : "false"}
                 onChange={(e) =>
@@ -165,11 +167,14 @@ export function ExpandedRowAnalysis({
 
       {/* Coluna 3 - Imagem e Mapa */}
       <MediaMapSection
-        photoUrl={
-          occurrence.photos?.initial?.[0]
-            ? `https://mapsync-media.s3.sa-east-1.amazonaws.com/${occurrence.photos.initial[0]}`
-            : null
-        }
+        photoUrls={[
+          {
+            label: "Inicial",
+            url: occurrence.photos?.initial?.[0]
+              ? `https://mapsync-media.s3.sa-east-1.amazonaws.com/${occurrence.photos.initial[0]}`
+              : null,
+          },
+        ]}
         lat={parseFloat(occurrence.address?.latitude || 0)}
         lng={parseFloat(occurrence.address?.longitude || 0)}
       />
