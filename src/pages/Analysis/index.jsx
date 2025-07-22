@@ -31,9 +31,6 @@ import { ExpandedRowAnalysis } from "./ExpandedRowAnalysis";
 //  Serviços
 import { api } from "@/services/api";
 
-
-
-
 export function Analysis() {
   const { user } = useAuth();
   const { isAnalyst } = usePermissions();
@@ -46,6 +43,7 @@ export function Analysis() {
   const [occurrences, setOccurrences] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [paginationPage, setPaginationPage] = useState(1);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRecent, setFilterRecent] = useState(null);
@@ -67,42 +65,41 @@ export function Analysis() {
     useState(false);
 
   useEffect(() => {
-    fetchOccurrences(currentPage);
-  }, [currentPage]);
-
+    fetchOccurrences(paginationPage);
+    setCurrentPage(paginationPage); // mantém o currentPage do Analysis atualizado
+  }, [paginationPage]);
   const fetchOccurrences = async (page = 1) => {
-  try {
-    const params = {
-      page,
-      limit: 6,
-      districtId: filterNeighborhood, // bairro
-      street: searchTerm,             // rua
-      type: filterType,
-      orderBy: filterRecent,          // 'recent' ou 'oldest'
-      startDate: filterDateRange.startDate
-        ? format(filterDateRange.startDate, "yyyy-MM-dd")
-        : undefined,
-      endDate: filterDateRange.endDate
-        ? format(filterDateRange.endDate, "yyyy-MM-dd")
-        : undefined,
-    };
+    try {
+      const params = {
+        page,
+        limit: 6,
+        districtId: filterNeighborhood, // bairro
+        street: searchTerm, // rua
+        type: filterType,
+        orderBy: filterRecent, // 'recent' ou 'oldest'
+        startDate: filterDateRange.startDate
+          ? format(filterDateRange.startDate, "yyyy-MM-dd")
+          : undefined,
+        endDate: filterDateRange.endDate
+          ? format(filterDateRange.endDate, "yyyy-MM-dd")
+          : undefined,
+      };
 
-    const res = await api.get("/occurrences/in-analysis", { params });
-    const allOccurrences = res.data.occurrences || [];
+      const res = await api.get("/occurrences/in-analysis", { params });
+      const allOccurrences = res.data.occurrences || [];
 
-    setOccurrences(allOccurrences);
-    setCurrentPage(res.data.currentPage || 1);
-    setTotalPages(res.data.totalPages || 1);
-  } catch (error) {
-    console.error("❌ Erro ao buscar ocorrências:", error);
-    toast({
-      variant: "destructive",
-      title: "Erro ao buscar ocorrências",
-      description: error.message,
-    });
-  }
-};
-
+      setOccurrences(allOccurrences);
+      setCurrentPage(res.data.currentPage || 1);
+      setTotalPages(res.data.totalPages || 1);
+    } catch (error) {
+      console.error("❌ Erro ao buscar ocorrências:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao buscar ocorrências",
+        description: error.message,
+      });
+    }
+  };
 
   const handleForwardOccurrence = async (occurrenceId, isEmergencial) => {
     try {
@@ -184,7 +181,9 @@ export function Analysis() {
             setFilterNeighborhood(neighborhood)
           }
           onFilterDateRange={(range) => setFilterDateRange(range)}
-          handleApplyFilters={() => fetchOccurrences(1)}
+          handleApplyFilters={() => {
+            setPaginationPage(1);
+          }}
         />
       </div>
 
@@ -209,11 +208,31 @@ export function Analysis() {
 
       <footer className="bg-[#EBEBEB] p-4 mt-auto">
         <div className="max-w-full mx-auto">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
+          <div className="flex items-center justify-between mt-4 px-4">
+            <span className="text-sm text-gray-500">
+              Página {paginationPage}
+            </span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setPaginationPage((prev) => Math.max(prev - 1, 1))
+                }
+                disabled={paginationPage === 1}
+              >
+                Anterior
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPaginationPage((prev) => prev + 1)}
+                disabled={occurrences.length < 6}
+              >
+                Próxima
+              </Button>
+            </div>
+          </div>
         </div>
       </footer>
 
