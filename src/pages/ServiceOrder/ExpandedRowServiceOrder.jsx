@@ -11,6 +11,9 @@ import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
 import { MediaMapSection } from "@/components/MediaMapSection";
 import { PDFDownloadLink, pdf } from "@react-pdf/renderer";
 import { ServiceOrderPdf } from "./ServiceOrderPdf";
+import { useToast } from "@/hooks/use-toast";
+
+import { api } from "@/services/api";
 
 export function ExpandedRowServiceOrder({ occurrence }) {
   const timeline = [
@@ -22,11 +25,17 @@ export function ExpandedRowServiceOrder({ occurrence }) {
 
   const [photoOpen, setPhotoOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
+  const { toast } = useToast();
 
   const photoUrl = occurrence?.result?.photos?.[0]?.url;
   const lat = parseFloat(occurrence.occurrence?.address?.latitude ?? 0);
   const lng = parseFloat(occurrence.occurrence?.address?.longitude ?? 0);
 
+  const [isModalOpen, setIsModalOpen] = useState(false); // modal iniciar
+  const [isFinalizeModalOpen, setIsFinalizeModalOpen] = useState(false); // modal finalizar
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
+
+  // Abre o pdf
   const handleOpenPdfInNewTab = async () => {
     let base64Image = null;
 
@@ -59,6 +68,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     window.open(url, "_blank");
   };
 
+  //Baixa o pdf
   const handleDownloadPdf = async () => {
     let base64Image = null;
 
@@ -102,6 +112,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     URL.revokeObjectURL(url);
   };
 
+  // Converte a imagem
   const toBase64 = async (url) => {
     const response = await fetch(url);
     const blob = await response.blob();
@@ -110,6 +121,70 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       reader.onloadend = () => resolve(reader.result);
       reader.readAsDataURL(blob);
     });
+  };
+
+  // Inicia a ocorrencia 
+  const handleStartExecution = async () => {
+    const occurrenceId = occurrence?.occurrence?.id;
+
+    if (!occurrenceId || !selectedPhoto) {
+      alert("ID da ocorrência ou imagem ausente.");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("occurrenceId", occurrenceId);
+      formData.append("photos", selectedPhoto); // ← agora vai sua imagem selecionada
+
+      await api.post("/service-orders/start-execution", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      toast({ title: "Execução iniciada com sucesso!" });
+      setSelectedPhoto(null);
+    } catch (err) {
+      console.error("Erro ao iniciar execução:", err);
+      toast({
+        variant: "destructive",
+        title: "Erro ao iniciar execução",
+        description: err.message || "Falha ao iniciar execução da OS.",
+      });
+    }
+  };
+
+  // Finaliza a ocorrencia 
+  const handleFinalizeExecution = async () => {
+    const serviceOrderId = occurrence?.id; // ou occurrence.serviceOrderId, dependendo da estrutura
+
+    if (!serviceOrderId || !selectedPhoto) {
+      alert("ID da OS ou imagem ausente.");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("serviceOrderId", serviceOrderId);
+      formData.append("photos", selectedPhoto);
+
+      await api.post("/service-orders/finalize", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      toast({ title: "Execução finalizada com sucesso!" });
+      setSelectedPhoto(null);
+    } catch (err) {
+      console.error("Erro ao finalizar execução:", err);
+      toast({
+        variant: "destructive",
+        title: "Erro ao finalizar execução",
+        description: err.message || "Falha ao finalizar execução da OS.",
+      });
+    }
   };
 
   return (
@@ -223,9 +298,27 @@ export function ExpandedRowServiceOrder({ occurrence }) {
           <Timeline timeline={timeline} />
         </div>
 
-        <Button className="w-full h-[64px] bg-green-100 hover:bg-green-200 text-green-700 mt-6">
-          Finalizar
-        </Button>
+        {/* BOTÃO DINÂMICO */}
+        {!occurrence.startedAt ? (
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            className="w-full h-[64px] bg-[#D1F0FA] hover:bg-blue-300 text-[#116B97] mt-6"
+          >
+            Iniciar
+          </Button>
+        ) : (
+          <Button
+            onClick={() => setIsFinalizeModalOpen(true)}
+            disabled={!!occurrence.finishedAt}
+            className={`w-full h-[64px] mt-6 ${
+              occurrence.finishedAt
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-[#C9F2E9] hover:bg-green-300 text-[#1C7551]"
+            }`}
+          >
+            Finalizar
+          </Button>
+        )}
       </div>
 
       {/* Coluna 3 - Imagem e mapa com modal */}
@@ -253,6 +346,94 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         lat={parseFloat(occurrence.occurrence?.address?.latitude ?? 0)}
         lng={parseFloat(occurrence.occurrence?.address?.longitude ?? 0)}
       />
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
+          <div className="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-lg space-y-5 text-center">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Anexar foto da execução
+            </h2>
+
+            <input
+              type="file"
+              accept="image/png, image/jpeg"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                setSelectedPhoto(file);
+              }}
+              className="w-full rounded-xl border border-gray-300 p-3 text-sm text-gray-800 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white"
+            />
+
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={async () => {
+                  await handleStartExecution();
+                  setIsModalOpen(false);
+                }}
+                disabled={!selectedPhoto}
+                className={`flex items-center justify-center gap-2 w-full rounded-2xl ${
+                  selectedPhoto ? "bg-black hover:bg-gray-900" : "bg-gray-300"
+                } text-white py-3 font-medium text-sm transition`}
+              >
+                Confirmar e Enviar
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setSelectedPhoto(null);
+                }}
+                className="text-sm text-gray-500 underline hover:text-gray-700 transition"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {isFinalizeModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
+          <div className="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-lg space-y-5 text-center">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Anexar foto final
+            </h2>
+
+            <input
+              type="file"
+              accept="image/png, image/jpeg"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                setSelectedPhoto(file);
+              }}
+              className="w-full rounded-xl border border-gray-300 p-3 text-sm text-gray-800 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white"
+            />
+
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={async () => {
+                  await handleFinalizeExecution();
+                  setIsFinalizeModalOpen(false);
+                }}
+                disabled={!selectedPhoto}
+                className={`flex items-center justify-center gap-2 w-full rounded-2xl ${
+                  selectedPhoto ? "bg-black hover:bg-gray-900" : "bg-gray-300"
+                } text-white py-3 font-medium text-sm transition`}
+              >
+                Confirmar Finalização
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsFinalizeModalOpen(false);
+                  setSelectedPhoto(null);
+                }}
+                className="text-sm text-gray-500 underline hover:text-gray-700 transition"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

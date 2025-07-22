@@ -33,15 +33,16 @@ export function InspectionCard({ serviceorder }) {
   const currentPhoto = photoUrls[photoIndex];
 
   const statusColors = {
-    aceita: "bg-[#EFFBFF] text-[#33CFFF]",
+    em_execucao: "bg-[#FFF6E0] text-[#FFBD4C]",
     aguardando_execucao: "bg-[#E5E5E5] text-[#777]",
     finalizada: "bg-[#DDF2EE] text-[#40C4AA]",
+    aguardando_execucao: "bg-[#EFFBFF] text-[#33CFFF]"
   };
 
   const statusLabel = {
     os_gerada: "Solicitado",
-    aguardando_execucao: "Aguardando Execução",
-    aceita: "Iniciada",
+    aguardando_execucao: "Solicitada",
+    em_execucao: "Andamento",
     finalizada: "Finalizada",
   };
 

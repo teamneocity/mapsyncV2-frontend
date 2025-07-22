@@ -111,7 +111,9 @@ export function ExpandedRowT({
       {/* Coluna 2 - Geração de OS */}
       <div className="flex flex-col justify-between space-y-4 h-full">
         <div className="space-y-2 h-full">
-          {occurrence.status !== "os_gerada" ? (
+          {occurrence.status !== "os_gerada" &&
+          occurrence.status !== "em_execucao" &&
+          occurrence.status !== "finalizada" ? (
             <>
               <h3 className="font-semibold text-[#787891] text-base mb-2 pb-1">
                 Programar e gerar O.S
@@ -194,7 +196,7 @@ export function ExpandedRowT({
           )}
         </div>
 
-        {occurrence.status !== "os_gerada" && (
+        {occurrence.status !== "os_gerada" && occurrence.status !=="em_execucao" && occurrence.status !== "finalizada" && (
           <Button
             className="w-full h-12 bg-[#C9F2E9] hover:bg-green-200 text-[#1C7551] items-center justify-center"
             onClick={() => onGenerateOS(occurrence.id)}

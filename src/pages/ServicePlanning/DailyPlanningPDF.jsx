@@ -100,8 +100,8 @@ const getStatusStyle = (status) => {
     os_gerada: { backgroundColor: "#f0ddee", color: "#733B73" },
     aguardando_execucao: { backgroundColor: "#FFE4B5", color: "#CD853F" },
     pendente: { backgroundColor: "#E8F7FF", color: "#33CFFF" },
-    aceita: { backgroundColor: "#FFF4D6", color: "#986F00" },
-    verificada: { backgroundColor: "#DDF2EE", color: "#40C4AA" },
+    em_execucao: { backgroundColor: "#FFF4D6", color: "#986F00" },
+    finalizada: { backgroundColor: "#DDF2EE", color: "#40C4AA" },
   };
   return map[status] || { backgroundColor: "#f0f0f0", color: "#666" };
 };
