@@ -22,11 +22,14 @@ export function GoogleMaps({ position, label }) {
           <Marker
             position={position}
             options={{
-              label: {
-                text: label,
-                fontSize: "14px",
-                color: "#000",
-              },
+              label:
+                typeof label === "string"
+                  ? {
+                      text: label,
+                      fontSize: "14px",
+                      color: "#000",
+                    }
+                  : undefined,
             }}
           />
         </GoogleMap>

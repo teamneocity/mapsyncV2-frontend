@@ -5,16 +5,41 @@ import { Button } from "@/components/ui/button";
 import { GoogleMaps } from "@/components/googleMaps";
 import { FileText, FileDown, Share2, FileCheck2 } from "lucide-react";
 import { Timeline } from "./Timeline";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import CloudShare from "@/assets/icons/cloudShare.svg?react";
 import FilePdf from "@/assets/icons/filePdf.svg?react";
 import Vector from "@/assets/icons/vector.svg?react";
 import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
 
+import { api } from "@/services/api";
+import { useToast } from "@/hooks/use-toast";
+
+import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { ThumbsDown } from "lucide-react";
+import { useAuth } from "@/hooks/auth";
+
 export function ExpandedRowA({ occurrence }) {
+  const { user } = useAuth();
   const [mapOpen, setMapOpen] = useState(false);
   const [photoOpen, setPhotoOpen] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
+
+  const { toast } = useToast();
+
+  const [refuseOpen, setRefuseOpen] = useState(false);
+  const [reason, setReason] = useState("");
+
+  const [finalizeOpen, setFinalizeOpen] = useState(false);
+  const [finalData, setFinalData] = useState({
+    length: "",
+    width: "",
+    distance: "",
+    notes: "",
+    photoUrl: "",
+    videoUrl: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   const timeline = [
     { label: "Solicitação", date: occurrence.requestedAt },
@@ -24,6 +49,89 @@ export function ExpandedRowA({ occurrence }) {
 
   const photoUrl = occurrence?.result?.photos?.[0]?.url;
   const videoUrl = occurrence?.result?.videos?.[0]?.url;
+
+  //aceita as inspeções
+  async function handleAcceptInspection(id) {
+    try {
+      await api.patch("/aerial-inspections/accept", { inspectionId: id });
+      toast({ title: "Inspeção aceita com sucesso!" });
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (err) {
+      console.error("Erro ao aceitar inspeção:", err);
+      toast({
+        variant: "destructive",
+        title: "Erro ao aceitar inspeção",
+        description: err?.response?.data?.message || "Erro desconhecido.",
+      });
+    }
+  }
+
+  // recusa solicitação
+  async function handleRefuseInspection(id) {
+    try {
+      await api.patch("/aerial-inspections/refuse", {
+        inspectionId: id,
+        reason,
+      });
+      toast({ title: "Inspeção recusada com sucesso!" });
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (err) {
+      console.error("Erro ao recusar inspeção:", err);
+      toast({
+        variant: "destructive",
+        title: "Erro ao recusar inspeção",
+        description: err?.response?.data?.message || "Erro desconhecido.",
+      });
+    }
+  }
+
+  //finaliza
+  async function handleFinalizeInspection(id) {
+  if (isSubmitting) return; // evita envio duplo
+
+  try {
+    setIsSubmitting(true);
+
+    const payload = {
+      inspectionId: id,
+      length: parseFloat(finalData.length),
+      width: parseFloat(finalData.width),
+      distance: parseFloat(finalData.distance),
+      notes: finalData.notes,
+      photos: [
+        {
+          url: finalData.photoUrl.trim(),
+          uploadedAt: new Date().toISOString(),
+          uploadedById: user.id,
+        },
+      ],
+      videos: [
+        {
+          url: finalData.videoUrl.trim(),
+          uploadedAt: new Date().toISOString(),
+          uploadedById: user.id,
+        },
+      ],
+    };
+
+    await api.post("/aerial-inspections/result", payload);
+    toast({ title: "Inspeção finalizada com sucesso!" });
+    setTimeout(() => window.location.reload(), 1000);
+  } catch (err) {
+    console.error("Erro ao finalizar inspeção:", err);
+    toast({
+      variant: "destructive",
+      title: "Erro ao finalizar inspeção",
+      description: err?.response?.data?.message || "Erro desconhecido.",
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+}
+
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-white p-4 rounded-lg shadow-sm text-sm items-stretch">
@@ -94,6 +202,55 @@ export function ExpandedRowA({ occurrence }) {
             </div>
           )}
         </div>
+        {!occurrence.acceptedAt && (
+          <>
+            <Button
+              className="w-full h-[64px] bg-[#FFE8E8] hover:bg-red-200 text-[#9D0000] mt-4"
+              onClick={() => setRefuseOpen(true)}
+            >
+              Cancelar
+              <ThumbsDown className="ml-2 h-4 w-4" />
+            </Button>
+
+            {refuseOpen && (
+              <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
+                <div className="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-lg space-y-5 text-center">
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Motivo da recusa
+                  </h2>
+
+                  <textarea
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    placeholder="Descreva aqui..."
+                    className="w-full rounded-xl border border-gray-300 p-3 text-sm text-gray-800 resize-none outline-none"
+                    rows={4}
+                  />
+
+                  <div className="flex flex-col gap-3">
+                    <button
+                      onClick={() => handleRefuseInspection(occurrence.id)}
+                      className="flex items-center justify-center gap-2 w-full rounded-2xl bg-black text-white py-3 font-medium text-sm hover:bg-gray-900 transition"
+                    >
+                      <span className="text-lg">↩</span>
+                      Confirmar recusa
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setRefuseOpen(false);
+                        setReason("");
+                      }}
+                      className="text-sm text-gray-500 underline hover:text-gray-700 transition"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* Coluna 2 - Ações e timeline */}
@@ -136,6 +293,139 @@ export function ExpandedRowA({ occurrence }) {
 
           <Timeline timeline={timeline} />
         </div>
+        {!occurrence.acceptedAt ? (
+          <Button
+            onClick={() => handleAcceptInspection(occurrence.id)}
+            className="w-full h-[64px] bg-[#A6E0FF] hover:bg-blue-300 text-[#00679D]"
+          >
+            Aceitar 
+          </Button>
+        ) : (
+          <>
+            <Button
+              onClick={() => setFinalizeOpen(true)}
+              disabled={!!occurrence.verifiedAt}
+              className="w-full h-[64px] bg-[#C9F2E9] hover:bg-green-300 text-[#1C7551]"
+            >
+              Finalizar 
+            </Button>
+
+            {finalizeOpen && (
+              <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
+                <div className="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-lg space-y-5 text-center">
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Finalizar inspeção aérea
+                  </h2>
+
+                  <input
+                    type="number"
+                    placeholder="Comprimento (m)"
+                    value={finalData.length}
+                    onChange={(e) =>
+                      setFinalData((prev) => ({
+                        ...prev,
+                        length: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-xl border border-gray-300 p-3 text-sm text-gray-800 outline-none"
+                  />
+
+                  <input
+                    type="number"
+                    placeholder="Largura (m)"
+                    value={finalData.width}
+                    onChange={(e) =>
+                      setFinalData((prev) => ({
+                        ...prev,
+                        width: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-xl border border-gray-300 p-3 text-sm text-gray-800 outline-none"
+                  />
+
+                  <input
+                    type="number"
+                    placeholder="Distância (m)"
+                    value={finalData.distance}
+                    onChange={(e) =>
+                      setFinalData((prev) => ({
+                        ...prev,
+                        distance: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-xl border border-gray-300 p-3 text-sm text-gray-800 outline-none"
+                  />
+
+                  <textarea
+                    placeholder="Notas da verificação"
+                    value={finalData.notes}
+                    onChange={(e) =>
+                      setFinalData((prev) => ({
+                        ...prev,
+                        notes: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-xl border border-gray-300 p-3 text-sm text-gray-800 resize-none outline-none"
+                    rows={3}
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="URL da foto"
+                    value={finalData.photoUrl}
+                    onChange={(e) =>
+                      setFinalData((prev) => ({
+                        ...prev,
+                        photoUrl: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-xl border border-gray-300 p-3 text-sm text-gray-800 outline-none"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="URL do vídeo"
+                    value={finalData.videoUrl}
+                    onChange={(e) =>
+                      setFinalData((prev) => ({
+                        ...prev,
+                        videoUrl: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-xl border border-gray-300 p-3 text-sm text-gray-800 outline-none"
+                  />
+
+                  <div className="flex flex-col gap-3 pt-2">
+                    <button
+                      onClick={() => handleFinalizeInspection(occurrence.id)}
+                      className="flex items-center justify-center gap-2 w-full rounded-2xl bg-black text-white py-3 font-medium text-sm hover:bg-gray-900 transition"
+                    >
+                      <span className="text-lg">✔</span>
+                      Confirmar finalização
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setFinalizeOpen(false);
+                        setFinalData({
+                          length: "",
+                          width: "",
+                          distance: "",
+                          notes: "",
+                          photoUrl: "",
+                          videoUrl: "",
+                        });
+                      }}
+                      className="text-sm text-gray-500 underline hover:text-gray-700 transition"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* Coluna 3 - Mídia e mapa */}
@@ -209,8 +499,8 @@ export function ExpandedRowA({ occurrence }) {
           <DialogContent className="max-w-5xl w-full h-[80vh]">
             <GoogleMaps
               position={{
-                lat: parseFloat(occurrence.address?.latitude ?? 0),
-                lng: parseFloat(occurrence.address?.longitude ?? 0),
+                lat: parseFloat(occurrence.address?.latitude) || 0,
+                lng: parseFloat(occurrence.address?.longitude) || 0,
               }}
               fullHeight
             />
