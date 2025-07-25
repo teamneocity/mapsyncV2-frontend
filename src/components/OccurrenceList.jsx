@@ -194,7 +194,7 @@ export function OccurrenceList({
                         <span className="text-xs font-medium text-gray-400 block">
                           Bairro
                         </span>
-                        {occ?.address?.neighborhoodName || "—"}
+                        {occ?.address?.neighborhoodName || occ?.address?.neighborhood || "—"}
                       </div>
                       <div>
                         <span className="text-xs font-medium text-gray-400 block">
@@ -205,7 +205,7 @@ export function OccurrenceList({
                             {getInicials(occ?.pilot?.name || "NA")}
                           </span>
                           <span className="text-xs" title={occ?.author?.name}>
-                            {occ?.author?.name || "—"}
+                            {occ?.author?.name || occ?.requester?.name || "—"}
                           </span>
                         </div>
                       </div>

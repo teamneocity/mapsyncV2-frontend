@@ -88,10 +88,10 @@ export function Filters({
       { value: "aprovada", label: "Aprovadas" },
     ],
     aerea: [
-      {value: "aceita", label: "Aceita" },
-      {value: "pendente", label: "Pendente"},
-      {value: "verificada", label: "Verificada"}
-    ]
+      { value: "aceita", label: "Aceita" },
+      { value: "pendente", label: "Pendente" },
+      { value: "verificada", label: "Verificada" },
+    ],
   };
 
   const currentStatusList = statusOptions[contextType] || statusOptions.padrao;
@@ -110,12 +110,12 @@ export function Filters({
         </div>
 
         {/* Rua + Bairro */}
-        <div className="flex gap-2 flex-1 md:min-w-[320px]">
+        <div className="flex flex-col sm:flex-row gap-2 flex-1 md:min-w-[320px]">
           <Input
             placeholder="Pesquise pela rua ou avenida"
             onChange={(e) => onSearch(e.target.value)}
             hideRing
-            className="text-sm h-12 flex-1 rounded-xl border-none shadow-sm placeholder:text-[#4B4B62] truncate"
+            className="text-sm h-12 w-full sm:flex-1 rounded-xl border-none shadow-sm placeholder:text-[#4B4B62] truncate"
           />
 
           <DropdownMenu>
@@ -178,9 +178,10 @@ export function Filters({
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="w-full sm:w-[220px] gap-2 h-12 px-3 justify-between rounded-xl border-none shadow-sm text-[#4B4B62] truncate"
+              className="w-full sm:min-w-[200px] sm:max-w-[300px] gap-2 h-12 px-3 justify-between rounded-xl border-none shadow-sm text-[#4B4B62] truncate"
             >
               <span className="truncate">Tipo de ocorrência</span>
+
               <Stroke className="ml-1 h-4 w-4 shrink-0" />
             </Button>
           </DropdownMenuTrigger>
