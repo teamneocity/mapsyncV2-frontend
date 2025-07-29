@@ -64,7 +64,7 @@ export function Dashboard() {
             key={user.id}
             className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-white`}
             style={{
-              zIndex: 10 - index,
+              zIndex: 4 - index,
               backgroundColor: [
                 "#B5E0A2",
                 "#D1C4E9",
@@ -99,7 +99,7 @@ export function Dashboard() {
                 key={chief.id}
                 className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-white`}
                 style={{
-                  zIndex: 10 - index,
+                  zIndex: 4 - index,
                   backgroundColor: [
                     "#B5E0A2",
                     "#D1C4E9",
@@ -158,28 +158,6 @@ export function Dashboard() {
             <div className="flex-1">
               <SectorBox />
             </div>
-          </div>
-        </div>
-
-        {/* Cards de resumo */}
-        <div className="px-4 pb-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-            <StatBox
-              title="Ocorrências"
-              value={42}
-              percentage={12}
-              icon={Bars}
-            />
-            <StatBox title="Resolvidos" value={30} percentage={8} icon={Bars} />
-            <StatBox title="Em aberto" value={5} percentage={-3} icon={Bars} />
-            <StatBox title="Cancelados" value={2} percentage={0} icon={Bars} />
-            <StatBox title="Atrasados" value={3} percentage={1} icon={Bars} />
-            <StatBox
-              title="Em andamento"
-              value={12}
-              percentage={6}
-              icon={Bars}
-            />
           </div>
         </div>
 

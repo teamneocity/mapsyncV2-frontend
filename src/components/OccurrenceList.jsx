@@ -55,9 +55,9 @@ export function OccurrenceList({
   };
 
   const typeLabels = {
-    BURACO_NA_RUA: "Buraco na rua",
-    DRENAGEM: "Drenagem",
-    TERRAPLANAGEM: "Terraplanagem",
+    TAPA_BURACO: "Buraco",
+    MEIO_FIO: "Meio fio",
+    DESOBSTRUCAO: "Desobstrução",
     LIMPA_FOSSA: "Limpa fossa",
   };
 
