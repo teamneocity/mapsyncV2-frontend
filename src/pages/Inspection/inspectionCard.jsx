@@ -3,6 +3,11 @@ import { format } from "date-fns";
 import { Clock } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 
+// Importando os ícones do Figma
+import Start from "@/assets/timeline/Start.svg?react";
+import During from "@/assets/timeline/During.svg?react";
+import End from "@/assets/timeline/End.svg?react";
+
 export function InspectionCard({ serviceorder }) {
   const occurrence = serviceorder.occurrence;
 
@@ -34,9 +39,8 @@ export function InspectionCard({ serviceorder }) {
 
   const statusColors = {
     em_execucao: "bg-[#FFF6E0] text-[#FFBD4C]",
-    aguardando_execucao: "bg-[#E5E5E5] text-[#777]",
+    aguardando_execucao: "bg-[#EFFBFF] text-[#33CFFF]",
     finalizada: "bg-[#DDF2EE] text-[#40C4AA]",
-    aguardando_execucao: "bg-[#EFFBFF] text-[#33CFFF]"
   };
 
   const statusLabel = {
@@ -50,11 +54,6 @@ export function InspectionCard({ serviceorder }) {
   const statusClass =
     statusColors[serviceorder.status] || "bg-gray-200 text-gray-600";
 
-  const hasImage = occurrence.photos?.initial?.[0];
-  const imageUrl = hasImage
-    ? `https://mapsync-media.s3.sa-east-1.amazonaws.com/${hasImage}`
-    : "https://via.placeholder.com/500x200.png?text=Sem+imagem";
-
   const timeline = {
     requested: occurrence.createdAt,
     accepted: serviceorder.createdAt,
@@ -62,8 +61,19 @@ export function InspectionCard({ serviceorder }) {
     finished: serviceorder.finishedAt,
   };
 
+  const timelineLabels = {
+    requested: "Solicitação",
+    accepted: "Aceito",
+    started: "Iniciado",
+    finished: "Finalizado",
+  };
+
+  const timelineIcons = [Start, During, During, End];
+  const timelineEntries = Object.entries(timeline);
+
   return (
     <div className="bg-[#F7F7F7] rounded-[12px] shadow-sm overflow-hidden flex-shrink-0 w-full max-w-[525px] border border-gray-200 min-h-[650px] sm:min-h-[auto]">
+      {/* Imagem principal */}
       <div className="relative">
         <Dialog>
           <DialogTrigger asChild>
@@ -129,6 +139,7 @@ export function InspectionCard({ serviceorder }) {
         </Dialog>
       </div>
 
+      {/* Status */}
       <div className="flex justify-end p-2 border-b border-dotted border-gray-300 pb-4 mb-4">
         <span
           className={`text-xs font-semibold px-2 py-1 rounded-full ${statusClass}`}
@@ -137,8 +148,10 @@ export function InspectionCard({ serviceorder }) {
         </span>
       </div>
 
+      {/* Conteúdo */}
       <div className="px-4 pb-4 text-sm text-[#787891] grid grid-cols-12 gap-2 min-h-[400px] sm:min-h-[auto]">
-        <div className="col-span-7 space-y-1">
+        {/* Coluna 1 */}
+        <div className="col-span-6 space-y-1">
           <p>
             <strong>O.S.:</strong> {serviceorder.protocolNumber}
           </p>
@@ -172,37 +185,49 @@ export function InspectionCard({ serviceorder }) {
             <strong>Latitude:</strong> {occurrence.address?.latitude}
           </p>
           <p>
-            <strong>Ocorrência:</strong> {occurrence.type}
+            <strong>Ocorrência:</strong> {occurrence.sector.name}
           </p>
         </div>
 
-        <div className="col-span-5">
-          {Object.entries(timeline).map(([key, date], i, arr) => (
-            <div className="flex items-start gap-2 mb-3" key={i}>
-              <div className="flex flex-col items-center">
-                <div className="h-4 w-4 bg-[#33C083] rounded-full border border-white" />
-                {arr[i + 1]?.[1] && (
-                  <div className="h-8 border-l-2 border-dotted border-green-300" />
-                )}
-              </div>
-              <div>
-                <p className="text-xs font-semibold capitalize">
-                  {
-                    {
-                      requested: "Solicitação",
-                      accepted: "Aceito",
-                      started: "Iniciado",
-                      finished: "Finalizado",
-                    }[key]
-                  }
-                </p>
-                <p className="text-xs text-gray-600">
-                  <Clock className="inline-block h-3 w-3 mr-1" />
-                  {date ? format(new Date(date), "dd/MM/yy, HH:mm") : "—"}
-                </p>
-              </div>
-            </div>
-          ))}
+        {/* Coluna 2 (Timeline com ícones SVG) */}
+        {/* Coluna 2 (Timeline com ícones SVG) */}
+        <div className="col-span-6 relative z-0">
+          <div className="relative">
+            <ul className="space-y-6 mt-1 pl-6">
+              {timelineEntries.map(([key, date], index) => {
+                // Ícone por posição
+                let Icon;
+                if (index === 0) Icon = Start;
+                else if (index === timelineEntries.length - 1) Icon = End;
+                else Icon = During;
+
+                const showLine = index < timelineEntries.length - 1;
+
+                return (
+                  <li key={index} className="relative flex items-start gap-3">
+                    {/* Ícone + linha */}
+                    <div className="absolute -left-6 top-1 flex flex-col items-center z-10">
+                      <Icon className="w-5 h-5" />
+                      {showLine && (
+                        <div className="h-8 border-l-2 border-dotted border-[#33C083]" />
+                      )}
+                    </div>
+
+                    {/* Texto */}
+                    <div className="ml-1 text-sm text-gray-700">
+                      <p className="text-xs font-semibold capitalize">
+                        {timelineLabels[key]}
+                      </p>
+                      <p className="text-xs text-gray-600 flex items-center gap-1">
+                        <Clock className="inline-block h-3 w-3" />
+                        {date ? format(new Date(date), "dd/MM/yy, HH:mm") : "—"}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         </div>
       </div>
     </div>

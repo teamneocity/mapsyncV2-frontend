@@ -1,20 +1,30 @@
 import { format } from "date-fns";
 import { Clock } from "lucide-react";
 
+import Start from "@/assets/timeline/Start.svg?react";
+import During from "@/assets/timeline/During.svg?react";
+import End from "@/assets/timeline/End.svg?react";
+
 export function Timeline({ timeline }) {
   return (
-    <div className="relative mt-4 pl-6">
-      <ul className="space-y-6 relative z-10">
+    <div className="relative mt-4 pl-6 z-0">
+      <ul className="space-y-6">
         {timeline.map((step, index) => {
-          const hasNextDate = timeline[index + 1]?.date;
+          // Escolhe o ícone com base na posição fixa
+          let Icon;
+          if (index === 0) Icon = Start;
+          else if (index === timeline.length - 1) Icon = End;
+          else Icon = During;
+
+          const showLine = index < timeline.length - 1;
 
           return (
             <li key={index} className="relative flex items-start gap-3">
-              {/* Bolinha e linha condicional */}
+              {/* Ícone + linha vertical */}
               <div className="absolute -left-6 top-1 flex flex-col items-center z-10">
-                <div className="w-4 h-4 bg-[#33C083] rounded-full border border-white" />
-                {hasNextDate && (
-                  <div className="h-8 border-l-2 border-dotted border-green-300" />
+                <Icon className="w-6 h-6" />
+                {showLine && (
+                  <div className="h-8 border-l-2 border-dotted border-[#33C083]" />
                 )}
               </div>
 
