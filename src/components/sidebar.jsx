@@ -68,14 +68,14 @@ export function Sidebar() {
                 </>
               )}
 
-              {(canSeeAll || isChief) && (
+              {/* {(canSeeAll || isChief) && (
                 <Link
                   to="/sectorAdmin"
                   className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                 >
                   <PeopleLine className="w-5 h-5 shrink-0" /> Setor
                 </Link>
-              )}
+              )} */}
               {(canSeeAll || isAnalyst || isChief) && (
                 <Link
                   to="/analysis"
@@ -151,7 +151,7 @@ export function Sidebar() {
                 <SettingsWindow className="w-5 h-5 shrink-0" /> Configurações
               </Link>
 
-              {(isAdmin || isChief) && (
+              {/* {(isAdmin || isChief) && (
                 <>
                   <Link
                     to="/userManagement"
@@ -160,7 +160,7 @@ export function Sidebar() {
                     <IconUsers className="w-5 h-5 shrink-0" /> Usuários
                   </Link>
                 </>
-              )}
+              )} */}
             </div>
           </div>
 
@@ -265,14 +265,14 @@ export function Sidebar() {
                       <HouseCheckIcon className="w-5 h-5 shrink-0" /> Dashboard
                     </Link>
                   )}
-                  {(canSeeAll || isChief) && (
+                  {/* {(canSeeAll || isChief) && (
                     <Link
                       to="/sectorAdmin"
                       className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                     >
                       <PeopleLine className="w-5 h-5 shrink-0" /> Setor
                     </Link>
-                  )}
+                  )} */}
                   {(isAnalyst || canSeeAll || isChief) && (
                     <Link
                       to="/analysis"
@@ -337,7 +337,7 @@ export function Sidebar() {
                     <SettingsWindow className="w-5 h-5 shrink-0" />{" "}
                     Configurações
                   </Link>
-                  {(canSeeAll || isChief) && (
+                  {/* {(canSeeAll || isChief) && (
                     <>
                       <Link
                         to="/userManagement"
@@ -346,7 +346,7 @@ export function Sidebar() {
                         <IconUsers className="w-5 h-5 shrink-0" /> Usuários
                       </Link>
                     </>
-                  )}
+                  )} */}
                   {(canSeeAll || isChief) && (
                     <Link
                       to="/feedback"
