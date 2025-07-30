@@ -4,6 +4,19 @@ import { api } from "@/services/api";
 
 import Pie from "@/assets/chart/Pie.svg?react";
 
+// Mapeia status brutos para labels formatadas
+function formatarStatus(status) {
+  const mapa = {
+    aprovada: "Aprovada",
+    finalizada: "Finalizada",
+    os_gerada: "O.S. Gerada",
+    pendente: "Pendente",
+    em_analise: "Em Análise",
+    em_fila: "Em Fila",
+  };
+  return mapa[status] || status;
+}
+
 export function PiePadAngleChart() {
   const [dados, setDados] = useState([]);
 
@@ -11,18 +24,12 @@ export function PiePadAngleChart() {
 
   useEffect(() => {
     async function fetchData() {
-      const res = await api.get("/occurrences");
-      const ocorrencias = res.data.occurrences;
+      const res = await api.get("/occurrences/stats");
+      const statusList = res.data.byStatus || [];
 
-      const setores = {};
-      for (const o of ocorrencias) {
-        const nome = o.sector?.name || "Sem setor";
-        setores[nome] = (setores[nome] || 0) + 1;
-      }
-
-      const data = Object.entries(setores).map(([name, value]) => ({
-        name,
-        value,
+      const data = statusList.map((item) => ({
+        name: formatarStatus(item.status),
+        value: item.count,
       }));
 
       setDados(data);
@@ -35,10 +42,12 @@ export function PiePadAngleChart() {
     color: colors,
     tooltip: {
       trigger: "item",
+      formatter: (params) =>
+        `${params.name}: <strong>${params.value}</strong> ocorrências`,
     },
     series: [
       {
-        name: "Ocorrências por setor",
+        name: "Ocorrências por status",
         type: "pie",
         radius: ["50%", "80%"],
         center: ["50%", "50%"],
@@ -70,7 +79,7 @@ export function PiePadAngleChart() {
       <div className="flex items-center gap-2 mb-4">
         <Pie className="w-5 h-5 text-[#5E56FF]" />
         <h2 className="text-lg font-semibold text-gray-800">
-          Ocorrências por Bairros
+          Ocorrências por Status
         </h2>
       </div>
 

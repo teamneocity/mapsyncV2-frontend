@@ -76,7 +76,7 @@ export function OccurrencesT() {
           endDate: filterDateRange.endDate
             ? format(filterDateRange.endDate, "yyyy-MM-dd")
             : null,
-          status: filterStatus, // <-- aqui
+          status: filterStatus, 
         },
       });
 
@@ -244,7 +244,7 @@ export function OccurrencesT() {
             setFilterNeighborhood(neighborhood)
           }
           onFilterDateRange={(range) => setFilterDateRange(range)}
-          onFilterStatus={(status) => setFilterStatus(status)} // <-- aqui
+          onFilterStatus={(status) => setFilterStatus(status)} 
           handleApplyFilters={handleApplyFilters}
         />
       </div>

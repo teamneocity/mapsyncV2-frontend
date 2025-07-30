@@ -21,12 +21,6 @@ export function InspectionCard({ serviceorder }) {
         `${baseURL}${occurrence.photos.initial[0]}`,
     },
     {
-      label: "Em andamento",
-      url:
-        occurrence.photos?.progress?.[0] &&
-        `${baseURL}${occurrence.photos.progress[0]}`,
-    },
-    {
       label: "Finalizada",
       url:
         occurrence.photos?.final?.[0] &&
@@ -189,8 +183,7 @@ export function InspectionCard({ serviceorder }) {
           </p>
         </div>
 
-        {/* Coluna 2 (Timeline com ícones SVG) */}
-        {/* Coluna 2 (Timeline com ícones SVG) */}
+        {/* Coluna 2  */}
         <div className="col-span-6 relative z-0">
           <div className="relative">
             <ul className="space-y-6 mt-1 pl-6">

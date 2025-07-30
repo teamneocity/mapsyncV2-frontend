@@ -23,7 +23,6 @@ import { ExpandedRowServiceOrder } from "./ExpandedRowServiceOrder";
 // Serviços e utilitários
 import { api } from "@/services/api";
 
-
 export function ServiceOrder() {
   const { toast } = useToast();
   const { isAdmin, isSupervisor } = usePermissions();
@@ -33,6 +32,7 @@ export function ServiceOrder() {
   const [selectOptions, setSelectOptions] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState(null);
+  const [filterStatus, setFilterStatus] = useState(null);
   const [filterRecent, setFilterRecent] = useState(null);
   const [filterNeighborhood, setFilterNeighborhood] = useState(null);
   const [filterDateRange, setFilterDateRange] = useState({
@@ -55,6 +55,7 @@ export function ServiceOrder() {
           street: searchTerm, // rua
           districtId: filterNeighborhood, // bairro
           type: filterType,
+          status: filterStatus,
           orderBy: filterRecent, // 'recent' ou 'oldest'
           startDate: filterDateRange.startDate
             ? format(filterDateRange.startDate, "yyyy-MM-dd")
@@ -143,6 +144,7 @@ export function ServiceOrder() {
         <Filters
           title="Ordens de Serviço"
           subtitle="Registradas"
+          contextType="padrao"
           onSearch={(input) => setSearchTerm(input)}
           onFilterType={(type) => setFilterType(type)}
           onFilterRecent={(order) => setFilterRecent(order)}
@@ -150,6 +152,7 @@ export function ServiceOrder() {
             setFilterNeighborhood(neighborhood)
           }
           onFilterDateRange={(range) => setFilterDateRange(range)}
+          onFilterStatus={(status) => setFilterStatus(status)}
           handleApplyFilters={handleApplyFilters}
         />
       </div>

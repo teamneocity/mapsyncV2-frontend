@@ -35,6 +35,17 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   const [isFinalizeModalOpen, setIsFinalizeModalOpen] = useState(false); // modal finalizar
   const [selectedPhoto, setSelectedPhoto] = useState(null);
 
+  const [isCreatePavingModalOpen, setIsCreatePavingModalOpen] = useState(false);
+
+  const [initialPhoto, setInitialPhoto] = useState(null);
+
+  const [formTipo, setFormTipo] = useState("TAPA_BURACO");
+  const [formDescricao, setFormDescricao] = useState(
+    "Ocorrência gerada após drenagem"
+  );
+  const [formEmergencial, setFormEmergencial] = useState(true);
+  const [formFotoId, setFormFotoId] = useState("");
+
   // Abre o pdf
   const handleOpenPdfInNewTab = async () => {
     let base64Image = null;
@@ -123,28 +134,21 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     });
   };
 
-  // Inicia a ocorrencia 
+  // Inicia a ocorrencia
   const handleStartExecution = async () => {
     const occurrenceId = occurrence?.occurrence?.id;
 
-    if (!occurrenceId || !selectedPhoto) {
-      alert("ID da ocorrência ou imagem ausente.");
+    if (!occurrenceId) {
+      alert("ID da ocorrência ausente.");
       return;
     }
 
     try {
-      const formData = new FormData();
-      formData.append("occurrenceId", occurrenceId);
-      formData.append("photos", selectedPhoto); // ← agora vai sua imagem selecionada
-
-      await api.post("/service-orders/start-execution", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      await api.post("/service-orders/start-execution", {
+        occurrenceId,
       });
 
       toast({ title: "Execução iniciada com sucesso!" });
-      setSelectedPhoto(null);
     } catch (err) {
       console.error("Erro ao iniciar execução:", err);
       toast({
@@ -155,9 +159,9 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     }
   };
 
-  // Finaliza a ocorrencia 
+  // Finaliza a ocorrencia
   const handleFinalizeExecution = async () => {
-    const serviceOrderId = occurrence?.id; // ou occurrence.serviceOrderId, dependendo da estrutura
+    const serviceOrderId = occurrence?.id;
 
     if (!serviceOrderId || !selectedPhoto) {
       alert("ID da OS ou imagem ausente.");
@@ -177,6 +181,12 @@ export function ExpandedRowServiceOrder({ occurrence }) {
 
       toast({ title: "Execução finalizada com sucesso!" });
       setSelectedPhoto(null);
+      setIsFinalizeModalOpen(false);
+
+      // Se for do setor de drenagem, sugere criar ocorrência de pavimentação
+      if (occurrence?.sector?.name?.toLowerCase().includes("drenagem")) {
+        setIsCreatePavingModalOpen(true);
+      }
     } catch (err) {
       console.error("Erro ao finalizar execução:", err);
       toast({
@@ -184,6 +194,57 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         title: "Erro ao finalizar execução",
         description: err.message || "Falha ao finalizar execução da OS.",
       });
+    }
+  };
+
+  // cria nova ocorrencia
+  const handleCreatePavingOccurrence = async () => {
+    try {
+      const address = occurrence?.occurrence?.address;
+      const sectorId = occurrence?.sector?.id;
+
+      if (!address || !sectorId) {
+        throw new Error("Endereço ou setor não encontrado.");
+      }
+
+      const body = {
+        type: formTipo,
+        description: formDescricao,
+        street: address.street,
+        number: address.number,
+        zipCode: address.zipCode,
+        neighborhoodId: address.neighborhoodId,
+        latitude: parseFloat(address.latitude),
+        longitude: parseFloat(address.longitude),
+        isEmergencial: formEmergencial,
+        initialPhotosUrls:
+          formFotoId && /^[0-9a-fA-F\-]{36}$/.test(formFotoId)
+            ? [formFotoId]
+            : [],
+      };
+
+      console.log("📦 Enviando:", body);
+
+      const response = await api.post("/occurrences/employee", body);
+
+      if (response?.status === 201) {
+        toast({
+          title: "Ocorrência enviada com sucesso!",
+          description: "A ocorrência foi criada e está aguardando análise.",
+        });
+      } else {
+        throw new Error("Falha inesperada ao criar a ocorrência.");
+      }
+    } catch (error) {
+      console.error("❌ Erro ao criar:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao criar ocorrência",
+        description: error?.message || "Erro inesperado.",
+      });
+    } finally {
+      setIsCreatePavingModalOpen(false);
+      setFormFotoId("");
     }
   };
 
@@ -331,12 +392,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
               `https://mapsync-media.s3.sa-east-1.amazonaws.com/${occurrence.occurrence.photos.initial[0]}`,
           },
           {
-            label: "Em andamento",
-            url:
-              occurrence?.occurrence?.photos?.progress?.[0] &&
-              `https://mapsync-media.s3.sa-east-1.amazonaws.com/${occurrence.occurrence.photos.progress[0]}`,
-          },
-          {
             label: "Finalizada",
             url:
               occurrence?.occurrence?.photos?.final?.[0] &&
@@ -350,37 +405,26 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
           <div className="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-lg space-y-5 text-center">
             <h2 className="text-xl font-semibold text-gray-900">
-              Anexar foto da execução
+              Deseja iniciar a execução da ordem de serviço?
             </h2>
+            <p className="text-sm text-gray-600">
+              Ao confirmar, a execução será iniciada sem necessidade de foto.
+            </p>
 
-            <input
-              type="file"
-              accept="image/png, image/jpeg"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                setSelectedPhoto(file);
-              }}
-              className="w-full rounded-xl border border-gray-300 p-3 text-sm text-gray-800 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white"
-            />
-
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 pt-2">
               <button
                 onClick={async () => {
                   await handleStartExecution();
                   setIsModalOpen(false);
                 }}
-                disabled={!selectedPhoto}
-                className={`flex items-center justify-center gap-2 w-full rounded-2xl ${
-                  selectedPhoto ? "bg-black hover:bg-gray-900" : "bg-gray-300"
-                } text-white py-3 font-medium text-sm transition`}
+                className="flex items-center justify-center gap-2 w-full rounded-2xl bg-black hover:bg-gray-900 text-white py-3 font-medium text-sm transition"
               >
-                Confirmar e Enviar
+                Confirmar Início
               </button>
 
               <button
                 onClick={() => {
                   setIsModalOpen(false);
-                  setSelectedPhoto(null);
                 }}
                 className="text-sm text-gray-500 underline hover:text-gray-700 transition"
               >
@@ -390,6 +434,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
           </div>
         </div>
       )}
+
       {isFinalizeModalOpen && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
           <div className="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-lg space-y-5 text-center">
@@ -426,6 +471,94 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                   setIsFinalizeModalOpen(false);
                   setSelectedPhoto(null);
                 }}
+                className="text-sm text-gray-500 underline hover:text-gray-700 transition"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {isCreatePavingModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
+          <div className="bg-white rounded-[2rem] w-full max-w-md p-6 shadow-lg space-y-5 text-left">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Criar ocorrência de pavimentação
+            </h2>
+
+            {/* Formulário */}
+            <div className="flex flex-col gap-4">
+              {/* Tipo */}
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Tipo
+                </label>
+                <select
+                  value={formTipo}
+                  onChange={(e) => setFormTipo(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg p-2 text-sm"
+                >
+                  <option value="TAPA_BURACO">TAPA_BURACO</option>
+                  <option value="DESOBSTRUCAO">DESOBSTRUCAO</option>
+                  <option value="MEIO_FIO">MEIO_FIO</option>
+                  <option value="LIMPA_FOSSA">LIMPA_FOSSA</option>
+                  <option value="AUSENCIA_DE_MEIO_FIO">
+                    AUSENCIA_DE_MEIO_FIO
+                  </option>
+                </select>
+              </div>
+
+              {/* Descrição */}
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Descrição
+                </label>
+                <textarea
+                  value={formDescricao}
+                  onChange={(e) => setFormDescricao(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg p-2 text-sm"
+                  rows={3}
+                />
+              </div>
+
+              {/* Emergencial */}
+              <div className="flex items-center gap-2">
+                <input
+                  id="emergencial"
+                  type="checkbox"
+                  checked={formEmergencial}
+                  onChange={(e) => setFormEmergencial(e.target.checked)}
+                />
+                <label htmlFor="emergencial" className="text-sm text-gray-700">
+                  É emergencial?
+                </label>
+              </div>
+
+              {/* Foto (simulação com ID manual por enquanto) */}
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  ID da foto (opcional)
+                </label>
+                <input
+                  type="text"
+                  value={formFotoId}
+                  onChange={(e) => setFormFotoId(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg p-2 text-sm"
+                  placeholder="UUID da imagem"
+                />
+              </div>
+            </div>
+
+            {/* Ações */}
+            <div className="flex flex-col gap-3 pt-4">
+              <button
+                onClick={handleCreatePavingOccurrence}
+                className="bg-black hover:bg-gray-900 text-white py-3 rounded-2xl font-medium text-sm"
+              >
+                Criar ocorrência
+              </button>
+              <button
+                onClick={() => setIsCreatePavingModalOpen(false)}
                 className="text-sm text-gray-500 underline hover:text-gray-700 transition"
               >
                 Cancelar

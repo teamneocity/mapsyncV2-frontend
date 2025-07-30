@@ -97,7 +97,7 @@ export function ExpandedRowT({
           </p>
         </div>
 
-        {occurrence.status !== "os_gerada" && (
+        {occurrence.status == "aprovada" && (
           <Button
             className="w-full h-12 bg-[#FFE8E8] hover:bg-red-200 text-[#9D0000]"
             onClick={() => onOpenReturnModal(occurrence.id)}

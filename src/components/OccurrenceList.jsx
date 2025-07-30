@@ -56,6 +56,7 @@ export function OccurrenceList({
 
   const typeLabels = {
     TAPA_BURACO: "Buraco",
+    AUSENCIA_DE_MEIO_FIO: "Ausência de meio fio",
     MEIO_FIO: "Meio fio",
     DESOBSTRUCAO: "Desobstrução",
     LIMPA_FOSSA: "Limpa fossa",

@@ -6,75 +6,34 @@ import { api } from "@/services/api";
 
 import Line from "@/assets/chart/Line.svg?react";
 
-const MESES = [
-  "Jan",
-  "Fev",
-  "Mar",
-  "Abr",
-  "Mai",
-  "Jun",
-  "Jul",
-  "Ago",
-  "Set",
-  "Out",
-  "Nov",
-  "Dez",
-];
 const COLORS = ["#9654F4", "#5E56FF", "#8F7CFF"];
-
-function agruparOcorrenciasPorMes(ocorrencias) {
-  const meses = Array(12).fill(0);
-  ocorrencias.forEach((o) => {
-    const mes = new Date(o.createdAt).getMonth();
-    meses[mes]++;
-  });
-  return meses;
-}
-
-function calcularVariação(meses) {
-  const penultimo = meses[10]; // Novembro
-  const ultimo = meses[11]; // Dezembro
-  if (penultimo === 0) return 0;
-  return Math.round(((ultimo - penultimo) / penultimo) * 100);
-}
 
 export function LineRaceChart() {
   const [bairrosDisponiveis, setBairrosDisponiveis] = useState([]);
   const [bairrosSelecionados, setBairrosSelecionados] = useState([]);
   const [ocorrencias, setOcorrencias] = useState([]);
 
-  // Carrega bairros
   useEffect(() => {
-    async function fetchBairros() {
-      const res = await api.get("/neighborhoods");
-      setBairrosDisponiveis(res.data.neighborhoods || []);
-      setBairrosSelecionados(res.data.neighborhoods.slice(0, 3));
+    async function fetchStats() {
+      const res = await api.get("/occurrences/stats");
+      const stats = res.data.byNeighborhood || [];
+
+      setBairrosDisponiveis(stats.map((b) => b.neighborhood));
+      setBairrosSelecionados(stats.slice(0, 3).map((b) => b.neighborhood));
+      setOcorrencias(stats);
     }
-    fetchBairros();
+    fetchStats();
   }, []);
 
-  // Carrega ocorrências
-  useEffect(() => {
-    async function fetchOcorrencias() {
-      const res = await api.get("/occurrences");
-      setOcorrencias(res.data.occurrences || []);
-    }
-    fetchOcorrencias();
-  }, []);
-
-  // Monta dados do gráfico com base nos bairros selecionados
   const dadosGrafico = useMemo(() => {
-    return bairrosSelecionados.map((bairro, index) => {
-      const ocorrenciasBairro = ocorrencias.filter(
-        (o) => o.address?.neighborhoodId === bairro.id
-      );
-      const porMes = agruparOcorrenciasPorMes(ocorrenciasBairro);
+    return bairrosSelecionados.map((nome, index) => {
+      const dado = ocorrencias.find((o) => o.neighborhood === nome);
       return {
-        name: bairro.name,
+        name: nome,
         color: COLORS[index % COLORS.length],
-        data: porMes,
-        total: ocorrenciasBairro.length,
-        variation: calcularVariação(porMes),
+        data: [dado?.previous || 0, dado?.current || 0],
+        total: dado?.current || 0,
+        variation: dado?.difference || 0,
       };
     });
   }, [bairrosSelecionados, ocorrencias]);
@@ -88,7 +47,7 @@ export function LineRaceChart() {
       top: "10%",
       containLabel: true,
     },
-    xAxis: { type: "category", data: MESES },
+    xAxis: { type: "category", data: ["Mês Anterior", "Mês Atual"] },
     yAxis: { type: "value" },
     color: dadosGrafico.map((b) => b.color),
     series: dadosGrafico.map((b) => ({
@@ -121,15 +80,14 @@ export function LineRaceChart() {
           <div className="relative">
             <Listbox.Button className="w-full border px-4 py-2 rounded-lg flex justify-between items-center bg-white shadow">
               <span className="truncate text-sm text-gray-700">
-                {bairrosSelecionados.map((b) => b.name).join(", ") ||
-                  "Selecione os bairros"}
+                {bairrosSelecionados.join(", ") || "Selecione os bairros"}
               </span>
               <ChevronDown className="w-4 h-4 text-gray-500" />
             </Listbox.Button>
             <Listbox.Options className="absolute mt-2 w-full bg-white border rounded-lg shadow z-10 max-h-60 overflow-auto">
               {bairrosDisponiveis.map((bairro) => (
                 <Listbox.Option
-                  key={bairro.id}
+                  key={bairro}
                   value={bairro}
                   className={({ active }) =>
                     `cursor-pointer px-4 py-2 text-sm ${
@@ -139,7 +97,7 @@ export function LineRaceChart() {
                 >
                   {({ selected }) => (
                     <div className="flex items-center justify-between">
-                      <span>{bairro.name}</span>
+                      <span>{bairro}</span>
                       {selected && <Check className="w-4 h-4 text-blue-600" />}
                     </div>
                   )}

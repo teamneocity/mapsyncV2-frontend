@@ -34,6 +34,7 @@ export function Inspection() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState(null);
   const [filterRecent, setFilterRecent] = useState(null);
+  const [filterStatus, setFilterStatus] = useState(null);
   const [filterNeighborhood, setFilterNeighborhood] = useState(null);
   const [filterDateRange, setFilterDateRange] = useState({
     startDate: null,
@@ -55,6 +56,7 @@ export function Inspection() {
           street: searchTerm, // padronizado com ServiceOrder
           districtId: filterNeighborhood,
           type: filterType,
+          status: filterStatus,
           orderBy: filterRecent,
           startDate: filterDateRange.startDate
             ? format(filterDateRange.startDate, "yyyy-MM-dd")
@@ -89,7 +91,7 @@ export function Inspection() {
       <Sidebar />
       <TopHeader />
 
-      {/* CONTEÚDO PRINCIPAL COM FLEX-1 */}
+      {/* CONTEÚDO PRINCIPAL */}
       <div className="flex-1">
         {/* FILTROS */}
         <div className="sticky top-[88px] z-10 bg-[#EBEBEB] px-4 py-4 sm:py-6">
@@ -102,6 +104,7 @@ export function Inspection() {
             onSearch={(input) => setSearchTerm(input)}
             onFilterType={(type) => setFilterType(type)}
             onFilterRecent={(order) => setFilterRecent(order)}
+            onFilterStatus={(status) => setFilterStatus(status)}
             onFilterNeighborhood={(neighborhood) =>
               setFilterNeighborhood(neighborhood)
             }

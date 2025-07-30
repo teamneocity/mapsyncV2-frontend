@@ -79,8 +79,8 @@ export function Filters({
 
   const statusOptions = {
     padrao: [
-      { value: "pendente", label: "Pendente" },
-      { value: "aceita", label: "Aceita" },
+      { value: "em_execucao", label: "Andamento" },
+      { value: "aguardando_execucao", label: "Aguardando execução" },
       { value: "finalizada", label: "Finalizada" },
     ],
     mapeamento: [
