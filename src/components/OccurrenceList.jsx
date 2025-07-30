@@ -162,7 +162,7 @@ export function OccurrenceList({
                     <div className="flex justify-between items-start">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
-                          {occ.protocol || "254525"}
+                          {occ.protocol || occ.protocolNumber ||"—"}
                         </div>
                         <div className="text-xs text-gray-500">
                           {occ.createdAt
@@ -250,7 +250,7 @@ export function OccurrenceList({
                   </div>
 
                   <div className="col-span-1 text-sm">
-                    {occ.protocol || "—"}
+                    {occ.protocol || occ.protocolNumber || "—"}
                   </div>
 
                   <div className="col-span-1 flex items-center gap-2">

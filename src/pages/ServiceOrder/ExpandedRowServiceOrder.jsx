@@ -12,6 +12,8 @@ import { MediaMapSection } from "@/components/MediaMapSection";
 import { PDFDownloadLink, pdf } from "@react-pdf/renderer";
 import { ServiceOrderPdf } from "./ServiceOrderPdf";
 import { useToast } from "@/hooks/use-toast";
+import { Calendar } from "lucide-react";
+
 
 import { api } from "@/services/api";
 
@@ -45,6 +47,9 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   );
   const [formEmergencial, setFormEmergencial] = useState(true);
   const [formFotoId, setFormFotoId] = useState("");
+
+  const [newScheduledDate, setNewScheduledDate] = useState(null);
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
 
   // Abre o pdf
   const handleOpenPdfInNewTab = async () => {
@@ -280,6 +285,16 @@ export function ExpandedRowServiceOrder({ occurrence }) {
               {format(new Date(occurrence.createdAt), "dd/MM/yyyy 'às' HH:mm")}
             </p>
             <p>
+              <strong>Data agendada:</strong>{" "}
+              {occurrence.scheduledDate
+                ? format(
+                    new Date(occurrence.scheduledDate),
+                    "dd/MM/yyyy 'às' HH:mm"
+                  )
+                : "—"}
+            </p>
+
+            <p>
               <strong>Enviado por:</strong>{" "}
               {occurrence.occurrence?.author?.name || "—"}
             </p>
@@ -333,12 +348,12 @@ export function ExpandedRowServiceOrder({ occurrence }) {
           <h3 className="font-semibold text-[#787891] mb-2">Ações</h3>
           <div className="bg-[#ECECEC] rounded-xl grid grid-cols-4 gap-2 p-2">
             <Button
+              onClick={() => setIsRescheduleModalOpen(true)}
               variant="ghost"
-              disabled
               className="flex flex-col items-center justify-center gap-1 h-[60px] hover:bg-[#DCDCDC] rounded-md"
             >
-              <Vector className="w-5 h-5" />
-              <span className="text-[#787891] text-xs">Ver notas</span>
+              <Calendar className="w-5 h-5" />
+              <span className="text-[#787891] text-xs">Reagendar</span>
             </Button>
 
             <Button
@@ -572,6 +587,61 @@ export function ExpandedRowServiceOrder({ occurrence }) {
               </button>
               <button
                 onClick={() => setIsCreatePavingModalOpen(false)}
+                className="text-sm text-gray-500 underline hover:text-gray-700 transition"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {isRescheduleModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
+          <div className="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-lg space-y-5 text-center">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Reagendar execução
+            </h2>
+            <p className="text-sm text-gray-600">
+              Selecione uma nova data e hora para a execução da O.S.
+            </p>
+
+            <input
+              type="datetime-local"
+              value={newScheduledDate || ""}
+              onChange={(e) => setNewScheduledDate(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg p-2 text-sm"
+            />
+
+            <div className="flex flex-col gap-3 pt-2">
+              <button
+                onClick={async () => {
+                  try {
+                    await api.put("/service-orders/reschedule", {
+                      serviceOrderId: occurrence.id,
+                      newScheduledDate: newScheduledDate
+                        ? new Date(newScheduledDate).toISOString()
+                        : null,
+                    });
+
+                    toast({ title: "Data reagendada com sucesso!" });
+                    setIsRescheduleModalOpen(false);
+                  } catch (err) {
+                    console.error("Erro ao reagendar:", err);
+                    toast({
+                      variant: "destructive",
+                      title: "Erro ao reagendar",
+                      description:
+                        err.message || "Falha no reagendamento da OS.",
+                    });
+                  }
+                }}
+                disabled={!newScheduledDate}
+                className="bg-black hover:bg-gray-900 text-white py-3 rounded-2xl font-medium text-sm"
+              >
+                Confirmar reagendamento
+              </button>
+              <button
+                onClick={() => setIsRescheduleModalOpen(false)}
                 className="text-sm text-gray-500 underline hover:text-gray-700 transition"
               >
                 Cancelar
