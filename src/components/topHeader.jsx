@@ -6,9 +6,11 @@ import { useAuth } from "@/hooks/auth";
 import { Button } from "@/components/ui/button";
 import Leave from "@/assets/icons/leave.svg?react";
 import Bell from "@/assets/icons/bell.svg?react";
+import { useState } from "react";
 
 export function TopHeader() {
   const { signOut } = useAuth();
+  const [showTooltip, setShowTooltip] = useState(false);
   const navigate = useNavigate();
 
   const handleSignOut = (e) => {
@@ -36,12 +38,24 @@ export function TopHeader() {
 
         {/* Botão de notificações */}
 
-        <Link
-          to="/notifications"
-          className="rounded-full bg-white p-2 hover:bg-zinc-100"
-        >
-          <Bell className="w-5 h-5 shrink-0" />
-        </Link>
+        {/* Botão de notificações com tooltip (sem link) */}
+        <div className="relative">
+          <button
+            onClick={() => {
+              setShowTooltip(true);
+              setTimeout(() => setShowTooltip(false), 2000);
+            }}
+            className="rounded-full bg-white p-2 hover:bg-zinc-100"
+          >
+            <Bell className="w-5 h-5 shrink-0" />
+          </button>
+
+          {showTooltip && (
+            <div className="absolute right-0 mt-2 w-max text-xs bg-gray-800 text-white px-3 py-1 rounded shadow z-50">
+              Sem notificações no momento
+            </div>
+          )}
+        </div>
 
         {/* Botão de sair */}
         <Link
