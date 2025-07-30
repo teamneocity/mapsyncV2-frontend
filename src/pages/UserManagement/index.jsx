@@ -162,7 +162,7 @@ export function UserManagement() {
           </div>
         </section>
 
-        {/* SEÇÃO 3 - Formulário */}
+        {/* SEÇÃO 2 - Formulário */}
         <section className="max-w-[1500px] w-full mx-auto bg-[#F9F9F9] rounded-xl p-2 flex flex-col xl:flex-row gap-6 items-stretch xl:h-[270px]">
           <div className="w-full xl:w-[200px] flex flex-col items-center justify-between h-full">
             <div className="bg-white rounded-xl shadow-md w-full h-[220px] flex items-center justify-center">
@@ -239,7 +239,7 @@ export function UserManagement() {
           </form>
         </section>
 
-        {/* SEÇÃO 4 - Lista de usuários */}
+        {/* SEÇÃO 3 - Lista de usuários */}
         <section className="max-w-[1500px] w-full mx-auto">
           <div className="hidden xl:block bg-[#D9DCE2] text-[#020231] font-semibold rounded-xl px-4 py-5 border border-gray-200 mb-2 text-sm">
             <div className="grid grid-cols-12 gap-4 items-center">

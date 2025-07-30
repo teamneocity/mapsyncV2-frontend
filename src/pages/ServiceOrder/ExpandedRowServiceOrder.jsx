@@ -334,6 +334,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
           <div className="bg-[#ECECEC] rounded-xl grid grid-cols-4 gap-2 p-2">
             <Button
               variant="ghost"
+              disabled
               className="flex flex-col items-center justify-center gap-1 h-[60px] hover:bg-[#DCDCDC] rounded-md"
             >
               <Vector className="w-5 h-5" />
@@ -360,6 +361,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
 
             <Button
               variant="ghost"
+              disabled
               className="flex flex-col items-center justify-center gap-1 h-[60px] hover:bg-[#DCDCDC] rounded-md"
             >
               <CloudShare className="w-5 h-5" />
