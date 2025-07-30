@@ -247,6 +247,13 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       setFormFotoId("");
     }
   };
+  const typeLabels = {
+    TAPA_BURACO: "Buraco",
+    AUSENCIA_DE_MEIO_FIO: "Ausência de meio fio",
+    MEIO_FIO: "Meio fio",
+    DESOBSTRUCAO: "Desobstrução",
+    LIMPA_FOSSA: "Limpa fossa",
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-white p-4 rounded-lg shadow-sm text-sm items-stretch">
@@ -262,8 +269,12 @@ export function ExpandedRowServiceOrder({ occurrence }) {
               {occurrence.occurrence?.author?.name || "—"}
             </p>
             <p>
-              <strong>Ocorrência:</strong> {occurrence.occurrence?.type || "—"}
+              <strong>Ocorrência:</strong>{" "}
+              {typeLabels[occurrence.occurrence?.type] ||
+                occurrence.occurrence?.type ||
+                "—"}
             </p>
+
             <p>
               <strong>Data:</strong>{" "}
               {format(new Date(occurrence.createdAt), "dd/MM/yyyy 'às' HH:mm")}

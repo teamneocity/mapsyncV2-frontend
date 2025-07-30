@@ -24,6 +24,14 @@ export function ExpandedRowT({
     ? `https://mapsync-media.s3.sa-east-1.amazonaws.com/${firstInitialPhoto}`
     : null;
 
+  const typeLabels = {
+    TAPA_BURACO: "Buraco",
+    AUSENCIA_DE_MEIO_FIO: "Ausência de meio fio",
+    MEIO_FIO: "Meio fio",
+    DESOBSTRUCAO: "Desobstrução",
+    LIMPA_FOSSA: "Limpa fossa",
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 bg-[#F7F7F7] rounded-lg text-sm">
       {/* Coluna 1 - Informações */}
@@ -46,8 +54,9 @@ export function ExpandedRowT({
             <div className="flex flex-col items-start space-y-2 flex-1">
               <p>
                 <span className="font-bold">Ocorrência:</span>{" "}
-                {occurrence.type || "—"}
+                {typeLabels[occurrence.type] || occurrence.type || "—"}
               </p>
+
               <p>
                 <span className="font-bold">Aprovado por:</span>{" "}
                 {occurrence.approvedBy?.name || "—"}
@@ -196,15 +205,17 @@ export function ExpandedRowT({
           )}
         </div>
 
-        {occurrence.status !== "os_gerada" && occurrence.status !=="em_execucao" && occurrence.status !== "finalizada" && (
-          <Button
-            className="w-full h-12 bg-[#C9F2E9] hover:bg-green-200 text-[#1C7551] items-center justify-center"
-            onClick={() => onGenerateOS(occurrence.id)}
-          >
-            Gerar O.S.
-            <ThumbsUp />
-          </Button>
-        )}
+        {occurrence.status !== "os_gerada" &&
+          occurrence.status !== "em_execucao" &&
+          occurrence.status !== "finalizada" && (
+            <Button
+              className="w-full h-12 bg-[#C9F2E9] hover:bg-green-200 text-[#1C7551] items-center justify-center"
+              onClick={() => onGenerateOS(occurrence.id)}
+            >
+              Gerar O.S.
+              <ThumbsUp />
+            </Button>
+          )}
       </div>
 
       {/* Coluna 3 - Imagem e Mapa */}

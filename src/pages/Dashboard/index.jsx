@@ -18,15 +18,17 @@ import { PiePadAngleChart } from "./PiePadAngleChart";
 // Serviços e utilitários
 import { api } from "@/services/api";
 import { getInicials } from "@/lib/utils";
+import { useAuth } from "@/hooks/auth";
 
 // Assets
 import Bars from "@/assets/icons/Bars.svg?react";
-
 
 export function Dashboard() {
   // Componente BlogBox local
 
   const [users, setUsers] = useState([]);
+  const { user } = useAuth();
+  const [name] = useState(user.name);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -55,39 +57,39 @@ export function Dashboard() {
     fetchChiefs();
   }, []);
 
- const BlogBox = () => (
-  <div className="flex flex-col justify-between gap-4 rounded-xl px-10 py-8 w-full h-full bg-white">
-    <div className="flex items-center justify-between w-full">
-      <div className="flex -space-x-3">
-        {users.slice(0, 5).map((user, index) => (
-          <div
-            key={user.id}
-            className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-white`}
-            style={{
-              zIndex: 4 - index,
-              backgroundColor: [
-                "#B5E0A2",
-                "#D1C4E9",
-                "#F8BBD0",
-                "#A5D6A7",
-                "#CE93D8",
-              ][index % 5],
-            }}
-          >
-            {getInicials(user.name)}
-          </div>
-        ))}
-      </div>
+  const BlogBox = () => (
+    <div className="flex flex-col justify-between gap-4 rounded-xl px-10 py-8 w-full h-full bg-white">
+      <div className="flex items-center justify-between w-full">
+        <div className="flex -space-x-3">
+          {users.slice(0, 5).map((user, index) => (
+            <div
+              key={user.id}
+              className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-white`}
+              style={{
+                zIndex: 4 - index,
+                backgroundColor: [
+                  "#B5E0A2",
+                  "#D1C4E9",
+                  "#F8BBD0",
+                  "#A5D6A7",
+                  "#CE93D8",
+                ][index % 5],
+              }}
+            >
+              {getInicials(user.name)}
+            </div>
+          ))}
+        </div>
 
-      <button
-        onClick={() => navigate("/userManagement")}
-        className="px-4 py-2 h-[55px] border border-zinc-300 text-sm rounded-xl hover:bg-zinc-100 transition"
-      >
-        + Gerir usuário
-      </button>
+        <button
+          onClick={() => navigate("/userManagement")}
+          className="px-4 py-2 h-[55px] border border-zinc-300 text-sm rounded-xl hover:bg-zinc-100 transition"
+        >
+          + Gerir usuário
+        </button>
+      </div>
     </div>
-  </div>
-);
+  );
 
   const SectorBox = () => (
     <div className="flex items-start gap-4 rounded-xl px-10 py-8 w-full h-full bg-white">
@@ -133,9 +135,7 @@ export function Dashboard() {
       <div className="flex-1">
         {/* Título */}
         <div className="px-4 py-4">
-          <h4 c>
-            Olá usuário,
-          </h4>
+          <h4 c>Olá {name},</h4>
           <h1 className="text-xl sm:text-4xl font-bold text-gray-800 mb-4">
             Bem vindo de volta 👋
           </h1>

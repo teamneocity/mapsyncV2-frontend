@@ -189,8 +189,8 @@ export function Filters({
             <DropdownMenuItem onClick={() => handleTypeFilter(null)}>
               Todos
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleTypeFilter("DRENAGEM")}>
-              Drenagem
+            <DropdownMenuItem onClick={() => handleTypeFilter("MEIO_FIO")}>
+              Meio fio
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleTypeFilter("LIMPA_FOSSA")}>
               Limpa Fossa
@@ -198,8 +198,14 @@ export function Filters({
             <DropdownMenuItem onClick={() => handleTypeFilter("TERRAPLANAGEM")}>
               Terra Planagem
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleTypeFilter("BURACO_NA_RUA")}>
+            <DropdownMenuItem onClick={() => handleTypeFilter("TAPA_BURACO")}>
               Buraco na Rua
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleTypeFilter("DESOBSTRUCAO")}>
+              Desobstrução
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleTypeFilter("AUSENCIA_DE_MEIO_FIO")}>
+              Ausência de meio fio
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

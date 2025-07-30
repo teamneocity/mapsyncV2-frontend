@@ -76,7 +76,7 @@ export function Sidebar() {
                   <PeopleLine className="w-5 h-5 shrink-0" /> Setor
                 </Link>
               )} */}
-              {(canSeeAll || isAnalyst || isChief) && (
+              {(isAdmin || isAnalyst) && (
                 <Link
                   to="/analysis"
                   className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
@@ -234,7 +234,9 @@ export function Sidebar() {
                   </span>
                   <PurpleCheck className="w-4 h-4 shrink-0" />
                 </div>
-                <span className="text-xs text-gray-500">{email}</span>
+                <span className="text-xs text-gray-500">
+                  {email.length > 20 ? `${email.slice(0, 20)}...` : email}
+                </span>
               </div>
             </div>
             <AngleSmallRight className="w-4 h-4 text-gray-400" />
@@ -273,7 +275,7 @@ export function Sidebar() {
                       <PeopleLine className="w-5 h-5 shrink-0" /> Setor
                     </Link>
                   )} */}
-                  {(isAnalyst || canSeeAll || isChief) && (
+                  {(isAnalyst || isAdmin || isChief) && (
                     <Link
                       to="/analysis"
                       className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"

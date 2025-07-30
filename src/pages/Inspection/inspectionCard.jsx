@@ -65,6 +65,14 @@ export function InspectionCard({ serviceorder }) {
   const timelineIcons = [Start, During, During, End];
   const timelineEntries = Object.entries(timeline);
 
+  const typeLabels = {
+    TAPA_BURACO: "Buraco",
+    AUSENCIA_DE_MEIO_FIO: "Ausência de meio fio",
+    MEIO_FIO: "Meio fio",
+    DESOBSTRUCAO: "Desobstrução",
+    LIMPA_FOSSA: "Limpa fossa",
+  };
+
   return (
     <div className="bg-[#F7F7F7] rounded-[12px] shadow-sm overflow-hidden flex-shrink-0 w-full max-w-[525px] border border-gray-200 min-h-[650px] sm:min-h-[auto]">
       {/* Imagem principal */}
@@ -179,7 +187,10 @@ export function InspectionCard({ serviceorder }) {
             <strong>Latitude:</strong> {occurrence.address?.latitude}
           </p>
           <p>
-            <strong>Ocorrência:</strong> {occurrence.sector.name}
+            <strong>Ocorrência:</strong>{" "}
+            {typeLabels[occurrence?.type] ||
+              occurrence?.type ||
+              "—"}
           </p>
         </div>
 
