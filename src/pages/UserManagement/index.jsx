@@ -162,27 +162,6 @@ export function UserManagement() {
           </div>
         </section>
 
-        {/* SEÇÃO 2 - Pesquisa visual */}
-        <section className="max-w-[1500px] w-full mx-auto bg-white border border-zinc-200 rounded-xl px-4 py-4 flex flex-col xl:flex-row gap-3 items-center justify-between">
-          <div className="flex flex-wrap w-full gap-2">
-            <input
-              type="text"
-              placeholder="Pesquise por nome"
-              className="flex-1 min-w-[150px] h-[48px] rounded-xl border border-zinc-300 px-4 text-sm placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-200 bg-white"
-            />
-            <select className="w-[150px] h-[48px] rounded-xl border border-zinc-300 px-3 text-sm bg-white text-zinc-700">
-              <option>Por cargo</option>
-              <option value="ADMIN">Administrador</option>
-              <option value="MANAGER">Gestor</option>
-              <option value="SUPERVISOR">Supervisor</option>
-              <option value="SECTOR_CHIEF">Chefe de setor</option>
-            </select>
-            <button className="h-[48px] px-4 bg-[#A6E0FF] hover:bg-[#87CEEB] text-[#00679D] text-sm font-medium rounded-xl transition">
-              Aplicar
-            </button>
-          </div>
-        </section>
-
         {/* SEÇÃO 3 - Formulário */}
         <section className="max-w-[1500px] w-full mx-auto bg-[#F9F9F9] rounded-xl p-2 flex flex-col xl:flex-row gap-6 items-stretch xl:h-[270px]">
           <div className="w-full xl:w-[200px] flex flex-col items-center justify-between h-full">
