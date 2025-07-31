@@ -12,6 +12,7 @@ function formatarStatus(status) {
     os_gerada: "O.S. Gerada",
     pendente: "Pendente",
     em_analise: "Em Análise",
+    em_execucao: "Em Execução",
     em_fila: "Em Fila",
   };
   return mapa[status] || status;
