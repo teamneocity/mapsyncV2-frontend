@@ -66,15 +66,19 @@ export function OccurrencesT() {
           page,
           districtId: filterNeighborhood, // bairro
           street: searchTerm, // rua
-          occurrenceType: filterType,
+          type: filterType,
           orderBy: filterRecent, // 'recent' ou 'oldest'
           startDate: filterDateRange.startDate
-            ? format(filterDateRange.startDate, "yyyy-MM-dd")
-            : null,
+            ? new Date(
+                new Date(filterDateRange.startDate).setHours(0, 0, 0, 0)
+              ).toISOString()
+            : undefined,
+
           endDate: filterDateRange.endDate
-            ? format(filterDateRange.endDate, "yyyy-MM-dd")
-            : null,
-          status: filterStatus,
+            ? new Date(
+                new Date(filterDateRange.endDate).setHours(23, 59, 59, 999)
+              ).toISOString()
+            : undefined,
         },
       });
 
@@ -88,13 +92,29 @@ export function OccurrencesT() {
       setCurrentPage(page);
       setHasNextPage(allOccurrences.length > 0);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro ao buscar ocorrências",
-        description: error.message,
-      });
-      setOccurrences([]);
-      setHasNextPage(false);
+      const is400 = error.response?.status === 400;
+      const isEnumError =
+        error.response?.data?.message?.includes("Invalid enum");
+
+      if (is400 && isEnumError) {
+        toast({
+          variant: "destructive",
+          title: "Tipo inválido",
+          description: "O tipo de ocorrência selecionado não é reconhecido.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erro ao buscar ocorrências",
+          description: error.message,
+        });
+      }
+
+      // ⚠️ Só limpa a lista se não for erro 400 de enum
+      if (!isEnumError) {
+        setOccurrences([]);
+        setHasNextPage(false);
+      }
     }
   };
 
@@ -242,7 +262,6 @@ export function OccurrencesT() {
             setFilterNeighborhood(neighborhood)
           }
           onFilterDateRange={(range) => setFilterDateRange(range)}
-          onFilterStatus={(status) => setFilterStatus(status)}
           handleApplyFilters={handleApplyFilters}
         />
       </div>

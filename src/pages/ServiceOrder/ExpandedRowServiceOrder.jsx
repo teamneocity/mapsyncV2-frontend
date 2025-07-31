@@ -178,15 +178,23 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       formData.append("serviceOrderId", serviceOrderId);
       formData.append("photos", selectedPhoto);
 
-      await api.post("/service-orders/finalize", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const uploadResponse = await api.post(
+        "/service-orders/finalize",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       toast({ title: "Execução finalizada com sucesso!" });
       setSelectedPhoto(null);
       setIsFinalizeModalOpen(false);
+
+      // 🔁 Salva o ID da foto final para usar na próxima ocorrência
+      const finalPhotoId = occurrence?.occurrence?.photos?.final?.[0];
+      setFormFotoId(finalPhotoId || "");
 
       // Se for do setor de drenagem, sugere criar ocorrência de pavimentação
       if (occurrence?.sector?.name?.toLowerCase().includes("drenagem")) {
@@ -212,21 +220,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         throw new Error("Endereço ou setor não encontrado.");
       }
 
-      // 🟡 Upload da imagem (se tiver sido selecionada)
-      let fotoId = "";
-
-      if (selectedUploadPhoto) {
-        const uploadForm = new FormData();
-        uploadForm.append("file", selectedUploadPhoto);
-
-        const uploadResponse = await api.post("/upload", uploadForm, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-
-        fotoId = uploadResponse.data?.id || "";
-      }
-
-      // 🟡 Corpo da ocorrência
+      // corpo da ocorrência
       const body = {
         type: formTipo,
         description: formDescricao,
@@ -237,7 +231,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         latitude: parseFloat(address.latitude),
         longitude: parseFloat(address.longitude),
         isEmergencial: formEmergencial,
-        initialPhotosUrls: fotoId ? [fotoId] : [],
+        initialPhotosUrls: formFotoId ? [formFotoId] : [],
       };
 
       console.log("📦 Enviando:", body);
@@ -247,8 +241,8 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       if (response?.status === 201 && response.data?.data) {
         const novaOcorrenciaId = response.data.data;
 
-        // 🟢 Aprova para setor de pavimentação
-        const setorPavimentacaoId = "3500cd38-d37c-44dc-9e85-f94290a7881a"; // Substitua se for necessário
+        // Aprova para setor de pavimentação
+        const setorPavimentacaoId = "3500cd38-d37c-44dc-9e85-f94290a7881a"; // ID fixo
 
         await api.post("/occurrences/approve", {
           occurrenceId: novaOcorrenciaId,
@@ -273,7 +267,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     } finally {
       setIsCreatePavingModalOpen(false);
       setFormFotoId("");
-      setSelectedUploadPhoto(null); // limpa foto
     }
   };
 
@@ -511,7 +504,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 onClick={async () => {
                   await handleFinalizeExecution();
                   setIsFinalizeModalOpen(false);
-                  window.location.reload();
                 }}
                 disabled={!selectedPhoto}
                 className={`flex items-center justify-center gap-2 w-full rounded-2xl ${
@@ -588,22 +580,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                   É emergencial?
                 </label>
               </div>
-
-              {/* Upload de foto */}
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  Foto inicial
-                </label>
-                <input
-                  type="file"
-                  accept="image/png, image/jpeg"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    setSelectedUploadPhoto(file);
-                  }}
-                  className="w-full border border-gray-300 rounded-lg p-2 text-sm"
-                />
-              </div>
             </div>
 
             {/* Ações */}
@@ -624,6 +600,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
           </div>
         </div>
       )}
+
       {isRescheduleModalOpen && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
           <div className="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-lg space-y-5 text-center">

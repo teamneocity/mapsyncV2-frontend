@@ -47,6 +47,15 @@ export function ServiceOrder() {
   }, []);
 
   const fetchServiceOrders = async (page = 1) => {
+    console.log("📤 Enviando filtros:", {
+      occurrenceType: filterType,
+      status: filterStatus,
+      street: searchTerm,
+      districtId: filterNeighborhood,
+      orderBy: filterRecent,
+      startDate: filterDateRange.startDate,
+      endDate: filterDateRange.endDate,
+    });
     try {
       const response = await api.get("/service-orders", {
         params: {
@@ -58,10 +67,14 @@ export function ServiceOrder() {
           status: filterStatus,
           orderBy: filterRecent, // 'recent' ou 'oldest'
           startDate: filterDateRange.startDate
-            ? format(filterDateRange.startDate, "yyyy-MM-dd")
+            ? new Date(
+                new Date(filterDateRange.startDate).setHours(0, 0, 0, 0)
+              ).toISOString()
             : undefined,
           endDate: filterDateRange.endDate
-            ? format(filterDateRange.endDate, "yyyy-MM-dd")
+            ? new Date(
+                new Date(filterDateRange.endDate).setHours(23, 59, 59, 999)
+              ).toISOString()
             : undefined,
         },
       });
@@ -86,11 +99,21 @@ export function ServiceOrder() {
       setCurrentPage(page);
       setHasNextPage(result.serviceorders?.length > 0);
     } catch (error) {
+      console.error("❌ Erro ao buscar ordens de serviço:", error);
+
+      // se for erro do axios, loga detalhes da resposta
+      if (error.response) {
+        console.error("➡️ status:", error.response.status);
+        console.error("➡️ data:", error.response.data);
+        console.error("➡️ headers:", error.response.headers);
+      }
+
       toast({
         variant: "destructive",
         title: "Erro ao buscar ordens de serviço",
         description: error.message,
       });
+
       setOccurrences([]);
       setHasNextPage(false);
     }

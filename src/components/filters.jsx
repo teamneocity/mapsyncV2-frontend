@@ -195,9 +195,6 @@ export function Filters({
             <DropdownMenuItem onClick={() => handleTypeFilter("LIMPA_FOSSA")}>
               Limpa Fossa
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleTypeFilter("TERRAPLANAGEM")}>
-              Terra Planagem
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleTypeFilter("TAPA_BURACO")}>
               Buraco na Rua
             </DropdownMenuItem>
