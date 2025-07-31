@@ -9,6 +9,7 @@ export const usePermissions = () => {
   const isSupervisor = user?.role === "SECTOR_CHIEF";
   const isInspector = user?.role == "INSPECTOR";
   const isChief = user?.role == "CHIEF";
+  const isPilot = user?.role == "PILOT";
 
   return {
     isAdmin,
@@ -16,6 +17,7 @@ export const usePermissions = () => {
     isOperator,
     isSupervisor,
     isInspector,
-    isChief
+    isChief,
+    isPilot
   };
 };

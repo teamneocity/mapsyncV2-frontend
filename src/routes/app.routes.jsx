@@ -23,7 +23,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 
 export function AppRoutes() {
   const { user } = useAuth();
-  const { isAdmin, isSupervisor, isAnalyst, isInspector, isChief } =
+  const { isAdmin, isSupervisor, isAnalyst, isInspector, isChief, isPilot } =
     usePermissions();
   const canSeeAll = isAdmin || isSupervisor;
 
@@ -135,7 +135,11 @@ export function AppRoutes() {
       {/* Rotas livres (não aparecem na Sidebar) */}
 
       <Route path="/userprofile" element={<UserProfile />} />
-      <Route path="/dashboard" element={<Dashboard />} />
+      <Route
+        path="/dashboard"
+        element={canSeeAll || isChief || isInspector ? <Dashboard/> : <Navigate to="/userprofile"/>} 
+      />
+
       {/* <Route path="/settings" element={<Settings />} /> */}
       {/* Admin/Gestor apenas */}
       {["admin", "gestor"].includes(user.role) ? (
