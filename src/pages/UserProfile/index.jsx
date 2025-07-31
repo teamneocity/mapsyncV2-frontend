@@ -29,7 +29,6 @@ import Mapa2 from "@/assets/Mapa2.svg";
 import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
 import Ponto from "@/assets/icons/Ponto.svg?react";
 import Pc from "@/assets/icons/Pc.svg?react";
- 
 
 export function UserProfile() {
   const { signOut, user, updateProfile } = useAuth();
@@ -55,25 +54,6 @@ export function UserProfile() {
     setAvatarFile(file);
     const imagePreview = URL.createObjectURL(file);
     setAvatar(imagePreview);
-  }
-
-  async function handleUpdateInfo(e) {
-    e.preventDefault();
-
-    try {
-      await updateProfile({
-        user: {
-          email,
-          name,
-          role: user.role,
-        },
-      });
-
-      alert("Informações atualizadas com sucesso!");
-    } catch (error) {
-      console.error(error);
-      alert("Erro ao atualizar as informações.");
-    }
   }
 
   async function handleChangePassword(e) {
@@ -171,38 +151,29 @@ export function UserProfile() {
           {/* Coluna dos inputs */}
           <form className="flex-1 grid grid-cols-1 bg-white p-2 border-b rounded-xl sm:grid-cols-2 gap-1">
             <Input
-              className="h-[64px]"
+              className="h-[94px]"
               placeholder="Nome completo"
+              disabled
               value={name}
-              onChange={(e) => setName(e.target.value)}
             />
             <Input
-              className="h-[64px]"
+              className="h-[94px]"
               placeholder="Data de nascimento"
               disabled
-              value={user?.birthDate || "01/01/1990"}
+              value={user?.birthDate || "Não definido"}
             />
             <Input
-              className="h-[64px]"
+              className="h-[94px]"
               placeholder="Setor"
               disabled
               value={user?.sector?.name || "Não definido"}
             />
             <Input
-              className="h-[64px]"
+              className="h-[94px]"
               placeholder="Email"
+              disabled
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
             />
-            <div className="col-span-full">
-              <Button
-                onClick={handleUpdateInfo}
-                type="button"
-                className="h-[55px] w-full bg-[#A6E0FF] hover:bg-[#87CEEB] text-[#00679D]"
-              >
-                Salvar
-              </Button>
-            </div>
           </form>
         </section>
 

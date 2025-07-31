@@ -25,7 +25,6 @@ import { ExpandedRowWithLoad } from "./ExpandedRowWithLoad";
 // Serviços e utilitários
 import { api } from "@/services/api";
 
-
 export function OccurrencesT() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -45,7 +44,6 @@ export function OccurrencesT() {
     endDate: null,
   });
   const [filterStatus, setFilterStatus] = useState(null);
-
 
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
   const [returnReason, setReturnReason] = useState("");
@@ -68,7 +66,7 @@ export function OccurrencesT() {
           page,
           districtId: filterNeighborhood, // bairro
           street: searchTerm, // rua
-          type: filterType,
+          occurrenceType: filterType,
           orderBy: filterRecent, // 'recent' ou 'oldest'
           startDate: filterDateRange.startDate
             ? format(filterDateRange.startDate, "yyyy-MM-dd")
@@ -76,7 +74,7 @@ export function OccurrencesT() {
           endDate: filterDateRange.endDate
             ? format(filterDateRange.endDate, "yyyy-MM-dd")
             : null,
-          status: filterStatus, 
+          status: filterStatus,
         },
       });
 
@@ -244,7 +242,7 @@ export function OccurrencesT() {
             setFilterNeighborhood(neighborhood)
           }
           onFilterDateRange={(range) => setFilterDateRange(range)}
-          onFilterStatus={(status) => setFilterStatus(status)} 
+          onFilterStatus={(status) => setFilterStatus(status)}
           handleApplyFilters={handleApplyFilters}
         />
       </div>

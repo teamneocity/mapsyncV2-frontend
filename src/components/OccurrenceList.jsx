@@ -17,7 +17,7 @@ export function OccurrenceList({
     serviceorders?.length > 0
       ? serviceorders.map((s) => ({
           ...s.occurrence,
-          isEmergencial: s.occurrence?.isEmergencial, // garante que venha
+          isEmergencial: s.occurrence?.isEmergencial, 
         }))
       : occurrences;
 
@@ -43,12 +43,12 @@ export function OccurrenceList({
       aprovada: "bg-[#EFFBFF] text-[#33CFFF]",
       os_gerada: "bg-[#f0ddee] text-[#733B73]",
       aguardando_execucao: "bg-[#f0ddee] text-[#733B73]",
-      em_execucao : "bg-[#FFF4D6] text-[#986F00]",
-      finalizada :  "bg-[#DDF2EE] text-[#40C4AA]",
+      em_execucao: "bg-[#FFF4D6] text-[#986F00]",
+      finalizada: "bg-[#DDF2EE] text-[#40C4AA]",
       pendente: "bg-[#E8F7FF] text-[#33CFFF]",
       aceita: "bg-[#FFF4D6] text-[#986F00]",
       verificada: "bg-[#DDF2EE] text-[#40C4AA]",
-      rejeitada:"bg-[#FFE8E8] text-[#9D0000]"
+      rejeitada: "bg-[#FFE8E8] text-[#9D0000]",
     };
 
     return map[status] || "bg-gray-100 text-gray-600";
@@ -76,7 +76,7 @@ export function OccurrenceList({
       pendente: "Pendente",
       aceita: "Aceita",
       verificada: "Verificada",
-      rejeitada: "Rejeitada"
+      rejeitada: "Rejeitada",
     };
 
     const isHoveringEmergencial = isEmergencial && hovering;
@@ -162,7 +162,7 @@ export function OccurrenceList({
                     <div className="flex justify-between items-start">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
-                          {occ.protocol || occ.protocolNumber ||"—"}
+                          {occ.protocol || occ.protocolNumber || "—"}
                         </div>
                         <div className="text-xs text-gray-500">
                           {occ.createdAt
@@ -195,7 +195,9 @@ export function OccurrenceList({
                         <span className="text-xs font-medium text-gray-400 block">
                           Bairro
                         </span>
-                        {occ?.address?.neighborhoodName || occ?.address?.neighborhood || "—"}
+                        {occ?.address?.neighborhoodName ||
+                          occ?.address?.neighborhood ||
+                          "—"}
                       </div>
                       <div>
                         <span className="text-xs font-medium text-gray-400 block">

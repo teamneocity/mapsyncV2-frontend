@@ -54,7 +54,7 @@ export function ServiceOrder() {
           limit: 6,
           street: searchTerm, // rua
           districtId: filterNeighborhood, // bairro
-          type: filterType,
+          occurrenceType: filterType,
           status: filterStatus,
           orderBy: filterRecent, // 'recent' ou 'oldest'
           startDate: filterDateRange.startDate
