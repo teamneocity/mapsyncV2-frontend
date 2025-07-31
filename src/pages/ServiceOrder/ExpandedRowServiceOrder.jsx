@@ -167,36 +167,43 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   // Finaliza a ocorrencia
   const handleFinalizeExecution = async () => {
     const serviceOrderId = occurrence?.id;
+    const occurrenceId = occurrence?.occurrence?.id;
 
-    if (!serviceOrderId || !selectedPhoto) {
-      alert("ID da OS ou imagem ausente.");
+    if (!serviceOrderId || !selectedPhoto || !occurrenceId) {
+      alert("ID da OS, ocorrência ou imagem ausente.");
       return;
     }
 
     try {
+      // Envia a imagem final e finaliza a OS
       const formData = new FormData();
       formData.append("serviceOrderId", serviceOrderId);
       formData.append("photos", selectedPhoto);
 
-      const uploadResponse = await api.post(
-        "/service-orders/finalize",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      await api.post("/service-orders/finalize", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       toast({ title: "Execução finalizada com sucesso!" });
       setSelectedPhoto(null);
       setIsFinalizeModalOpen(false);
 
-      // 🔁 Salva o ID da foto final para usar na próxima ocorrência
-      const finalPhotoId = occurrence?.occurrence?.photos?.final?.[0];
-      setFormFotoId(finalPhotoId || "");
+      // Replica a imagem final da ocorrência original
+      const replicateResponse = await api.post(
+        "/occurrences/attachments/replicate-from-occurrence",
+        {
+          occurrenceId,
+        }
+      );
 
-      // Se for do setor de drenagem, sugere criar ocorrência de pavimentação
+      const novoAttachmentId = replicateResponse?.data?.attachmentId;
+
+      // Armazena o ID do novo anexo para ser usado como imagem inicial
+      setFormFotoId(novoAttachmentId || "");
+
+      // Se for do setor de drenagem, pergunta se quer criar nova ocorrência
       if (occurrence?.sector?.name?.toLowerCase().includes("drenagem")) {
         setIsCreatePavingModalOpen(true);
       }

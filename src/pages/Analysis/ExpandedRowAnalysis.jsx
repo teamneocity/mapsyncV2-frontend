@@ -36,6 +36,12 @@ export function ExpandedRowAnalysis({
     fetchSectors();
   }, []);
 
+  useEffect(() => {
+    if (typeof occurrence.isEmergencial === "boolean") {
+      setIsEmergencialSelection(occurrence.isEmergencial);
+    }
+  }, [occurrence]);
+
   const createdAt = occurrence.createdAt
     ? format(new Date(occurrence.createdAt), "dd/MM/yyyy HH:mm")
     : "Data não informada";
