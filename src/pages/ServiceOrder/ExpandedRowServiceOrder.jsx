@@ -14,7 +14,6 @@ import { ServiceOrderPdf } from "./ServiceOrderPdf";
 import { useToast } from "@/hooks/use-toast";
 import { Calendar } from "lucide-react";
 
-
 import { api } from "@/services/api";
 
 export function ExpandedRowServiceOrder({ occurrence }) {
@@ -40,6 +39,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   const [isCreatePavingModalOpen, setIsCreatePavingModalOpen] = useState(false);
 
   const [initialPhoto, setInitialPhoto] = useState(null);
+  const [selectedUploadPhoto, setSelectedUploadPhoto] = useState(null);
 
   const [formTipo, setFormTipo] = useState("TAPA_BURACO");
   const [formDescricao, setFormDescricao] = useState(
@@ -206,12 +206,27 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   const handleCreatePavingOccurrence = async () => {
     try {
       const address = occurrence?.occurrence?.address;
-      const sectorId = occurrence?.sector?.id;
+      const setorAtualId = occurrence?.sector?.id;
 
-      if (!address || !sectorId) {
+      if (!address || !setorAtualId) {
         throw new Error("Endereço ou setor não encontrado.");
       }
 
+      // 🟡 Upload da imagem (se tiver sido selecionada)
+      let fotoId = "";
+
+      if (selectedUploadPhoto) {
+        const uploadForm = new FormData();
+        uploadForm.append("file", selectedUploadPhoto);
+
+        const uploadResponse = await api.post("/upload", uploadForm, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        fotoId = uploadResponse.data?.id || "";
+      }
+
+      // 🟡 Corpo da ocorrência
       const body = {
         type: formTipo,
         description: formDescricao,
@@ -222,20 +237,28 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         latitude: parseFloat(address.latitude),
         longitude: parseFloat(address.longitude),
         isEmergencial: formEmergencial,
-        initialPhotosUrls:
-          formFotoId && /^[0-9a-fA-F\-]{36}$/.test(formFotoId)
-            ? [formFotoId]
-            : [],
+        initialPhotosUrls: fotoId ? [fotoId] : [],
       };
 
       console.log("📦 Enviando:", body);
 
       const response = await api.post("/occurrences/employee", body);
 
-      if (response?.status === 201) {
+      if (response?.status === 201 && response.data?.data) {
+        const novaOcorrenciaId = response.data.data;
+
+        // 🟢 Aprova para setor de pavimentação
+        const setorPavimentacaoId = "3500cd38-d37c-44dc-9e85-f94290a7881a"; // Substitua se for necessário
+
+        await api.post("/occurrences/approve", {
+          occurrenceId: novaOcorrenciaId,
+          sectorId: setorPavimentacaoId,
+        });
+
         toast({
-          title: "Ocorrência enviada com sucesso!",
-          description: "A ocorrência foi criada e está aguardando análise.",
+          title: "Ocorrência criada e encaminhada com sucesso!",
+          description:
+            "A nova ocorrência foi enviada ao setor de pavimentação.",
         });
       } else {
         throw new Error("Falha inesperada ao criar a ocorrência.");
@@ -250,8 +273,10 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     } finally {
       setIsCreatePavingModalOpen(false);
       setFormFotoId("");
+      setSelectedUploadPhoto(null); // limpa foto
     }
   };
+
   const typeLabels = {
     TAPA_BURACO: "Buraco",
     AUSENCIA_DE_MEIO_FIO: "Ausência de meio fio",
@@ -444,6 +469,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 onClick={async () => {
                   await handleStartExecution();
                   setIsModalOpen(false);
+                  window.location.reload();
                 }}
                 className="flex items-center justify-center gap-2 w-full rounded-2xl bg-black hover:bg-gray-900 text-white py-3 font-medium text-sm transition"
               >
@@ -485,6 +511,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 onClick={async () => {
                   await handleFinalizeExecution();
                   setIsFinalizeModalOpen(false);
+                  window.location.reload();
                 }}
                 disabled={!selectedPhoto}
                 className={`flex items-center justify-center gap-2 w-full rounded-2xl ${
@@ -562,17 +589,19 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 </label>
               </div>
 
-              {/* Foto (simulação com ID manual por enquanto) */}
+              {/* Upload de foto */}
               <div>
                 <label className="text-sm font-medium text-gray-700">
-                  ID da foto (opcional)
+                  Foto inicial
                 </label>
                 <input
-                  type="text"
-                  value={formFotoId}
-                  onChange={(e) => setFormFotoId(e.target.value)}
+                  type="file"
+                  accept="image/png, image/jpeg"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    setSelectedUploadPhoto(file);
+                  }}
                   className="w-full border border-gray-300 rounded-lg p-2 text-sm"
-                  placeholder="UUID da imagem"
                 />
               </div>
             </div>
