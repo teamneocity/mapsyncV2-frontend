@@ -128,15 +128,15 @@ export function AppRoutes() {
         element={isAdmin || isChief ? <UserManagement /> : <Navigate to="/" />}
       />
       {/* Rota: /feedback */}
-      <Route
+      {/* <Route
         path="/feedback"
         element={canSeeAll || isChief ? <Feedback /> : <Navigate to="/" />}
-      />
+      /> */}
       {/* Rotas livres (não aparecem na Sidebar) */}
 
       <Route path="/userprofile" element={<UserProfile />} />
       <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/settings" element={<Settings />} />
+      {/* <Route path="/settings" element={<Settings />} /> */}
       {/* Admin/Gestor apenas */}
       {["admin", "gestor"].includes(user.role) ? (
         <>

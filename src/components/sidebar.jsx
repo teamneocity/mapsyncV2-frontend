@@ -141,7 +141,7 @@ export function Sidebar() {
             </div>
           </div>
 
-          <div className="w-full border-b pb-3">
+          {/* <div className="w-full border-b pb-3">
             <p className="text-base font-normal mb-2 text-[#4B4B62]">Ajustes</p>
             <div className="flex flex-col gap-1 text-[#787891]">
               <Link
@@ -151,7 +151,7 @@ export function Sidebar() {
                 <SettingsWindow className="w-5 h-5 shrink-0" /> Configurações
               </Link>
 
-              {/* {(isAdmin || isChief) && (
+              {(isAdmin || isChief) && (
                 <>
                   <Link
                     to="/userManagement"
@@ -160,11 +160,11 @@ export function Sidebar() {
                     <IconUsers className="w-5 h-5 shrink-0" /> Usuários
                   </Link>
                 </>
-              )} */}
+              )}
             </div>
-          </div>
+          </div> */}
 
-          {(canSeeAll || isChief) && (
+          {/* {(canSeeAll || isChief) && (
             <div className="mt-3 w-full">
               <p className="text-base font-normal mb-2 text-[#4B4B62]">
                 Suporte
@@ -176,7 +176,7 @@ export function Sidebar() {
                 <IconFeedback className="w-5 h-5 shrink-0" /> Feedback
               </Link>
             </div>
-          )}
+          )} */}
         </nav>
 
         <div className="mt-auto w-full">
@@ -332,13 +332,13 @@ export function Sidebar() {
                     </>
                   )}
                   {/* Ajustes */}
-                  <Link
+                  {/* <Link
                     to="/dashboard"
                     className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
                   >
                     <SettingsWindow className="w-5 h-5 shrink-0" />{" "}
                     Configurações
-                  </Link>
+                  </Link> */}
                   {/* {(canSeeAll || isChief) && (
                     <>
                       <Link
@@ -349,14 +349,14 @@ export function Sidebar() {
                       </Link>
                     </>
                   )} */}
-                  {(canSeeAll || isChief) && (
+                  {/* {(canSeeAll || isChief) && (
                     <Link
                       to="/feedback"
                       className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900 text-md"
                     >
                       <IconFeedback className="w-5 h-5 shrink-0" /> Feedback
                     </Link>
-                  )}
+                  )} */}
                 </div>
               </nav>
 
