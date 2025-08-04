@@ -29,12 +29,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -49,7 +44,6 @@ import { api } from "@/services/api";
 
 // Assets
 import Trash from "@/assets/icons/trash.svg?react";
-
 
 export function SectorAdmin() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -110,8 +104,7 @@ export function SectorAdmin() {
         inspectorIds: [selectedInspectorId],
       });
 
-      setIsAddInspectorDialogOpen(false);
-      setSelectedInspectorId("");
+      setSelectedInspectorId(""); // limpa select
       const response = await api.get("/sectors/details");
       setAllSectors(response.data.sectors);
     } catch (error) {
@@ -130,10 +123,7 @@ export function SectorAdmin() {
         teamName: newTeamName,
       });
 
-      setNewTeamName("");
-      setIsAddDialogOpen(false);
-
-      // Atualiza os dados localmente (opcional)
+      setNewTeamName(""); // limpa o campo
       const updated = await api.get("/sectors/details");
       setAllSectors(updated.data.sectors);
     } catch (error) {
@@ -167,9 +157,10 @@ export function SectorAdmin() {
         serviceNatureName: newServiceName,
       });
 
+      // limpa o campo de nome, mas mantém o modal aberto e a equipe selecionada
       setNewServiceName("");
-      setSelectedTeamId(null);
 
+      // atualiza os dados do setor
       const updated = await api.get("/sectors/details");
       setAllSectors(updated.data.sectors);
     } catch (error) {
@@ -203,9 +194,7 @@ export function SectorAdmin() {
         foremenName: newForemanName,
       });
 
-      setNewForemanName("");
-      setSelectedTeamId(null);
-
+      setNewForemanName(""); // apenas limpa o campo
       const updated = await api.get("/sectors/details");
       setAllSectors(updated.data.sectors);
     } catch (error) {
@@ -238,9 +227,7 @@ export function SectorAdmin() {
         chiefIds: [selectedChiefId],
       });
 
-      setIsAddDialogOpen(false);
-      setSelectedChiefId("");
-
+      setSelectedChiefId(""); // mantém o modal aberto
       const response = await api.get("/sectors/details");
       setAllSectors(response.data.sectors);
     } catch (error) {
