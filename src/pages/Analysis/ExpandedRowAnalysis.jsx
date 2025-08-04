@@ -132,9 +132,10 @@ export function ExpandedRowAnalysis({
               </label>
               <select
                 value={isEmergencialSelection ? "true" : "false"}
-                onChange={(e) =>
-                  setIsEmergencialSelection(e.target.value === "true")
-                }
+                onChange={(e) => {
+                  const booleanValue = e.target.value === "true";
+                  setIsEmergencialSelection(booleanValue);
+                }}
                 className={`w-full p-2 rounded text-sm h-[55px] ${
                   isEmergencialSelection
                     ? "text-red-600 font-semibold"
@@ -160,11 +161,19 @@ export function ExpandedRowAnalysis({
             />
           </div>
         </div>
+
         <Button
           className="w-full bg-[#FFF0E6] h-[64px] hover:bg-orange-200 text-[#FF7A21] flex items-center justify-center gap-2"
-          onClick={() =>
-            handleForwardOccurrence(occurrence.id, isEmergencialSelection)
-          }
+          onClick={() => {
+            console.log("🔍 Enviando:", {
+              isEmergencialSelection,
+              enviado: isEmergencialSelection === true,
+            });
+            handleForwardOccurrence(
+              occurrence.id,
+              isEmergencialSelection === true
+            );
+          }}
         >
           Encaminhar
           <ThumbsUp className="w-4 h-4" />

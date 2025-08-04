@@ -7,6 +7,11 @@ export function MediaMapSection({ photoUrls = [], lat, lng, className = "" }) {
   const [mapOpen, setMapOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+
   const prevImage = () =>
     setCurrentIndex((prev) => (prev === 0 ? photoUrls.length - 1 : prev - 1));
 
@@ -68,11 +73,46 @@ export function MediaMapSection({ photoUrls = [], lat, lng, className = "" }) {
           {/* Modal só aparece se tiver imagem */}
           {currentPhoto.url && (
             <DialogContent className="max-w-4xl w-full">
-              <img
-                src={currentPhoto.url}
-                alt={`Imagem expandida ${currentIndex + 1}`}
-                className="w-full max-h-[80vh] object-contain"
-              />
+              <div
+                onDoubleClick={() => {
+                  setZoomLevel((prev) => (prev >= 3 ? 1 : prev + 1));
+                  setOffset({ x: 0, y: 0 });
+                }}
+                onMouseDown={(e) => {
+                  if (zoomLevel > 1) {
+                    setIsDragging(true);
+                    setDragStart({
+                      x: e.clientX - offset.x,
+                      y: e.clientY - offset.y,
+                    });
+                  }
+                }}
+                onMouseMove={(e) => {
+                  if (isDragging) {
+                    setOffset({
+                      x: e.clientX - dragStart.x,
+                      y: e.clientY - dragStart.y,
+                    });
+                  }
+                }}
+                onMouseUp={() => setIsDragging(false)}
+                onMouseLeave={() => setIsDragging(false)}
+                className={`w-full h-full flex items-center justify-center overflow-hidden ${
+                  zoomLevel > 1 ? "cursor-grabbing" : "cursor-zoom-in"
+                }`}
+              >
+                <img
+                  src={currentPhoto.url}
+                  alt={`Imagem expandida ${currentIndex + 1}`}
+                  className="transition-transform duration-300 object-contain"
+                  style={{
+                    maxHeight: "80vh",
+                    transform: `scale(${zoomLevel}) translate(${offset.x}px, ${offset.y}px)`,
+                    cursor: zoomLevel > 1 ? "grab" : "zoom-in",
+                  }}
+                  draggable={false}
+                />
+              </div>
             </DialogContent>
           )}
         </Dialog>
