@@ -21,19 +21,32 @@ export function ExpandedRowAnalysis({
 }) {
   const [sectors, setSectors] = useState([]);
   const [isEmergencialSelection, setIsEmergencialSelection] = useState(false);
+  const [neighborhoods, setNeighborhoods] = useState([]);
+  const [editableNeighborhoodId, setEditableNeighborhoodId] = useState(
+    occurrence.address?.neighborhoodId || ""
+  );
 
   useEffect(() => {
     async function fetchSectors() {
       try {
         const response = await api.get("/sectors/names");
-        console.log("Setores carregados:", response.data.sectors);
         setSectors(response.data.sectors);
       } catch (error) {
         console.error("Erro ao buscar setores:", error);
       }
     }
 
+    async function fetchNeighborhoods() {
+      try {
+        const response = await api.get("/neighborhoods");
+        setNeighborhoods(response.data.neighborhoods); // corrigido aqui
+      } catch (error) {
+        console.error("Erro ao buscar bairros:", error);
+      }
+    }
+
     fetchSectors();
+    fetchNeighborhoods();
   }, []);
 
   useEffect(() => {
@@ -55,6 +68,8 @@ export function ExpandedRowAnalysis({
   const zip = occurrence.address?.zipCode || "Não informado";
   const bairro = occurrence.address?.neighborhoodName || "Não informado";
   const regiao = occurrence.address?.state || "Não informado";
+
+  
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 bg-[#F7F7F7] p-4 rounded-lg shadow-sm text-sm">
@@ -107,8 +122,9 @@ export function ExpandedRowAnalysis({
       </div>
 
       {/* Coluna 2 - Edição */}
-      <div className="flex flex-col justify-between space-y-6 h-full">
-        <div className="space-y-6">
+      <div className="flex flex-col justify-between space-y-4 h-full">
+        <div className="space-y-4">
+          {/* Setor responsável */}
           <div>
             <label className="font-semibold block mb-1 text-[#787891]">
               Setor responsável
@@ -125,29 +141,49 @@ export function ExpandedRowAnalysis({
                 </option>
               ))}
             </select>
-
-            <div className="mt-4">
-              <label className="font-semibold block mb-1 text-[#787891]">
-                Classificação
-              </label>
-              <select
-                value={isEmergencialSelection ? "true" : "false"}
-                onChange={(e) => {
-                  const booleanValue = e.target.value === "true";
-                  setIsEmergencialSelection(booleanValue);
-                }}
-                className={`w-full p-2 rounded text-sm h-[55px] ${
-                  isEmergencialSelection
-                    ? "text-red-600 font-semibold"
-                    : "text-[#787891]"
-                }`}
-              >
-                <option value="false">Não emergencial</option>
-                <option value="true">Emergencial</option>
-              </select>
-            </div>
           </div>
 
+          {/* Bairro da ocorrência */}
+          <div>
+            <label className="font-semibold block mb-1 text-[#787891]">
+              Bairro da ocorrência
+            </label>
+            <select
+              value={editableNeighborhoodId}
+              onChange={(e) => setEditableNeighborhoodId(e.target.value)}
+              className="w-full p-2 rounded h-[55px] text-[#787891]"
+            >
+              <option value="">Selecione o bairro</option>
+              {neighborhoods.map((neighborhood) => (
+                <option key={neighborhood.id} value={neighborhood.id}>
+                  {neighborhood.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Classificação */}
+          <div>
+            <label className="font-semibold block mb-1 text-[#787891]">
+              Classificação
+            </label>
+            <select
+              value={isEmergencialSelection ? "true" : "false"}
+              onChange={(e) =>
+                setIsEmergencialSelection(e.target.value === "true")
+              }
+              className={`w-full p-2 rounded text-sm h-[55px] ${
+                isEmergencialSelection
+                  ? "text-red-600 font-semibold"
+                  : "text-[#787891]"
+              }`}
+            >
+              <option value="false">Não emergencial</option>
+              <option value="true">Emergencial</option>
+            </select>
+          </div>
+
+          {/* Anotações da ocorrência */}
           <div>
             <label className="font-semibold block mb-1">
               Anotações da ocorrência
@@ -162,17 +198,25 @@ export function ExpandedRowAnalysis({
           </div>
         </div>
 
+        {/* Botão encaminhar */}
         <Button
           className="w-full bg-[#FFF0E6] h-[64px] hover:bg-orange-200 text-[#FF7A21] flex items-center justify-center gap-2"
-          onClick={() => {
-            console.log("🔍 Enviando:", {
-              isEmergencialSelection,
-              enviado: isEmergencialSelection === true,
-            });
-            handleForwardOccurrence(
-              occurrence.id,
-              isEmergencialSelection === true
-            );
+          onClick={async () => {
+            if (
+              editableNeighborhoodId !== occurrence.address?.neighborhoodId &&
+              occurrence.status === "em_analise"
+            ) {
+              try {
+                await api.patch(`/occurrences/${occurrence.id}/neighborhood`, {
+                  neighborhoodId: editableNeighborhoodId,
+                });
+              } catch (error) {
+                alert("Erro ao atualizar bairro: " + error.message);
+                return;
+              }
+            }
+
+            handleForwardOccurrence(occurrence.id, isEmergencialSelection);
           }}
         >
           Encaminhar
