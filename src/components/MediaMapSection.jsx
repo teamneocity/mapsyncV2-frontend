@@ -1,6 +1,14 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { GoogleMaps } from "@/components/googleMaps";
+
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 export function MediaMapSection({ photoUrls = [], lat, lng, className = "" }) {
   const [photoOpen, setPhotoOpen] = useState(false);
@@ -73,6 +81,12 @@ export function MediaMapSection({ photoUrls = [], lat, lng, className = "" }) {
           {/* Modal só aparece se tiver imagem */}
           {currentPhoto.url && (
             <DialogContent className="max-w-4xl w-full">
+              <VisuallyHidden>
+                <DialogTitle>Visualização da Imagem</DialogTitle>
+                <DialogDescription>
+                  Imagem expandida do serviço executado
+                </DialogDescription>
+              </VisuallyHidden>
               <div
                 onDoubleClick={() => {
                   setZoomLevel((prev) => (prev >= 3 ? 1 : prev + 1));
@@ -125,6 +139,12 @@ export function MediaMapSection({ photoUrls = [], lat, lng, className = "" }) {
             </div>
           </DialogTrigger>
           <DialogContent className="max-w-5xl w-full h-[80vh]">
+            <VisuallyHidden>
+              <DialogTitle>Mapa de localização</DialogTitle>
+              <DialogDescription>
+                Visualização ampliada do local da ocorrência
+              </DialogDescription>
+            </VisuallyHidden>
             <GoogleMaps position={{ lat, lng }} fullHeight label="ocorrencia" />
           </DialogContent>
         </Dialog>

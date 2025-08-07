@@ -51,6 +51,9 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   const [newScheduledDate, setNewScheduledDate] = useState(null);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
 
+  const [isRescheduleHistoryModalOpen, setIsRescheduleHistoryModalOpen] =
+    useState(false);
+
   // Abre o pdf
   const handleOpenPdfInNewTab = async () => {
     let base64Image = null;
@@ -309,15 +312,23 @@ export function ExpandedRowServiceOrder({ occurrence }) {
               <strong>Data:</strong>{" "}
               {format(new Date(occurrence.createdAt), "dd/MM/yyyy 'às' HH:mm")}
             </p>
-            <p>
-              <strong>Data agendada:</strong>{" "}
-              {occurrence.scheduledDate
-                ? format(
-                    new Date(occurrence.scheduledDate),
-                    "dd/MM/yyyy 'às' HH:mm"
-                  )
-                : "—"}
-            </p>
+            {/* Data agendada estilizada como botão */}
+            <div>
+              <label className="text-sm text-[#787891] font-semibold mb-1 block">
+                Data agendada:
+              </label>
+              <button
+                onClick={() => setIsRescheduleHistoryModalOpen(true)}
+                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-left bg-[#F8F8F8] hover:bg-gray-200 transition"
+              >
+                {occurrence.scheduledDate
+                  ? format(
+                      new Date(occurrence.scheduledDate),
+                      "dd/MM/yyyy 'às' HH:mm"
+                    )
+                  : "—"}
+              </button>
+            </div>
 
             <p>
               <strong>Enviado por:</strong>{" "}
@@ -658,6 +669,64 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 className="text-sm text-gray-500 underline hover:text-gray-700 transition"
               >
                 Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isRescheduleHistoryModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
+          <div className="bg-white rounded-[2rem] w-full max-w-md p-6 shadow-lg space-y-5 text-left">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Histórico de reagendamentos
+            </h2>
+
+            {occurrence?.rescheduleHistory?.length > 0 ? (
+              <ul className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                {occurrence.rescheduleHistory.map((item, index) => (
+                  <li
+                    key={index}
+                    className="border rounded-lg p-3 bg-[#F8F8F8] text-sm text-gray-800"
+                  >
+                    <p>
+                      <strong>Data anterior:</strong>{" "}
+                      {format(
+                        new Date(item.previousScheduledDate),
+                        "dd/MM/yyyy 'às' HH:mm"
+                      )}
+                    </p>
+                    <p>
+                      <strong>Nova data:</strong>{" "}
+                      {format(
+                        new Date(item.newScheduledDate),
+                        "dd/MM/yyyy 'às' HH:mm"
+                      )}
+                    </p>
+                    <p>
+                      <strong>Reagendado por:</strong>{" "}
+                      {item.rescheduledBy?.name || "—"}
+                    </p>
+                    <p>
+                      <strong>Data do reagendamento:</strong>{" "}
+                      {format(
+                        new Date(item.rescheduledAt),
+                        "dd/MM/yyyy 'às' HH:mm"
+                      )}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-600">Nenhum reagendamento registrado.</p>
+            )}
+
+            <div className="pt-4">
+              <button
+                onClick={() => setIsRescheduleHistoryModalOpen(false)}
+                className="text-sm text-gray-500 underline hover:text-gray-700 transition w-full"
+              >
+                Fechar
               </button>
             </div>
           </div>

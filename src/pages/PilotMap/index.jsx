@@ -9,7 +9,14 @@ import { TrendingUp } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
 import { Filters } from "@/components/filters";
-import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,         // ⬅️ adicionar isso
+  DialogDescription,   // ⬅️ e isso
+} from "@/components/ui/dialog";
+
 import { GoogleMaps } from "@/components/googleMaps";
 
 // Serviços e utilitários
@@ -17,7 +24,6 @@ import { api } from "@/services/api";
 
 // Assets
 import Bars from "@/assets/icons/Bars.svg?react";
-
 
 export function PilotMap() {
   const [pilots, setPilots] = useState([]);
@@ -138,7 +144,7 @@ export function PilotMap() {
               return (
                 <div
                   key={item.id || index}
-                  className="bg-[#F7F7F7] rounded-2xl shadow-sm w-full h-[630px] overflow-hidden flex flex-col"
+                  className="bg-[#F7F7F7] rounded-2xl shadow-sm w-full h-[630px] overflow-hidden flex flex-col min-w-0 break-words"
                 >
                   {/* MAPA */}
                   <div className="relative w-full h-[315px] p-2 shrink-0">
@@ -163,6 +169,14 @@ export function PilotMap() {
                       </DialogTrigger>
 
                       <DialogContent className="max-w-5xl w-full h-[80vh]">
+                        <DialogTitle className="sr-only">
+                          Mapa do piloto
+                        </DialogTitle>
+                        <DialogDescription className="sr-only">
+                          Este modal mostra a localização atual do piloto em
+                          tempo real.
+                        </DialogDescription>
+
                         <GoogleMaps
                           position={position}
                           label="Piloto"
@@ -175,9 +189,9 @@ export function PilotMap() {
 
                   {/* CONTEÚDO COM SCROLL */}
                   <div className="overflow-y-auto px-2 pb-4 flex-1">
-                    <div className="h-full flex flex-col lg:flex-row gap-6 items-stretch">
+                    <div className="flex flex-col xl:flex-row gap-6 items-stretch min-w-0">
                       {/* Info piloto */}
-                      <div className="bg-white p-3 rounded-xl w-full max-w-[320px] text-[#787891] text-sm space-y-1">
+                      <div className="bg-white p-3 rounded-xl w-full max-w-[440px] xl:max-w-[320px] text-[#787891] text-sm space-y-1 break-words min-w-0">
                         <p>
                           <strong>Status:</strong>{" "}
                           <span
@@ -191,41 +205,41 @@ export function PilotMap() {
                           </span>
                         </p>
 
-                        <p>
+                        <p className="break-words">
                           <strong>Piloto:</strong> {item.name}
                         </p>
-                        <p>
+                        <p className="break-words">
                           <strong>Telefone:</strong> Não informado
                         </p>
-                        <p>
+                        <p className="break-words">
                           <strong>Data:</strong> {item.data}
                         </p>
-                        <p>
+                        <p className="break-words">
                           <strong>Bairro:</strong> {item.bairro}
                         </p>
-                        <p>
+                        <p className="break-words">
                           <strong>CEP:</strong> {item.cep}
                           <strong className="ml-4">Zona:</strong> {item.zona}
                         </p>
-                        <p>
+                        <p className="break-words">
                           <strong>Endereço:</strong> {item.endereco}
                         </p>
-                        <p>
+                        <p className="break-words">
                           <strong>Longitude:</strong> {item.longitude}
                         </p>
-                        <p>
+                        <p className="break-words">
                           <strong>Latitude:</strong> {item.latitude}
                         </p>
-                        <p>
+                        <p className="break-words">
                           <strong>Tempo de percurso:</strong> {item.stats.tempo}
                         </p>
-                        <p>
+                        <p className="break-words">
                           <strong>Km percorrido:</strong> {item.stats.km}
                         </p>
                       </div>
 
                       {/* Indicadores */}
-                      <div className="flex flex-col justify-between w-full h-full gap-2">
+                      <div className="flex flex-col justify-between w-full h-full gap-2 min-w-0">
                         {/* Ocorrências */}
                         <div className="bg-white rounded-xl border shadow px-4 pt-4 pb-2 flex flex-col justify-between h-full">
                           <div className="flex items-start justify-between">
