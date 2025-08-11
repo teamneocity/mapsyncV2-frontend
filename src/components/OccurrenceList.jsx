@@ -10,6 +10,8 @@ export function OccurrenceList({
   serviceorders,
   renderExpandedRow,
   showEmergencialStatus = false,
+  dateOrder = "recent",
+  onToggleDateOrder,
 }) {
   const [expandedRows, setExpandedRows] = useState(new Set());
 
@@ -17,7 +19,7 @@ export function OccurrenceList({
     serviceorders?.length > 0
       ? serviceorders.map((s) => ({
           ...s.occurrence,
-          isEmergencial: s.occurrence?.isEmergencial, 
+          isEmergencial: s.occurrence?.isEmergencial,
         }))
       : occurrences;
 
@@ -104,12 +106,28 @@ export function OccurrenceList({
       <div className="hidden xl:block bg-[#D9DCE2] text-[#020231] font-semibold rounded-xl px-4 py-5 border border-gray-200 mb-2 md:text-sm">
         <div className="grid grid-cols-12 gap-4 items-center">
           <div className="col-span-1 pl-6" title="Data">
-            Data
+            <button
+              type="button"
+              onClick={() =>
+                onToggleDateOrder?.(
+                  dateOrder === "recent" ? "oldest" : "recent"
+                )
+              }
+              className="group inline-flex items-center gap-1 select-none"
+            >
+              Data
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${
+                  dateOrder === "recent" ? "" : "rotate-180"
+                }`}
+              />
+            </button>
           </div>
+
           <div className="col-span-1" title="Origem">
             Origem
           </div>
-          <div className="col-span-1" title="Protocolo">
+          <div className="col-span-1 " title="Protocolo">
             Protocolo
           </div>
           <div className="col-span-1 truncate" title="Enviado por">
@@ -251,8 +269,13 @@ export function OccurrenceList({
                     {occ.origin || "Plataforma"}
                   </div>
 
-                  <div className="col-span-1 text-sm">
-                    {occ.protocol || occ.protocolNumber || "—"}
+                  <div className="col-span-1 text-sm min-w-0">
+                    <span
+                      className="block truncate"
+                      title={occ.protocol || occ.protocolNumber || "—"}
+                    >
+                      {occ.protocol || occ.protocolNumber || "—"}
+                    </span>
                   </div>
 
                   <div className="col-span-1 flex items-center gap-2">

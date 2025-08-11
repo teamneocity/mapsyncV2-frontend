@@ -16,7 +16,6 @@ import { ExpandedRowA } from "./ExpandedRowA";
 // Serviços e utilitários
 import { api } from "@/services/api";
 
-
 export function OccurrencesA() {
   const [occurrences, setOccurrences] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,38 +29,42 @@ export function OccurrencesA() {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
+  const handleToggleDateOrder = (orderValue) => {
+    setOrder(orderValue); // 'recent' ou 'oldest'
+    setCurrentPage(1);
+    fetchInspections(); // recarrega já com nova ordem
+  };
+
   const fetchInspections = async () => {
-  try {
-    const queryParams = new URLSearchParams({
-      page: currentPage.toString(),
-      ...(street && { street }),
-      ...(neighborhoodId && { neighborhoodId }),
-      ...(order && { order }),
-      ...(type && { type }),
-      ...(status && { status }),
-      ...(startDate && {
-        startDate: startDate.toISOString().split("T")[0],
-      }),
-      ...(endDate && { endDate: endDate.toISOString().split("T")[0] }),
-    });
+    try {
+      const queryParams = new URLSearchParams({
+        page: currentPage.toString(),
+        ...(street && { street }),
+        ...(neighborhoodId && { neighborhoodId }),
+        ...(order && { order }),
+        ...(type && { type }),
+        ...(status && { status }),
+        ...(startDate && {
+          startDate: startDate.toISOString().split("T")[0],
+        }),
+        ...(endDate && { endDate: endDate.toISOString().split("T")[0] }),
+      });
 
-    const response = await api.get(
-      `/aerial-inspections?${queryParams.toString()}`
-    );
+      const response = await api.get(
+        `/aerial-inspections?${queryParams.toString()}`
+      );
 
-    const { inspections, totalCount } = response.data;
-    setOccurrences(inspections);
-    setTotalPages(Math.ceil(totalCount / 10));
-  } catch (error) {
-    console.error("Erro ao buscar inspeções:", error);
-  }
-};
+      const { inspections, totalCount } = response.data;
+      setOccurrences(inspections);
+      setTotalPages(Math.ceil(totalCount / 10));
+    } catch (error) {
+      console.error("Erro ao buscar inspeções:", error);
+    }
+  };
 
-useEffect(() => {
-  fetchInspections(currentPage);
-}, [currentPage]);
-
-
+  useEffect(() => {
+    fetchInspections(currentPage);
+  }, [currentPage]);
 
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
@@ -95,6 +98,8 @@ useEffect(() => {
 
       <OccurrenceList
         occurrences={occurrences}
+        dateOrder={order || "recent"} // nova prop
+        onToggleDateOrder={handleToggleDateOrder} // nova prop
         renderExpandedRow={(occ) => <ExpandedRowA occurrence={occ} />}
       />
 

@@ -59,6 +59,12 @@ export function OccurrencesT() {
     fetchOccurrences(1);
   };
 
+  // ⬇️ novo: alterna a ordenação por data
+  const handleToggleDateOrder = (order) => {
+    setFilterRecent(order); // 'recent' | 'oldest'
+    fetchOccurrences(1); // recarrega com a nova ordem
+  };
+
   const fetchOccurrences = async (page = 1) => {
     try {
       const response = await api.get("/occurrences", {
@@ -268,6 +274,8 @@ export function OccurrencesT() {
 
       <OccurrenceList
         occurrences={occurrences}
+        dateOrder={filterRecent ?? "recent"} // nova prop
+        onToggleDateOrder={handleToggleDateOrder} // nova prop
         renderExpandedRow={(occurrence) => (
           <ExpandedRowWithLoad
             occurrence={occurrence}

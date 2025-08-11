@@ -219,13 +219,11 @@ export function UserManagement() {
               onChange={(e) => setNewRole(e.target.value)}
             >
               <option value="SECTOR_CHIEF">Chefe de Setor</option>
-              <option value="SUPERVISOR">Supervisor</option>
-              <option value="MANAGER">Gestor</option>
+              <option value="CHIEF">Gestor</option>
               <option value="ANALYST">Analista</option>
               <option value="INSPECTOR">Inspetor</option>
               <option value="PILOT">Piloto</option>
               <option value="DRONE_OPERATOR">Operador de Drone</option>
-              <option value="CHIEF">Chefe Geral</option>
             </select>
 
             <div className="col-span-full">

@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import emurb from "@/assets/emurb.svg"; // ajuste o caminho se necessário
-import { LiveActionButton } from "@/components/live-action-button";
+
 import { useAuth } from "@/hooks/auth";
 import { Button } from "@/components/ui/button";
 import Leave from "@/assets/icons/leave.svg?react";
@@ -34,7 +34,7 @@ export function TopHeader() {
 
       {/* Botões do lado direito */}
       <div className="flex items-center gap-4">
-        <LiveActionButton />
+        
 
         {/* Botão de notificações */}
 

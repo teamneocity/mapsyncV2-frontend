@@ -6,6 +6,7 @@ import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { GoogleMaps } from "@/components/googleMaps";
 import { api } from "@/services/api";
 import { MediaMapSection } from "@/components/MediaMapSection";
+import { SelectStreetDialog } from "@/components/SelectStreetDialog";
 
 export function ExpandedRowAnalysis({
   occurrence,
@@ -68,8 +69,6 @@ export function ExpandedRowAnalysis({
   const zip = occurrence.address?.zipCode || "Não informado";
   const bairro = occurrence.address?.neighborhoodName || "Não informado";
   const regiao = occurrence.address?.state || "Não informado";
-
-  
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 bg-[#F7F7F7] p-4 rounded-lg shadow-sm text-sm">
@@ -161,6 +160,12 @@ export function ExpandedRowAnalysis({
               ))}
             </select>
           </div>
+          <SelectStreetDialog
+            occurrenceId={occurrence.id}
+            lat={parseFloat(occurrence.address?.latitude || 0)}
+            lng={parseFloat(occurrence.address?.longitude || 0)}
+            onSuccess={() => window.location.reload()} // ou set algum state se preferir
+          />
 
           {/* Classificação */}
           <div>

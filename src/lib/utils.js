@@ -6,12 +6,21 @@ export function cn(...inputs) {
 }
 
 
-export function getInicials(name) {
-  const parts = name.split(" ");
+export function getInicials(name = "") {
+  if (!name) return "";
   
-  // Pega a primeira letra de cada parte, converte para maiúscula e junta
-  const initials = parts.map(parte => parte.charAt(0).toUpperCase()).join("");
+  const parts = name.trim().split(/\s+/); // quebra e remove espaços extras
   
-  return initials;
+  if (parts.length === 1) {
+    // Se só tem um nome, pega só a primeira letra
+    return parts[0].charAt(0).toUpperCase();
+  }
+
+  // Pega primeira letra do primeiro nome e do último nome
+  const first = parts[0].charAt(0).toUpperCase();
+  const last = parts[parts.length - 1].charAt(0).toUpperCase();
+
+  return first + last;
 }
+
 

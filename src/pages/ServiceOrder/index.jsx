@@ -46,6 +46,11 @@ export function ServiceOrder() {
     fetchServiceOrders(1); // apenas carrega a página 1 inicialmente
   }, []);
 
+  const handleToggleDateOrder = (order) => {
+    setFilterRecent(order); // 'recent' | 'oldest'
+    fetchServiceOrders(1);
+  };
+
   const fetchServiceOrders = async (page = 1) => {
     console.log("📤 Enviando filtros:", {
       occurrenceType: filterType,
@@ -182,6 +187,8 @@ export function ServiceOrder() {
 
       <OccurrenceList
         occurrences={occurrences}
+        dateOrder={filterRecent ?? "recent"} // nova prop
+        onToggleDateOrder={handleToggleDateOrder} // nova prop
         renderExpandedRow={(occurrence) => (
           <ExpandedRowServiceOrder
             occurrence={occurrence.raw} // passa o dado original completo para o expandido
