@@ -42,6 +42,8 @@ export function ServiceOrder() {
   const [currentPage, setCurrentPage] = useState(1); // controla a página atual
   const [hasNextPage, setHasNextPage] = useState(false);
 
+  const PAGE_SIZE = 10; 
+
   useEffect(() => {
     fetchServiceOrders(1); // apenas carrega a página 1 inicialmente
   }, []);
@@ -65,7 +67,6 @@ export function ServiceOrder() {
       const response = await api.get("/service-orders", {
         params: {
           page,
-          limit: 6,
           street: searchTerm, // rua
           districtId: filterNeighborhood, // bairro
           occurrenceType: filterType,
@@ -102,11 +103,10 @@ export function ServiceOrder() {
 
       setOccurrences(flattened);
       setCurrentPage(page);
-      setHasNextPage(result.serviceorders?.length > 0);
+      setHasNextPage((result.serviceorders?.length ?? 0) === PAGE_SIZE);
     } catch (error) {
       console.error("❌ Erro ao buscar ordens de serviço:", error);
 
-      // se for erro do axios, loga detalhes da resposta
       if (error.response) {
         console.error("➡️ status:", error.response.status);
         console.error("➡️ data:", error.response.data);
@@ -137,6 +137,9 @@ export function ServiceOrder() {
   const handleDeleteImage = (imageId) => {
     console.log("Deletar imagem", imageId);
   };
+
+  
+
 
   const loadOptionsForOccurrence = async (occurrence) => {
     try {
@@ -187,11 +190,11 @@ export function ServiceOrder() {
 
       <OccurrenceList
         occurrences={occurrences}
-        dateOrder={filterRecent ?? "recent"} // nova prop
-        onToggleDateOrder={handleToggleDateOrder} // nova prop
+        dateOrder={filterRecent ?? "recent"} 
+        onToggleDateOrder={handleToggleDateOrder}
         renderExpandedRow={(occurrence) => (
           <ExpandedRowServiceOrder
-            occurrence={occurrence.raw} // passa o dado original completo para o expandido
+            occurrence={occurrence.raw} 
             loadOptionsForOccurrence={loadOptionsForOccurrence}
             selectedValues={selectedValues}
             setSelectedValues={setSelectedValues}

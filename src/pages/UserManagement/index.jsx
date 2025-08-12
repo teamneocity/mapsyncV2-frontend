@@ -22,6 +22,7 @@ import ImgUsers from "@/assets/icons/imgUsers.svg";
 import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
 import Trash from "@/assets/icons/trash.svg?react";
 
+import { useToast } from "@/hooks/use-toast";
 
 export function UserManagement() {
   const { user } = useAuth();
@@ -47,6 +48,7 @@ export function UserManagement() {
   const [selectedUser, setSelectedUser] = useState(null);
 
   const [hasNextPage, setHasNextPage] = useState(true);
+  const { toast } = useToast();
 
   async function handleCreateUser(e) {
     e.preventDefault();
@@ -57,7 +59,11 @@ export function UserManagement() {
         password: newPassword,
         role: newRole,
       });
-      alert("Usuário criado com sucesso!");
+      toast({
+        title: "Usuário criado",
+        description: "O usuário foi criado com sucesso!",
+        variant: "success",
+      });
       setNewName("");
       setNewEmail("");
       setNewPassword("");
@@ -65,7 +71,11 @@ export function UserManagement() {
       fetchUsers();
     } catch (error) {
       console.error(error);
-      alert("Erro ao criar usuário.");
+      toast({
+        title: "Erro",
+        description: "Não foi possível criar o usuário.",
+        variant: "destructive",
+      });
     }
   }
 
@@ -80,7 +90,7 @@ export function UserManagement() {
 
       setUsers(data);
       setCurrentPage(page);
-      setHasNextPage(data.length > 0); // se vier vazio, desativa botão "Próxima"
+      setHasNextPage(data.length > 0);
     } catch (error) {
       console.error("Erro ao buscar usuários:", error);
     }
@@ -124,9 +134,18 @@ export function UserManagement() {
                     await api.delete(`/employees/${selectedUser.id}`);
                     setRemoveModalOpen(false);
                     fetchUsers();
+                    toast({
+                      title: "Usuário removido",
+                      description: "O usuário foi removido com sucesso.",
+                      variant: "success",
+                    });
                   } catch (error) {
                     console.error("Erro ao remover:", error);
-                    alert("Erro ao remover usuário");
+                    toast({
+                      title: "Erro",
+                      description: "Não foi possível remover o usuário.",
+                      variant: "destructive",
+                    });
                   }
                 }}
                 className="bg-red-500 hover:bg-red-600 text-white"
@@ -145,7 +164,9 @@ export function UserManagement() {
         <section className="max-w-[1500px] w-full mx-auto bg-white rounded-xl p-2 flex flex-col xl:flex-row justify-between items-center gap-6">
           <div className="flex-1">
             <p className="text-sm text-zinc-800">
-              <span className="font-semibold">Opções de gerenciamente de usuários .</span>
+              <span className="font-semibold">
+                Opções de gerenciamente de usuários .
+              </span>
               Opções de gerenciamento de usuários. Saiba quais funções cada
               usuário pode desempenhar e quais permissões são atribuídas a cada
               perfil. Garantimos segurança, organização e personalização de

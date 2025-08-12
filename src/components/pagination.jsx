@@ -1,4 +1,4 @@
-// pagination.jsx
+// src/components/pagination.jsx
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 
@@ -7,7 +7,13 @@ export function Pagination({ onPageChange, hasNextPage }) {
 
   useEffect(() => {
     onPageChange(currentPage);
-  }, [currentPage]);
+  }, [currentPage, onPageChange]);
+
+  const goPrev = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const goNext = () => {
+    if (!hasNextPage) return;          
+    setCurrentPage((prev) => prev + 1);
+  };
 
   return (
     <div className="flex items-center justify-between mt-4">
@@ -17,7 +23,7 @@ export function Pagination({ onPageChange, hasNextPage }) {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          onClick={goPrev}
           disabled={currentPage === 1}
         >
           Anterior
@@ -25,7 +31,7 @@ export function Pagination({ onPageChange, hasNextPage }) {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setCurrentPage((prev) => prev + 1)}
+          onClick={goNext}
           disabled={!hasNextPage}
         >
           Próxima

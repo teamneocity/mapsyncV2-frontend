@@ -1,21 +1,17 @@
 // src/pages/Analysis/index.jsx
-
 "use client";
 
-// React e bibliotecas externas
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { Menu } from "lucide-react";
 
-//  Hooks customizados
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useUserSector } from "@/hooks/useUserSector";
 import { useAuth } from "@/hooks/auth";
 
-//  Componentes globais
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
 import { Filters } from "@/components/filters";
@@ -25,10 +21,7 @@ import { LiveActionButton } from "@/components/live-action-button";
 import { OccurrenceList } from "@/components/OccurrenceList";
 import { IgnoreOccurrenceModal } from "@/components/ignoreOccurrenceModal";
 
-//  Componentes locais
 import { ExpandedRowAnalysis } from "./ExpandedRowAnalysis";
-
-//  Serviços
 import { api } from "@/services/api";
 
 export function Analysis() {
@@ -42,8 +35,7 @@ export function Analysis() {
 
   const [occurrences, setOccurrences] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [paginationPage, setPaginationPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRecent, setFilterRecent] = useState(null);
@@ -64,40 +56,70 @@ export function Analysis() {
   const [isIgnoreOcurrenceModalOpen, setIsIgnoreOcurrenceModalOpen] =
     useState(false);
 
+  const PAGE_SIZE = 10;
+
   useEffect(() => {
-    fetchOccurrences(paginationPage);
-    setCurrentPage(paginationPage); // mantém o currentPage do Analysis atualizado
-  }, [paginationPage]);
+    fetchOccurrences(1);
+  }, []);
+
+  const handleToggleDateOrder = (order) => {
+    setFilterRecent(order); // 'recent' | 'oldest'
+    fetchServiceOrders(1);
+  };
+
   const fetchOccurrences = async (page = 1) => {
+    console.log("📤 Enviando filtros:", {
+      street: searchTerm,
+      districtId: filterNeighborhood,
+      type: filterType,
+      orderBy: filterRecent,
+      startDate: filterDateRange.startDate,
+      endDate: filterDateRange.endDate,
+    });
+
     try {
-      const params = {
-        page,
-        limit: 6,
-        districtId: filterNeighborhood, // bairro
-        street: searchTerm, // rua
-        type: filterType,
-        orderBy: filterRecent, // 'recent' ou 'oldest'
-        startDate: filterDateRange.startDate
-          ? format(filterDateRange.startDate, "yyyy-MM-dd")
-          : undefined,
-        endDate: filterDateRange.endDate
-          ? format(filterDateRange.endDate, "yyyy-MM-dd")
-          : undefined,
-      };
+      const response = await api.get("/occurrences/in-analysis", {
+        params: {
+          page,
+          street: searchTerm, // rua
+          districtId: filterNeighborhood, // bairro
+          type: filterType,
+          orderBy: filterRecent, // 'recent' ou 'oldest'
+          startDate: filterDateRange.startDate
+            ? new Date(
+                new Date(filterDateRange.startDate).setHours(0, 0, 0, 0)
+              ).toISOString()
+            : undefined,
+          endDate: filterDateRange.endDate
+            ? new Date(
+                new Date(filterDateRange.endDate).setHours(23, 59, 59, 999)
+              ).toISOString()
+            : undefined,
+        },
+      });
 
-      const res = await api.get("/occurrences/in-analysis", { params });
-      const allOccurrences = res.data.occurrences || [];
+      const list = response.data.occurrences || [];
 
-      setOccurrences(allOccurrences);
-      setCurrentPage(res.data.currentPage || 1);
-      setTotalPages(res.data.totalPages || 1);
+      setOccurrences(list);
+      setCurrentPage(page);
+      setHasNextPage((list.length ?? 0) === PAGE_SIZE);
     } catch (error) {
       console.error("❌ Erro ao buscar ocorrências:", error);
+
+      if (error.response) {
+        console.error("➡️ status:", error.response.status);
+        console.error("➡️ data:", error.response.data);
+        console.error("➡️ headers:", error.response.headers);
+      }
+
       toast({
         variant: "destructive",
         title: "Erro ao buscar ocorrências",
         description: error.message,
       });
+
+      setOccurrences([]);
+      setHasNextPage(false);
     }
   };
 
@@ -147,7 +169,7 @@ export function Analysis() {
     try {
       await api.post(`/occurrences/reject`, {
         occurrenceId: selectedOccurrenceId,
-        reason: reason,
+        reason,
       });
 
       toast({ title: "Ocorrência apagada com sucesso!" });
@@ -161,10 +183,13 @@ export function Analysis() {
     }
   };
 
+  const handleApplyFiltersClick = () => {
+    fetchOccurrences(1);
+  };
+
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
-
       <TopHeader />
 
       <div className="px-4 py-4 sm:py-6">
@@ -181,14 +206,14 @@ export function Analysis() {
             setFilterNeighborhood(neighborhood)
           }
           onFilterDateRange={(range) => setFilterDateRange(range)}
-          handleApplyFilters={() => {
-            setPaginationPage(1);
-          }}
+          handleApplyFilters={handleApplyFiltersClick}
         />
       </div>
 
       <OccurrenceList
         occurrences={occurrences || []}
+        dateOrder={filterRecent ?? "recent"}
+        onToggleDateOrder={handleToggleDateOrder}
         renderExpandedRow={(occurrence) => (
           <ExpandedRowAnalysis
             occurrence={occurrence}
@@ -208,31 +233,10 @@ export function Analysis() {
 
       <footer className="bg-[#EBEBEB] p-4 mt-auto">
         <div className="max-w-full mx-auto">
-          <div className="flex items-center justify-between mt-4 px-4">
-            <span className="text-sm text-gray-500">
-              Página {paginationPage}
-            </span>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setPaginationPage((prev) => Math.max(prev - 1, 1))
-                }
-                disabled={paginationPage === 1}
-              >
-                Anterior
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPaginationPage((prev) => prev + 1)}
-                disabled={occurrences.length < 6}
-              >
-                Próxima
-              </Button>
-            </div>
-          </div>
+          <Pagination
+            onPageChange={fetchOccurrences}
+            hasNextPage={hasNextPage}
+          />
         </div>
       </footer>
 

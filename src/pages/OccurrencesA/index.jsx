@@ -29,6 +29,7 @@ export function OccurrencesA() {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
+
   const handleToggleDateOrder = (orderValue) => {
     setOrder(orderValue); // 'recent' ou 'oldest'
     setCurrentPage(1);

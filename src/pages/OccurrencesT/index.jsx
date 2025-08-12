@@ -51,6 +51,8 @@ export function OccurrencesT() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
 
+  const PAGE_SIZE = 10; // 👈 padrão do backend
+
   useEffect(() => {
     fetchOccurrences(1); // apenas carrega a página 1 inicialmente
   }, []);
@@ -96,7 +98,7 @@ export function OccurrencesT() {
 
       setOccurrences(filteredOccurrences);
       setCurrentPage(page);
-      setHasNextPage(allOccurrences.length > 0);
+      setHasNextPage((allOccurrences.length ?? 0) === PAGE_SIZE);
     } catch (error) {
       const is400 = error.response?.status === 400;
       const isEnumError =
@@ -298,7 +300,7 @@ export function OccurrencesT() {
         <div className="max-w-full mx-auto">
           <Pagination
             onPageChange={fetchOccurrences}
-            hasNextPage={hasNextPage}
+            hasNextPage={hasNextPage} 
           />
         </div>
       </footer>

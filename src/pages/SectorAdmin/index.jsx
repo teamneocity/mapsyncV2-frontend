@@ -38,6 +38,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 // Serviços e utilitários
 import { api } from "@/services/api";
@@ -73,6 +74,7 @@ export function SectorAdmin() {
 
   const [availableChiefs, setAvailableChiefs] = useState([]);
   const [selectedChiefId, setSelectedChiefId] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     async function fetchSector() {
@@ -107,9 +109,18 @@ export function SectorAdmin() {
       setSelectedInspectorId(""); // limpa select
       const response = await api.get("/sectors/details");
       setAllSectors(response.data.sectors);
+      toast({
+        title: "Fiscal adicionado",
+        description: "O fiscal foi adicionado com sucesso.",
+        variant: "success",
+      });
     } catch (error) {
       console.error("Erro ao adicionar fiscal:", error);
-      alert("Erro ao adicionar fiscal");
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar o fiscal.",
+        variant: "destructive",
+      });
     }
   }
 
@@ -126,8 +137,18 @@ export function SectorAdmin() {
       setNewTeamName(""); // limpa o campo
       const updated = await api.get("/sectors/details");
       setAllSectors(updated.data.sectors);
+      toast({
+        title: "Equipe criada",
+        description: "A equipe foi adicionada com sucesso.",
+        variant: "success",
+      });
     } catch (error) {
       console.error("Erro ao adicionar equipe:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar a equipe.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -142,8 +163,18 @@ export function SectorAdmin() {
       // Atualiza os dados após remoção
       const updated = await api.get("/sectors/details");
       setAllSectors(updated.data.sectors);
+      toast({
+        title: "Equipe removida",
+        description: "A equipe foi removida com sucesso.",
+        variant: "success",
+      });
     } catch (error) {
       console.error("Erro ao remover equipe:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover a equipe.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -163,8 +194,18 @@ export function SectorAdmin() {
       // atualiza os dados do setor
       const updated = await api.get("/sectors/details");
       setAllSectors(updated.data.sectors);
+      toast({
+        title: "Serviço adicionado",
+        description: "A natureza de serviço foi adicionada com sucesso.",
+        variant: "success",
+      });
     } catch (error) {
       console.error("Erro ao adicionar natureza de serviço:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar a natureza de serviço.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -178,8 +219,18 @@ export function SectorAdmin() {
 
       const updated = await api.get("/sectors/details");
       setAllSectors(updated.data.sectors);
+      toast({
+        title: "Serviço removido",
+        description: "A natureza de serviço foi removida com sucesso.",
+        variant: "success",
+      });
     } catch (error) {
       console.error("Erro ao remover natureza de serviço:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover a natureza de serviço.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -197,8 +248,18 @@ export function SectorAdmin() {
       setNewForemanName(""); // apenas limpa o campo
       const updated = await api.get("/sectors/details");
       setAllSectors(updated.data.sectors);
+      toast({
+        title: "Encarregado adicionado",
+        description: "O encarregado foi adicionado com sucesso.",
+        variant: "success",
+      });
     } catch (error) {
       console.error("Erro ao adicionar encarregado:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar o encarregado.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -212,8 +273,18 @@ export function SectorAdmin() {
 
       const updated = await api.get("/sectors/details");
       setAllSectors(updated.data.sectors);
+      toast({
+        title: "Encarregado removido",
+        description: "O encarregado foi removido com sucesso.",
+        variant: "success",
+      });
     } catch (error) {
       console.error("Erro ao remover encarregado:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover o encarregado.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -230,9 +301,18 @@ export function SectorAdmin() {
       setSelectedChiefId(""); // mantém o modal aberto
       const response = await api.get("/sectors/details");
       setAllSectors(response.data.sectors);
+      toast({
+        title: "Chefe adicionado",
+        description: "O chefe foi adicionado com sucesso.",
+        variant: "success",
+      });
     } catch (error) {
       console.error("Erro ao adicionar chefe:", error);
-      alert("Erro ao adicionar chefe");
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar o chefe.",
+        variant: "destructive",
+      });
     }
   }
 
@@ -246,9 +326,18 @@ export function SectorAdmin() {
 
       const updated = await api.get("/sectors/details");
       setAllSectors(updated.data.sectors);
+      toast({
+        title: "Chefe removido",
+        description: "O chefe foi removido com sucesso.",
+        variant: "success",
+      });
     } catch (error) {
       console.error("Erro ao remover chefe:", error);
-      alert("Erro ao remover chefe");
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover o chefe.",
+        variant: "destructive",
+      });
     }
   };
 
