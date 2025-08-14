@@ -12,6 +12,7 @@ export function OccurrenceList({
   showEmergencialStatus = false,
   dateOrder = "recent",
   onToggleDateOrder,
+  statusLabelOverrides = {},
 }) {
   const [expandedRows, setExpandedRows] = useState(new Set());
 
@@ -64,7 +65,7 @@ export function OccurrenceList({
     LIMPA_FOSSA: "Limpa fossa",
   };
 
-  function StatusBadge({ status, isEmergencial }) {
+  function StatusBadge({ status, isEmergencial, labelOverrides = {} }) {
     const [hovering, setHovering] = useState(false);
 
     const statusLabels = {
@@ -80,6 +81,10 @@ export function OccurrenceList({
       verificada: "Verificada",
       rejeitada: "Rejeitada",
     };
+    const label =
+      (labelOverrides && labelOverrides[status]) ??
+      statusLabels[status] ??
+      status;
 
     const isHoveringEmergencial = isEmergencial && hovering;
 
@@ -95,7 +100,7 @@ export function OccurrenceList({
         onMouseEnter={() => isEmergencial && setHovering(true)}
         onMouseLeave={() => isEmergencial && setHovering(false)}
       >
-        {isHoveringEmergencial ? "Emergencial" : statusLabels[status] || status}
+        {isHoveringEmergencial ? "Emergencial" : label}
       </span>
     );
   }
@@ -192,6 +197,7 @@ export function OccurrenceList({
                         <StatusBadge
                           status={occ.status}
                           isEmergencial={occ.isEmergencial}
+                          labelOverrides={statusLabelOverrides}
                         />
                       </div>
                     </div>
@@ -318,6 +324,7 @@ export function OccurrenceList({
                     <StatusBadge
                       status={occ.status}
                       isEmergencial={occ.isEmergencial}
+                      labelOverrides={statusLabelOverrides}
                     />
                   </div>
                 </div>

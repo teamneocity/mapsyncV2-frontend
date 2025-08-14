@@ -98,6 +98,10 @@ export function ExpandedRowAnalysis({
             {occurrence.type}
           </p>
           <p>
+            <span className="text-gray-500 font-medium">Protocolo:</span>{" "}
+            {occurrence.protocolNumber}
+          </p>
+          <p>
             <span className="text-gray-500 font-medium">Latitude:</span>{" "}
             {occurrence.address.latitude}
           </p>

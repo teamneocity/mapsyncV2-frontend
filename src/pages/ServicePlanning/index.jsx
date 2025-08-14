@@ -22,7 +22,6 @@ import { api } from "@/services/api";
 import Printer from "@/assets/icons/Printer.svg?react";
 import FilePdf from "@/assets/icons/filePdf.svg?react";
 
-
 export function ServicePlanning() {
   const [serviceOrders, setServiceOrders] = useState([]);
   const [date, setDate] = useState(new Date());
@@ -135,7 +134,12 @@ export function ServicePlanning() {
         />
       </div>
 
-      <OccurrenceList occurrences={serviceOrders} />
+      <OccurrenceList
+        occurrences={serviceOrders}
+        statusLabelOverrides={{
+          aguardando_execucao: "Agendada",
+        }}
+      />
       <div className="flex justify-end gap-3 px-6 pb-10 mt-4">
         <button
           onClick={handlePrint}

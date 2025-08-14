@@ -329,6 +329,9 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                   : "—"}
               </button>
             </div>
+            <p>
+              <strong>Protocolo:</strong> {occurrence.protocolNumber || "—"}
+            </p>
 
             <p>
               <strong>Enviado por:</strong>{" "}
@@ -407,7 +410,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
               className="flex flex-col items-center justify-center gap-1 h-[60px] hover:bg-[#DCDCDC] rounded-md"
             >
               <CloudUploadAlt className="w-5 h-5" />
-              <span className="text-[#787891] text-xs">Upload</span>
+              <span className="text-[#787891] text-xs">Download</span>
             </Button>
 
             <Button

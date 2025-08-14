@@ -63,6 +63,10 @@ export function ExpandedRowT({
               </p>
             </div>
           </div>
+           <p>
+            <span className="font-bold">Protocolo:</span>{" "}
+            {occurrence.protocolNumber || "—"}
+          </p>
 
           <p>
             <span className="font-bold">Descrição:</span>{" "}
