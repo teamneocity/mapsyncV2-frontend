@@ -25,7 +25,7 @@ export function Filters({
   onSearch,
   title = "Análises de ocorrências",
   subtitle = "Via aplicativo",
-  contextType = "padrao", // ← nova prop
+  contextType = "padrao",
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRecent, setSelectedRecent] = useState(null);
@@ -201,7 +201,9 @@ export function Filters({
             <DropdownMenuItem onClick={() => handleTypeFilter("DESOBSTRUCAO")}>
               Desobstrução
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleTypeFilter("AUSENCIA_DE_MEIO_FIO")}>
+            <DropdownMenuItem
+              onClick={() => handleTypeFilter("AUSENCIA_DE_MEIO_FIO")}
+            >
               Ausência de meio fio
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -251,14 +253,6 @@ export function Filters({
             className="h-9 text-[#4B4B62]"
           />
         </div>
-
-        {/* Botão aplicar */}
-        <Button
-          className="bg-[#A6E0FF] text-[#00679D] hover:bg-[#ADD8E6] w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm"
-          onClick={handleApplyFilters}
-        >
-          Aplicar
-        </Button>
       </div>
     </header>
   );

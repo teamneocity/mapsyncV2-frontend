@@ -13,6 +13,8 @@ import { TopHeader } from "@/components/topHeader";
 import { TutorialCard } from "@/pages/Dashboard/tutorialCard.jsx";
 import { StatBox } from "./statBox";
 import { LineRaceChart } from "./LineRaceChart";
+import { ServiceOrdersByNeighborhoodLine } from "./ServiceOrdersByNeighborhoodLine";
+import { ServiceOrdersPiePadAngleChart } from "./ServiceOrdersPiePadAngleChart";
 import { PiePadAngleChart } from "./PiePadAngleChart";
 
 // Serviços e utilitários
@@ -162,12 +164,23 @@ export function Dashboard() {
         </div>
 
         {/* Gráficos */}
+        {/* Gráficos - BLOCO 1 (mantido) */}
         <div className="px-4 pb-10 mt-6 grid grid-cols-1 xl:grid-cols-3 gap-4">
           <div className="bg-white rounded-2xl shadow px-4 pt-4 pb-2 xl:col-span-2">
             <LineRaceChart />
           </div>
           <div className="bg-white rounded-2xl shadow px-4 pt-2 pb-2 xl:col-span-1">
             <PiePadAngleChart />
+          </div>
+        </div>
+
+        {/* Gráficos - BLOCO 2 (NOVO, mesmo layout) */}
+        <div className="px-4 pb-10 mt-2 grid grid-cols-1 xl:grid-cols-3 gap-4">
+          <div className="bg-white rounded-2xl shadow px-4 pt-4 pb-2 xl:col-span-2">
+            <ServiceOrdersByNeighborhoodLine />
+          </div>
+          <div className="bg-white rounded-2xl shadow px-4 pt-2 pb-2 xl:col-span-1">
+            <ServiceOrdersPiePadAngleChart />
           </div>
         </div>
       </div>
