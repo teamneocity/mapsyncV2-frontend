@@ -73,7 +73,7 @@ export function OccurrenceList({
       emergencial: "Emergencial",
       aprovada: "Aprovada",
       os_gerada: "O.S. gerada",
-      aguardando_execucao: "Aguardando execução",
+      aguardando_execucao: "Agendada",
       em_execucao: "Andamento",
       finalizada: "Finalizada",
       pendente: "Pendente",
