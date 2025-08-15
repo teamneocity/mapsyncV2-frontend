@@ -35,7 +35,7 @@ export function Analysis() {
 
   const [occurrences, setOccurrences] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRecent, setFilterRecent] = useState(null);
@@ -56,27 +56,16 @@ export function Analysis() {
   const [isIgnoreOcurrenceModalOpen, setIsIgnoreOcurrenceModalOpen] =
     useState(false);
 
-  const PAGE_SIZE = 10;
-
   useEffect(() => {
     fetchOccurrences(1);
   }, []);
 
   const handleToggleDateOrder = (order) => {
     setFilterRecent(order); // 'recent' | 'oldest'
-    fetchServiceOrders(1);
+    fetchOccurrences(1);
   };
 
   const fetchOccurrences = async (page = 1) => {
-    console.log("📤 Enviando filtros:", {
-      street: searchTerm,
-      districtId: filterNeighborhood,
-      type: filterType,
-      orderBy: filterRecent,
-      startDate: filterDateRange.startDate,
-      endDate: filterDateRange.endDate,
-    });
-
     try {
       const response = await api.get("/occurrences/in-analysis", {
         params: {
@@ -84,7 +73,7 @@ export function Analysis() {
           street: searchTerm, // rua
           districtId: filterNeighborhood, // bairro
           type: filterType,
-          orderBy: filterRecent, // 'recent' ou 'oldest'
+          orderBy: filterRecent, // 'recent' | 'oldest'
           startDate: filterDateRange.startDate
             ? new Date(
                 new Date(filterDateRange.startDate).setHours(0, 0, 0, 0)
@@ -98,11 +87,15 @@ export function Analysis() {
         },
       });
 
-      const list = response.data.occurrences || [];
+      const {
+        occurrences: list = [],
+        page: serverPage = page,
+        totalPages: serverTotalPages = 1,
+      } = response.data ?? {};
 
       setOccurrences(list);
-      setCurrentPage(page);
-      setHasNextPage((list.length ?? 0) === PAGE_SIZE);
+      setCurrentPage(serverPage);
+      setTotalPages(serverTotalPages);
     } catch (error) {
       console.error("❌ Erro ao buscar ocorrências:", error);
 
@@ -119,7 +112,8 @@ export function Analysis() {
       });
 
       setOccurrences([]);
-      setHasNextPage(false);
+      setCurrentPage(1);
+      setTotalPages(1);
     }
   };
 
@@ -234,8 +228,9 @@ export function Analysis() {
       <footer className="bg-[#EBEBEB] p-4 mt-auto">
         <div className="max-w-full mx-auto">
           <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
             onPageChange={fetchOccurrences}
-            hasNextPage={hasNextPage}
           />
         </div>
       </footer>

@@ -39,10 +39,8 @@ export function ServiceOrder() {
     startDate: null,
     endDate: null,
   });
-  const [currentPage, setCurrentPage] = useState(1); // controla a página atual
-  const [hasNextPage, setHasNextPage] = useState(false);
-
-  const PAGE_SIZE = 10; 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     fetchServiceOrders(1); // apenas carrega a página 1 inicialmente
@@ -54,15 +52,6 @@ export function ServiceOrder() {
   };
 
   const fetchServiceOrders = async (page = 1) => {
-    console.log("📤 Enviando filtros:", {
-      occurrenceType: filterType,
-      status: filterStatus,
-      street: searchTerm,
-      districtId: filterNeighborhood,
-      orderBy: filterRecent,
-      startDate: filterDateRange.startDate,
-      endDate: filterDateRange.endDate,
-    });
     try {
       const response = await api.get("/service-orders", {
         params: {
@@ -71,7 +60,7 @@ export function ServiceOrder() {
           districtId: filterNeighborhood, // bairro
           occurrenceType: filterType,
           status: filterStatus,
-          orderBy: filterRecent, // 'recent' ou 'oldest'
+          orderBy: filterRecent, // 'recent' | 'oldest'
           startDate: filterDateRange.startDate
             ? new Date(
                 new Date(filterDateRange.startDate).setHours(0, 0, 0, 0)
@@ -85,8 +74,18 @@ export function ServiceOrder() {
         },
       });
 
-      const result = response.data;
-      const flattened = (result.serviceorders || []).map((order) => ({
+      const data = response.data ?? {};
+      const meta = data.meta ?? {};
+
+      const listRaw = Array.isArray(data.serviceorders)
+        ? data.serviceorders
+        : [];
+
+      const serverPage = typeof meta.page === "number" ? meta.page : page;
+      const serverTotalPages =
+        typeof meta.totalPages === "number" ? meta.totalPages : 1;
+
+      const flattened = listRaw.map((order) => ({
         id: order.id,
         status: order?.status || order.status,
         createdAt: order.occurrence?.createdAt || order.createdAt,
@@ -102,16 +101,13 @@ export function ServiceOrder() {
       }));
 
       setOccurrences(flattened);
-      setCurrentPage(page);
-      setHasNextPage((result.serviceorders?.length ?? 0) === PAGE_SIZE);
+      setCurrentPage(serverPage);
+      setTotalPages(serverTotalPages);
     } catch (error) {
-      console.error("❌ Erro ao buscar ordens de serviço:", error);
-
-      if (error.response) {
-        console.error("➡️ status:", error.response.status);
-        console.error("➡️ data:", error.response.data);
-        console.error("➡️ headers:", error.response.headers);
-      }
+      console.error(
+        "❌ Erro ao buscar ordens de serviço:",
+        error?.response?.data || error
+      );
 
       toast({
         variant: "destructive",
@@ -120,7 +116,8 @@ export function ServiceOrder() {
       });
 
       setOccurrences([]);
-      setHasNextPage(false);
+      setCurrentPage(1);
+      setTotalPages(1);
     }
   };
 
@@ -137,9 +134,6 @@ export function ServiceOrder() {
   const handleDeleteImage = (imageId) => {
     console.log("Deletar imagem", imageId);
   };
-
-  
-
 
   const loadOptionsForOccurrence = async (occurrence) => {
     try {
@@ -190,11 +184,11 @@ export function ServiceOrder() {
 
       <OccurrenceList
         occurrences={occurrences}
-        dateOrder={filterRecent ?? "recent"} 
+        dateOrder={filterRecent ?? "recent"}
         onToggleDateOrder={handleToggleDateOrder}
         renderExpandedRow={(occurrence) => (
           <ExpandedRowServiceOrder
-            occurrence={occurrence.raw} 
+            occurrence={occurrence.raw}
             loadOptionsForOccurrence={loadOptionsForOccurrence}
             selectedValues={selectedValues}
             setSelectedValues={setSelectedValues}
@@ -209,8 +203,9 @@ export function ServiceOrder() {
       <footer className="bg-[#EBEBEB] p-4 mt-auto">
         <div className="max-w-full mx-auto">
           <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
             onPageChange={fetchServiceOrders}
-            hasNextPage={hasNextPage}
           />
         </div>
       </footer>

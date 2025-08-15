@@ -49,7 +49,7 @@ export function OccurrencesT() {
   const [returnReason, setReturnReason] = useState("");
   const [selectedOccurrenceId, setSelectedOccurrenceId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
 
   const PAGE_SIZE = 10; // 👈 padrão do backend
 
@@ -75,13 +75,12 @@ export function OccurrencesT() {
           districtId: filterNeighborhood, // bairro
           street: searchTerm, // rua
           type: filterType,
-          orderBy: filterRecent, // 'recent' ou 'oldest'
+          orderBy: filterRecent, // 'recent' | 'oldest'
           startDate: filterDateRange.startDate
             ? new Date(
                 new Date(filterDateRange.startDate).setHours(0, 0, 0, 0)
               ).toISOString()
             : undefined,
-
           endDate: filterDateRange.endDate
             ? new Date(
                 new Date(filterDateRange.endDate).setHours(23, 59, 59, 999)
@@ -90,15 +89,20 @@ export function OccurrencesT() {
         },
       });
 
-      const allOccurrences = response.data.occurrences || [];
+      const {
+        occurrences: allOccurrences = [],
+        page: serverPage = page,
+        totalPages: serverTotalPages = 1,
+      } = response.data ?? {};
 
+      // mantém o filtro local para não listar "em_analise"
       const filteredOccurrences = allOccurrences.filter(
         (occ) => occ.status !== "em_analise"
       );
 
       setOccurrences(filteredOccurrences);
-      setCurrentPage(page);
-      setHasNextPage((allOccurrences.length ?? 0) === PAGE_SIZE);
+      setCurrentPage(serverPage);
+      setTotalPages(serverTotalPages);
     } catch (error) {
       const is400 = error.response?.status === 400;
       const isEnumError =
@@ -118,10 +122,10 @@ export function OccurrencesT() {
         });
       }
 
-      // ⚠️ Só limpa a lista se não for erro 400 de enum
       if (!isEnumError) {
         setOccurrences([]);
-        setHasNextPage(false);
+        setCurrentPage(1);
+        setTotalPages(1);
       }
     }
   };
@@ -299,8 +303,9 @@ export function OccurrencesT() {
       <footer className="bg-[#EBEBEB] p-4 mt-auto">
         <div className="max-w-full mx-auto">
           <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
             onPageChange={fetchOccurrences}
-            hasNextPage={hasNextPage} 
           />
         </div>
       </footer>
