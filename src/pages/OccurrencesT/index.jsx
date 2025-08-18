@@ -37,7 +37,7 @@ export function OccurrencesT() {
   const [selectedValues, setSelectedValues] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState(null);
-  const [filterRecent, setFilterRecent] = useState(null);
+  const [filterRecent, setFilterRecent] = useState("recent");
   const [filterNeighborhood, setFilterNeighborhood] = useState(null);
   const [filterDateRange, setFilterDateRange] = useState({
     startDate: null,
@@ -51,20 +51,26 @@ export function OccurrencesT() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const PAGE_SIZE = 10; // 👈 padrão do backend
-
   useEffect(() => {
-    fetchOccurrences(1); // apenas carrega a página 1 inicialmente
-  }, []);
+    fetchOccurrences(currentPage);
+  }, [
+    currentPage,
+    searchTerm,
+    filterType,
+    filterRecent,
+    filterNeighborhood,
+    filterDateRange.startDate,
+    filterDateRange.endDate,
+    filterStatus,
+  ]);
 
   const handleApplyFilters = () => {
-    fetchOccurrences(1);
+    setCurrentPage(1);
   };
 
-  // ⬇️ novo: alterna a ordenação por data
   const handleToggleDateOrder = (order) => {
     setFilterRecent(order); // 'recent' | 'oldest'
-    fetchOccurrences(1); // recarrega com a nova ordem
+    setCurrentPage(1);
   };
 
   const fetchOccurrences = async (page = 1) => {
@@ -75,7 +81,7 @@ export function OccurrencesT() {
           districtId: filterNeighborhood, // bairro
           street: searchTerm, // rua
           type: filterType,
-          orderBy: filterRecent, // 'recent' | 'oldest'
+          orderBy: filterRecent, 
           startDate: filterDateRange.startDate
             ? new Date(
                 new Date(filterDateRange.startDate).setHours(0, 0, 0, 0)
@@ -267,13 +273,26 @@ export function OccurrencesT() {
           title="Ocorrências"
           subtitle="Terrestres"
           contextType="mapeamento"
-          onSearch={(input) => setSearchTerm(input)}
-          onFilterType={(type) => setFilterType(type)}
-          onFilterRecent={(order) => setFilterRecent(order)}
-          onFilterNeighborhood={(neighborhood) =>
-            setFilterNeighborhood(neighborhood)
-          }
-          onFilterDateRange={(range) => setFilterDateRange(range)}
+          onSearch={(input) => {
+            setSearchTerm(input);
+            setCurrentPage(1);
+          }}
+          onFilterType={(type) => {
+            setFilterType(type);
+            setCurrentPage(1);
+          }}
+          onFilterRecent={(order) => {
+            setFilterRecent(order);
+            setCurrentPage(1);
+          }}
+          onFilterNeighborhood={(neighborhood) => {
+            setFilterNeighborhood(neighborhood);
+            setCurrentPage(1);
+          }}
+          onFilterDateRange={(range) => {
+            setFilterDateRange(range);
+            setCurrentPage(1);
+          }}
           handleApplyFilters={handleApplyFilters}
         />
       </div>

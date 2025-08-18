@@ -38,7 +38,7 @@ export function Analysis() {
   const [totalPages, setTotalPages] = useState(1);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterRecent, setFilterRecent] = useState(null);
+  const [filterRecent, setFilterRecent] = useState("recent");
   const [filterType, setFilterType] = useState(null);
   const [filterDateRange, setFilterDateRange] = useState({
     startDate: null,
@@ -57,12 +57,21 @@ export function Analysis() {
     useState(false);
 
   useEffect(() => {
-    fetchOccurrences(1);
-  }, []);
+    fetchOccurrences(currentPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    currentPage,
+    searchTerm,
+    filterRecent,
+    filterType,
+    filterNeighborhood,
+    filterDateRange.startDate,
+    filterDateRange.endDate,
+  ]);
 
   const handleToggleDateOrder = (order) => {
     setFilterRecent(order); // 'recent' | 'oldest'
-    fetchOccurrences(1);
+    setCurrentPage(1);
   };
 
   const fetchOccurrences = async (page = 1) => {
@@ -73,7 +82,7 @@ export function Analysis() {
           street: searchTerm, // rua
           districtId: filterNeighborhood, // bairro
           type: filterType,
-          orderBy: filterRecent, // 'recent' | 'oldest'
+          orderBy: filterRecent || "recent", // sempre manda algo
           startDate: filterDateRange.startDate
             ? new Date(
                 new Date(filterDateRange.startDate).setHours(0, 0, 0, 0)
@@ -193,13 +202,26 @@ export function Analysis() {
         <Filters
           title="Análise"
           subtitle="das ocorrências"
-          onSearch={(input) => setSearchTerm(input)}
-          onFilterType={(type) => setFilterType(type)}
-          onFilterRecent={(order) => setFilterRecent(order)}
-          onFilterNeighborhood={(neighborhood) =>
-            setFilterNeighborhood(neighborhood)
-          }
-          onFilterDateRange={(range) => setFilterDateRange(range)}
+          onSearch={(input) => {
+            setSearchTerm(input);
+            setCurrentPage(1);
+          }}
+          onFilterType={(type) => {
+            setFilterType(type);
+            setCurrentPage(1);
+          }}
+          onFilterRecent={(order) => {
+            setFilterRecent(order);
+            setCurrentPage(1);
+          }}
+          onFilterNeighborhood={(neighborhood) => {
+            setFilterNeighborhood(neighborhood);
+            setCurrentPage(1);
+          }}
+          onFilterDateRange={(range) => {
+            setFilterDateRange(range);
+            setCurrentPage(1);
+          }}
           handleApplyFilters={handleApplyFiltersClick}
         />
       </div>
