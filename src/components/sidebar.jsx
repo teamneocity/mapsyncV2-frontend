@@ -17,6 +17,12 @@ import TaskChecklist from "@/assets/icons/TaskChecklist.svg?react";
 import IconFeedback from "@/assets/icons/IconFeedback.svg?react";
 import { Icon, PanelLeftClose } from "lucide-react";
 import PurpleCheck from "@/assets/icons/PurpleCheck.svg?react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -36,6 +42,16 @@ export function Sidebar() {
   const { isAdmin, isSupervisor, isAnalyst, isInspector, isChief } =
     usePermissions();
   const canSeeAll = isAdmin || isSupervisor;
+
+  const roleLabel =
+    {
+      CHIEF: "Chefe Geral",
+      ADMIN: "Admin",
+      SECTOR_CHIEF: "Chefe de Setor",
+      ANALYST: "Analista",
+      INSPECTOR: "Fiscal",
+      FIELD_AGENT: "Agente de Campo",
+    }[user?.role] || "Cargo desconhecido";
 
   return (
     <div className="flex">
@@ -182,27 +198,37 @@ export function Sidebar() {
         <div className="mt-auto w-full">
           {/* Nível de Usuário */}
           <div className="px-4 pb-3">
-            <p className="text-sm text-gray-700 font-medium mb-1">
-              Nível de usuário{" "}
-              <span className="bg-[#003DF6] text-white text-xs font-semibold px-2 py-0.5 rounded-full ml-2">
-                {{
-                  CHIEF: "Master",
-                  ADMIN: "Avançado",
-                  SECTOR_CHIEF: "Médio",
-                  ANALYST: "Básico",
-                  INSPECTOR: "Básico",
-                  FIELD_AGENT: "Básico",
-                }[user?.role] || "Desconhecido"}
-              </span>
-            </p>
-            <div className="w-full h-[6px] bg-gray-200 rounded-full">
+            <TooltipProvider delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-sm text-gray-700 font-medium mb-1 inline-flex items-center gap-2">
+                    Nível de usuário
+                    <span className="bg-[#003DF6] text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                      {{
+                        CHIEF: "Avançado",
+                        ADMIN: "Master",
+                        SECTOR_CHIEF: "Médio",
+                        ANALYST: "Básico",
+                        INSPECTOR: "Básico",
+                        FIELD_AGENT: "Básico",
+                      }[user?.role] || "Desconhecido"}
+                    </span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="bg-gray-900 text-white">
+                  <p className="text-xs font-medium">Cargo: {roleLabel}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <div className="w-full h-[6px] bg-gray-200 rounded-full mt-1.5">
               <div
                 className="h-[6px] rounded-full transition-all duration-300"
                 style={{
                   width: `${
                     {
-                      CHIEF: 100,
-                      ADMIN: 80,
+                      CHIEF: 80,
+                      ADMIN: 100,
                       SECTOR_CHIEF: 60,
                       ANALYST: 40,
                       INSPECTOR: 40,
@@ -211,7 +237,7 @@ export function Sidebar() {
                   }%`,
                   backgroundColor: "#003DF6",
                 }}
-              ></div>
+              />
             </div>
           </div>
 
@@ -362,29 +388,42 @@ export function Sidebar() {
 
               <div className="mt-auto w-full">
                 {/* Card de perfil */}
-                <Link
-                  to="/userprofile"
-                  className="mx-4 mb-5 bg-white rounded-xl p-3 flex items-center justify-between shadow-sm hover:shadow-md transition"
-                >
-                  <div className="flex items-center gap-3 ">
-                    <Avatar className="h-10 w-10 ">
-                      <AvatarImage
-                        src={`${api.defaults.baseURL}/avatar/${user.avatar}`}
-                      />
-                      <AvatarFallback>{userInitials}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col ">
-                      <div className="flex items-center gap-1">
-                        <span className="font-semibold text-sm text-gray-900">
-                          {name}
-                        </span>
-                        <PurpleCheck className="w-4 h-4 shrink-0" />
-                      </div>
-                      <span className="text-xs text-gray-500">{email}</span>
-                    </div>
-                  </div>
-                  <AngleSmallRight className="w-4 h-4 text-gray-400" />
-                </Link>
+                <TooltipProvider delayDuration={150}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link
+                        to="/userprofile"
+                        className="mx-4 mb-5 bg-[#F7F7F7] rounded-xl p-3 flex items-center justify-between shadow-sm hover:shadow-md transition"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage
+                              src={`${api.defaults.baseURL}/avatar/${user.avatar}`}
+                            />
+                            <AvatarFallback>{userInitials}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-1">
+                              <span className="font-semibold text-sm text-gray-900">
+                                {name}
+                              </span>
+                              <PurpleCheck className="w-4 h-4 shrink-0" />
+                            </div>
+                            <span className="text-xs text-gray-500">
+                              {email.length > 20
+                                ? `${email.slice(0, 20)}...`
+                                : email}
+                            </span>
+                          </div>
+                        </div>
+                        <AngleSmallRight className="w-4 h-4 text-gray-400" />
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-gray-900 text-white">
+                      <p className="text-xs font-medium">Cargo: {roleLabel}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </SheetContent>
           </Sheet>
