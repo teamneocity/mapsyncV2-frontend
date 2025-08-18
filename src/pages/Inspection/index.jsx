@@ -2,7 +2,6 @@
 
 // React e bibliotecas externas
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { format } from "date-fns";
 
 // Hooks customizados
@@ -25,7 +24,6 @@ import { api } from "@/services/api";
 // Assets
 import emurb from "../../assets/emurb.svg";
 
-
 export function Inspection() {
   const { toast } = useToast();
   const { isAdmin, isSupervisor } = usePermissions();
@@ -40,50 +38,74 @@ export function Inspection() {
     startDate: null,
     endDate: null,
   });
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(false);
 
+  // ✅ Padrão novo de paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // carrega sempre que página OU filtros mudarem
   useEffect(() => {
-    fetchServiceOrders(1);
-  }, []);
+    fetchServiceOrders(currentPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    currentPage,
+    searchTerm,
+    filterType,
+    filterRecent,
+    filterStatus,
+    filterNeighborhood,
+    filterDateRange.startDate,
+    filterDateRange.endDate,
+  ]);
 
   const fetchServiceOrders = async (page = 1) => {
     try {
-      const response = await api.get("/service-orders", {
-        params: {
-          page,
-          limit: 6,
-          street: searchTerm, // padronizado com ServiceOrder
-          districtId: filterNeighborhood,
-          type: filterType,
-          status: filterStatus,
-          orderBy: filterRecent,
-          startDate: filterDateRange.startDate
-            ? format(filterDateRange.startDate, "yyyy-MM-dd")
-            : undefined,
-          endDate: filterDateRange.endDate
-            ? format(filterDateRange.endDate, "yyyy-MM-dd")
-            : undefined,
-        },
-      });
+      const params = {
+        page, // ✅ só página; backend define pageSize
+        // limit removido (padrão novo)
+        street: searchTerm,
+        districtId: filterNeighborhood,
+        type: filterType,
+        status: filterStatus,
+        orderBy: filterRecent,
+        // Aqui mantive o formato "yyyy-MM-dd" que você já estava usando nesta tela
+        startDate: filterDateRange.startDate
+          ? format(filterDateRange.startDate, "yyyy-MM-dd")
+          : undefined,
+        endDate: filterDateRange.endDate
+          ? format(filterDateRange.endDate, "yyyy-MM-dd")
+          : undefined,
+      };
 
-      const result = response.data;
-      setOccurrences(result.serviceorders || []);
-      setCurrentPage(page);
-      setHasNextPage(result.serviceorders?.length > 0);
+      const { data } = await api.get("/service-orders", { params });
+
+      // Aceita os dois formatos de payload que já vimos no seu back:
+      // 1) { meta: { page, totalPages }, serviceorders: [...] }
+      // 2) { page, totalPages, serviceorders: [...] } (fallback)
+      const list = data?.serviceorders ?? [];
+      const serverPage =
+        data?.meta?.page ?? data?.page ?? page;
+      const serverTotalPages =
+        data?.meta?.totalPages ?? data?.totalPages ?? 1;
+
+      setOccurrences(list);
+      setCurrentPage(serverPage);
+      setTotalPages(serverTotalPages);
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Erro ao buscar ordens de serviço",
-        description: error.message,
+        description: error?.response?.data?.message || error.message,
       });
       setOccurrences([]);
-      setHasNextPage(false);
+      setCurrentPage(1);
+      setTotalPages(1);
     }
   };
 
+  // ✅ no padrão novo, aplicar filtros sempre volta pra página 1
   const handleApplyFilters = () => {
-    fetchServiceOrders(1);
+    setCurrentPage(1);
   };
 
   return (
@@ -101,14 +123,30 @@ export function Inspection() {
           <Filters
             title="Fiscalização de"
             subtitle="Ordens de serviço"
-            onSearch={(input) => setSearchTerm(input)}
-            onFilterType={(type) => setFilterType(type)}
-            onFilterRecent={(order) => setFilterRecent(order)}
-            onFilterStatus={(status) => setFilterStatus(status)}
-            onFilterNeighborhood={(neighborhood) =>
-              setFilterNeighborhood(neighborhood)
-            }
-            onFilterDateRange={(range) => setFilterDateRange(range)}
+            onSearch={(input) => {
+              setSearchTerm(input);
+              setCurrentPage(1);
+            }}
+            onFilterType={(type) => {
+              setFilterType(type);
+              setCurrentPage(1);
+            }}
+            onFilterRecent={(order) => {
+              setFilterRecent(order);
+              setCurrentPage(1);
+            }}
+            onFilterStatus={(status) => {
+              setFilterStatus(status);
+              setCurrentPage(1);
+            }}
+            onFilterNeighborhood={(neighborhood) => {
+              setFilterNeighborhood(neighborhood);
+              setCurrentPage(1);
+            }}
+            onFilterDateRange={(range) => {
+              setFilterDateRange(range);
+              setCurrentPage(1);
+            }}
             handleApplyFilters={handleApplyFilters}
           />
         </div>
@@ -125,12 +163,13 @@ export function Inspection() {
         </div>
       </div>
 
-      {/* PAGINAÇÃO FIXA */}
-      <footer className=" bottom-0 z-10 bg-[#EBEBEB] p-4 ">
+      {/* PAGINAÇÃO FIXA - padrão novo */}
+      <footer className="bottom-0 z-10 bg-[#EBEBEB] p-4">
         <div className="max-w-full mx-auto">
           <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
             onPageChange={fetchServiceOrders}
-            hasNextPage={hasNextPage}
           />
         </div>
       </footer>
