@@ -11,7 +11,7 @@ import { TopHeader } from "@/components/topHeader";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Pagination } from "@/components/pagination";
+// REMOVIDO: import { Pagination } from "@/components/pagination";
 
 // Serviços e utilitários
 import { api } from "@/services/api";
@@ -39,15 +39,15 @@ export function UserManagement() {
 
   const [users, setUsers] = useState([]);
 
+  // paginação local
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(true); // controlado por lookahead
 
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [removeModalOpen, setRemoveModalOpen] = useState(false);
   const [blockModalOpen, setBlockModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
-  const [hasNextPage, setHasNextPage] = useState(true);
   const { toast } = useToast();
 
   async function handleCreateUser(e) {
@@ -68,7 +68,8 @@ export function UserManagement() {
       setNewEmail("");
       setNewPassword("");
       setNewRole("SECTOR_CHIEF");
-      fetchUsers();
+      // Recarrega do início para garantir lista atualizada
+      await fetchUsers(1);
     } catch (error) {
       console.error(error);
       toast({
@@ -80,21 +81,50 @@ export function UserManagement() {
   }
 
   useEffect(() => {
-    fetchUsers();
+    fetchUsers(1);
   }, []);
 
+  // Busca a página "page" e faz lookahead em page+1 para decidir o estado do botão "Próxima"
   async function fetchUsers(page = 1) {
     try {
-      const response = await api.get(`/employees?page=${page}`);
-      const data = response.data.employees || [];
+      const res = await api.get(`/employees?page=${page}`);
+      const list = res.data.employees || [];
 
-      setUsers(data);
+      setUsers(list);
       setCurrentPage(page);
-      setHasNextPage(data.length > 0);
+
+      // lookahead: consulta próxima página para saber se existe "Próxima"
+      try {
+        const nextRes = await api.get(`/employees?page=${page + 1}`);
+        const nextList = nextRes.data.employees || [];
+        setHasNextPage(nextList.length > 0);
+      } catch {
+        // se der erro no lookahead, por segurança desabilita "Próxima"
+        setHasNextPage(false);
+      }
     } catch (error) {
       console.error("Erro ao buscar usuários:", error);
+      toast({
+        title: "Erro ao buscar usuários",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
     }
   }
+
+  // mesmo visual/comportamento do seu componente Pagination, sem totalPages
+  const canGoPrev = currentPage > 1;
+  const canGoNext = hasNextPage;
+
+  const goPrev = async () => {
+    if (!canGoPrev) return;
+    await fetchUsers(currentPage - 1);
+  };
+
+  const goNext = async () => {
+    if (!canGoNext) return;
+    await fetchUsers(currentPage + 1);
+  };
 
   const avatarUrl = user.avatar
     ? `${api.defaults.baseURL}/avatar/${user.avatar}`
@@ -133,7 +163,7 @@ export function UserManagement() {
                   try {
                     await api.delete(`/employees/${selectedUser.id}`);
                     setRemoveModalOpen(false);
-                    fetchUsers();
+                    await fetchUsers(1);
                     toast({
                       title: "Usuário removido",
                       description: "O usuário foi removido com sucesso.",
@@ -270,6 +300,12 @@ export function UserManagement() {
             </div>
           </div>
 
+          {users.length === 0 && (
+            <div className="bg-white border border-gray-200 rounded-xl p-6 text-center text-sm text-zinc-600">
+              Nenhum usuário encontrado.
+            </div>
+          )}
+
           {users.map((user) => {
             const status = user.deletedAt ? "bloqueado" : "ativo";
 
@@ -375,10 +411,33 @@ export function UserManagement() {
           })}
         </section>
 
-        {/* PAGINAÇÃO */}
+        {/* Paginação com o MESMO visual do seu componente */}
         <footer className="bg-[#EBEBEB] p-4 mt-4">
           <div className="max-w-[1500px] mx-auto">
-            <Pagination onPageChange={fetchUsers} hasNextPage={hasNextPage} />
+            <div className="flex items-center justify-between mt-4">
+              <span className="text-sm text-gray-500">
+                Página {currentPage}
+              </span>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={goPrev}
+                  disabled={!canGoPrev}
+                >
+                  Anterior
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={goNext}
+                  disabled={!canGoNext}
+                >
+                  Próxima
+                </Button>
+              </div>
+            </div>
           </div>
         </footer>
       </main>

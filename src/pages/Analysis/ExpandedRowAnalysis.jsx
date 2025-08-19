@@ -65,6 +65,11 @@ export function ExpandedRowAnalysis({
   const [updatingNeighborhood, setUpdatingNeighborhood] = useState(false);
   const [confirmNeighborhoodOpen, setConfirmNeighborhoodOpen] = useState(false);
 
+  // histórico de endereço (bairro/rua/número)
+  const [isAddressHistoryOpen, setIsAddressHistoryOpen] = useState(false);
+  const [addressAudits, setAddressAudits] = useState([]);
+  const [loadingAddressAudits, setLoadingAddressAudits] = useState(false);
+
   useEffect(() => {
     async function fetchSectors() {
       try {
@@ -93,6 +98,36 @@ export function ExpandedRowAnalysis({
       setIsEmergencialSelection(occurrence.isEmergencial);
     }
   }, [occurrence]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      try {
+        setLoadingAddressAudits(true);
+        const res = await api.get(`/occurrences/${occurrence.id}/audits`);
+
+        // A API pode retornar { audits: [...] } ou só [...]
+        const list = Array.isArray(res.data)
+          ? res.data
+          : res.data?.audits || [];
+
+        // interessa só o que mexe no endereço
+        const filtered = list.filter((a) =>
+          (a.field || "").startsWith("address.")
+        );
+        if (mounted) setAddressAudits(filtered);
+      } catch (err) {
+        console.error("Erro ao buscar histórico de endereço:", err);
+      } finally {
+        if (mounted) setLoadingAddressAudits(false);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [occurrence.id]);
 
   const createdAt = occurrence.createdAt
     ? format(new Date(occurrence.createdAt), "dd/MM/yyyy HH:mm")
@@ -184,10 +219,19 @@ export function ExpandedRowAnalysis({
           <p>
             <span className="text-gray-500 font-medium">Data:</span> {createdAt}
           </p>
-          <p>
-            <span className="text-gray-500 font-medium">Local:</span>{" "}
-            {addressLine}
-          </p>
+
+          <div>
+            <label className="text-sm text-[#787891] font-semibold mb-1 block">
+              Local:
+            </label>
+            <button
+              onClick={() => setIsAddressHistoryOpen(true)}
+              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-left bg-[#F8F8F8] hover:bg-gray-200 transition"
+              title="Ver histórico de alterações de endereço"
+            >
+              {addressLine}
+            </button>
+          </div>
           <p>
             <span className="text-gray-500 font-medium">CEP:</span> {zip}
           </p>
@@ -413,6 +457,92 @@ export function ExpandedRowAnalysis({
               {updatingNeighborhood ? "Salvando..." : "Confirmar"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Modal - Histórico de alterações de endereço */}
+      <Dialog
+        open={isAddressHistoryOpen}
+        onOpenChange={setIsAddressHistoryOpen}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Histórico de alterações de endereço</DialogTitle>
+            <DialogDescription>
+              Registros de alterações em bairro, rua e número desta ocorrência.
+            </DialogDescription>
+          </DialogHeader>
+
+          {loadingAddressAudits ? (
+            <p className="text-gray-600">Carregando...</p>
+          ) : addressAudits.length > 0 ? (
+            <ul className="space-y-3 max-h-96 overflow-y-auto pr-2">
+              {addressAudits.map((a) => {
+                // mapeia campo em rótulo legível
+                const fieldLabel =
+                  a.field === "address.neighborhoodId"
+                    ? "Bairro"
+                    : a.field === "address.street"
+                    ? "Rua"
+                    : a.field === "address.number"
+                    ? "Número"
+                    : a.field?.replace("address.", "") || "Endereço";
+
+                // valores antigos/novos com fallback
+                const fromVal =
+                  a.oldNeighborhoodName ||
+                  a.oldValue ||
+                  (a.type?.includes("NEIGHBORHOOD") ? "—" : "—");
+                const toVal =
+                  a.newNeighborhoodName ||
+                  a.newValue ||
+                  (a.type?.includes("NEIGHBORHOOD") ? "—" : "—");
+
+                return (
+                  <li
+                    key={a.id}
+                    className="border rounded-lg p-3 bg-[#F8F8F8] text-sm text-gray-800"
+                  >
+                    <p className="text-xs text-gray-500 mb-1">
+                      {format(new Date(a.createdAt), "dd/MM/yyyy 'às' HH:mm")}
+                    </p>
+
+                    <p className="font-medium">
+                      <strong>{fieldLabel}:</strong>{" "}
+                      <span className="inline-block">
+                        {fromVal} <span className="text-gray-500">→</span>{" "}
+                        {toVal}
+                      </span>
+                    </p>
+
+                    {a.changedBy?.name && (
+                      <p className="mt-1">
+                        <strong>Alterado por:</strong> {a.changedBy.name}
+                      </p>
+                    )}
+
+                    {a.reason && (
+                      <p className="mt-1">
+                        <strong>Motivo:</strong> {a.reason}
+                      </p>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="text-gray-600">
+              Nenhuma alteração de endereço registrada.
+            </p>
+          )}
+
+          <div className="pt-2">
+            <button
+              onClick={() => setIsAddressHistoryOpen(false)}
+              className="text-sm text-gray-500 underline hover:text-gray-700 transition w-full"
+            >
+              Fechar
+            </button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
