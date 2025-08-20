@@ -136,7 +136,7 @@ export function ExpandedRowAnalysis({
   // exibição usa os estados locais (sem depender de reload)
   const addressLine = localAddress.street
     ? `${localAddress.street}, ${localAddress.number || "s/n"} - ${
-        localAddress.city || "Cidade não informada"
+        localAddress.city || "Aracaju"
       }`
     : "Endereço não informado";
 
