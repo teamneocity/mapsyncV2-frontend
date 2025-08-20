@@ -62,8 +62,6 @@ export function OccurrenceList({
   };
 
   function StatusBadge({ status, isEmergencial, labelOverrides = {} }) {
-    const [hovering, setHovering] = useState(false);
-
     const statusLabels = {
       em_analise: "Em análise",
       emergencial: "Emergencial",
@@ -77,26 +75,22 @@ export function OccurrenceList({
       verificada: "Verificada",
       rejeitada: "Rejeitada",
     };
+
     const label =
       (labelOverrides && labelOverrides[status]) ??
       statusLabels[status] ??
       status;
 
-    const isHoveringEmergencial = isEmergencial && hovering;
-
-    const baseClass = isHoveringEmergencial
+    // 🔴 se for emergencial, força vermelho fixo
+    const baseClass = isEmergencial
       ? "bg-[#FFE8E8] text-[#FF2222]"
       : getStatusClasses(status);
 
-    const borderClass = isEmergencial ? "border border-red-500" : "";
-
     return (
       <span
-        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold break-words text-center ${baseClass} ${borderClass}`}
-        onMouseEnter={() => isEmergencial && setHovering(true)}
-        onMouseLeave={() => isEmergencial && setHovering(false)}
+        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold break-words text-center ${baseClass}`}
       >
-        {isHoveringEmergencial ? "Emergencial" : label}
+        {label}
       </span>
     );
   }
@@ -155,7 +149,7 @@ export function OccurrenceList({
       {/* Lista de ocorrências */}
       <div className="space-y-1">
         {/* ⬅️ estado vazio */}
-        {(!dataToRender || dataToRender.length === 0) ? (
+        {!dataToRender || dataToRender.length === 0 ? (
           <div className="w-full">
             <div className="border border-dashed border-gray-300 rounded-xl bg-white">
               <div className="px-6 py-10 text-center">
@@ -243,9 +237,7 @@ export function OccurrenceList({
                               {getInicials(occ?.pilot?.name || "NA")}
                             </span>
                             <span className="text-xs" title={occ?.author?.name}>
-                              {occ?.author?.name ||
-                                occ?.requester?.name ||
-                                "—"}
+                              {occ?.author?.name || occ?.requester?.name || "—"}
                             </span>
                           </div>
                         </div>
