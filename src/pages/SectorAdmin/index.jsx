@@ -124,6 +124,32 @@ export function SectorAdmin() {
     }
   }
 
+  // Remover fiscal (JS puro)
+  const handleRemoveInspector = async (inspectorId) => {
+    try {
+      await api.post("/sectors/remove-inspectors", {
+        sectorId: sectorData.id,
+        inspectorIds: [inspectorId],
+      });
+
+      const updated = await api.get("/sectors/details");
+      setAllSectors(updated.data.sectors);
+
+      toast({
+        title: "Fiscal removido",
+        description: "O fiscal foi removido com sucesso.",
+        variant: "success",
+      });
+    } catch (error) {
+      console.error("Erro ao remover fiscal:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover o fiscal.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Adiciona equipe
   const handleAddTeam = async () => {
     if (!newTeamName.trim()) return;
@@ -357,17 +383,28 @@ export function SectorAdmin() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md space-y-4">
             <h2 className="text-lg font-semibold text-red-600">Confirmação</h2>
-            <p>
-              Tem certeza que deseja remover{" "}
-              <strong>
-                {itemToDelete?.type === "team"
-                  ? "esta equipe"
-                  : itemToDelete?.type === "service"
-                  ? "esta natureza de serviço"
-                  : "este encarregado"}
-              </strong>
-              ?
-            </p>
+
+            {(() => {
+              const typeLabel = {
+                team: "esta equipe",
+                service: "esta natureza de serviço",
+                foreman: "este encarregado",
+                inspector: "este fiscal",
+                chief: "este chefe de setor",
+              };
+              const label =
+                (itemToDelete &&
+                  itemToDelete.type &&
+                  typeLabel[itemToDelete.type]) ||
+                "este item";
+
+              return (
+                <p>
+                  Tem certeza que deseja remover <strong>{label}</strong>?
+                </p>
+              );
+            })()}
+
             <div className="flex justify-end gap-2">
               <Button
                 onClick={() => setConfirmDeleteOpen(false)}
@@ -375,40 +412,36 @@ export function SectorAdmin() {
               >
                 Cancelar
               </Button>
+
               <Button
                 className="bg-red-500 hover:bg-red-600 text-white"
                 onClick={async () => {
                   try {
-                    if (itemToDelete?.type === "team") {
-                      await api.post("/sectors/remove-team", {
-                        sectorId: sectorData.id,
-                        teamId: itemToDelete.teamId,
-                      });
-                    } else if (itemToDelete?.type === "service") {
-                      await api.post("/teams/remove-nature", {
-                        teamId: itemToDelete.teamId,
-                        serviceNatureId: itemToDelete.serviceId,
-                      });
-                    } else if (itemToDelete?.type === "foreman") {
-                      await api.post("/sectors/remove-foreman", {
-                        sectorId: sectorData.id,
-                        foremanId: itemToDelete.foremanId,
-                      });
-                    } else if (itemToDelete?.type === "inspector") {
-                      await api.post("/sectors/remove-inspectors", {
-                        sectorId: sectorData.id,
-                        inspectorIds: [itemToDelete.inspectorId],
-                      });
-                    } else if (itemToDelete?.type === "chief") {
-                      await api.post("/sectors/remove-sector-chiefs", {
-                        sectorId: sectorData.id,
-                        chiefIds: [itemToDelete.chiefId],
-                      });
+                    if (!itemToDelete || !itemToDelete.type) {
+                      throw new Error("Tipo de remoção inválido.");
                     }
 
+                    // Dispatcher simples em JS puro
+                    const actions = {
+                      team: () => handleRemoveTeam(itemToDelete.teamId),
+                      service: () =>
+                        handleRemoveServiceNature(
+                          itemToDelete.teamId,
+                          itemToDelete.serviceId
+                        ),
+                      foreman: () =>
+                        handleRemoveForeman(itemToDelete.foremanId),
+                      inspector: () =>
+                        handleRemoveInspector(itemToDelete.inspectorId),
+                      chief: () => handleRemoveChief(itemToDelete.chiefId),
+                    };
+
+                    const fn = actions[itemToDelete.type];
+                    if (!fn) throw new Error("Tipo de remoção inválido.");
+
+                    await fn(); // cada função já faz toast + refetch
                     setConfirmDeleteOpen(false);
-                    const res = await api.get("/sectors/details");
-                    setAllSectors(res.data.sectors);
+                    setItemToDelete(null);
                   } catch (err) {
                     console.error("Erro ao remover:", err);
                     alert("Erro ao remover");
