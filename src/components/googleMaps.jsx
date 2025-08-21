@@ -1,13 +1,34 @@
+// src/components/googleMaps.jsx
 import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 
-export function GoogleMaps({ position, label, fullHeight, onMapClick, onAddressDetected }) {
+function parseAddress(components = []) {
+  const get = (type) =>
+    components.find((c) => c.types.includes(type))?.long_name || "";
+
+  const street = get("route");
+  const number = get("street_number");
+  const city =
+    get("sublocality_level_1") || get("locality") || get("administrative_area_level_2");
+  const state = get("administrative_area_level_1");
+  const zipCode = get("postal_code");
+
+  return { street, number, city, state, zipCode };
+}
+
+export function GoogleMaps({
+  position,
+  label,
+  fullHeight,
+  onMapClick,
+  onAddressDetected,
+}) {
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: "AIzaSyBXrFDOX3QgRHeisAfz1v77UFhipej7yOM", // 🔐 chave fixa
+    googleMapsApiKey: "AIzaSyBXrFDOX3QgRHeisAfz1v77UFhipej7yOM",
   });
 
   return (
-    <div className="w-full h-full">
+    <div className={`w-full ${fullHeight ? "h-full" : "h-[100%]"}`}>
       {isLoaded ? (
         <GoogleMap
           mapContainerStyle={{ width: "100%", height: "100%" }}
@@ -17,44 +38,31 @@ export function GoogleMaps({ position, label, fullHeight, onMapClick, onAddressD
             const lat = e.latLng.lat();
             const lng = e.latLng.lng();
 
-            // Callback externo se quiser usar posição
-            if (onMapClick) {
-              onMapClick({ lat, lng });
-            }
+            if (onMapClick) onMapClick({ lat, lng });
 
-            // Geocodificação reversa
             const geocoder = new window.google.maps.Geocoder();
-
             geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-              if (status === "OK" && results[0]) {
-                const components = results[0].address_components;
-
-                const rua = components.find((comp) =>
-                  comp.types.includes("route")
-                )?.long_name;
-
-                const numero = components.find((comp) =>
-                  comp.types.includes("street_number")
-                )?.long_name;
-
-                if (rua && numero) {
-                  const enderecoCompleto = `${rua}, ${numero}`;
-                  console.log("Endereço completo:", enderecoCompleto);
-
-                  if (onAddressDetected) {
-                    onAddressDetected(enderecoCompleto, lat, lng);
-                  }
-                } else {
-                  console.log("Rua ou número não encontrado");
-                  if (onAddressDetected) {
-                    onAddressDetected(null, lat, lng);
-                  }
-                }
+              if (status === "OK" && results?.[0]) {
+                const addr = parseAddress(results[0].address_components);
+                const payload = {
+                  ...addr,
+                  latitude: lat,
+                  longitude: lng,
+                  formatted: results[0].formatted_address || "",
+                };
+                if (onAddressDetected) onAddressDetected(payload);
               } else {
-                console.error("Erro ao buscar endereço:", status);
-                if (onAddressDetected) {
-                  onAddressDetected(null, lat, lng);
-                }
+                if (onAddressDetected)
+                  onAddressDetected({
+                    street: "",
+                    number: "",
+                    city: "",
+                    state: "",
+                    zipCode: "",
+                    latitude: lat,
+                    longitude: lng,
+                    formatted: "",
+                  });
               }
             });
           }}
@@ -69,11 +77,7 @@ export function GoogleMaps({ position, label, fullHeight, onMapClick, onAddressD
             options={{
               label:
                 typeof label === "string"
-                  ? {
-                      text: label,
-                      fontSize: "14px",
-                      color: "#000",
-                    }
+                  ? { text: label, fontSize: "14px", color: "#000" }
                   : undefined,
             }}
           />

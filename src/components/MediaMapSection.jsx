@@ -177,7 +177,7 @@ export function MediaMapSection({ photoUrls = [], lat, lng, className = "" }) {
                  );
                  const data = await res.json();
                  const rua =
-                   data.results?.[0]?.formatted_address ??
+                   data.results?.[0]?.formatted_address ??``
                    "Rua não encontrada";
                  setRuaClicada(rua);
                }}

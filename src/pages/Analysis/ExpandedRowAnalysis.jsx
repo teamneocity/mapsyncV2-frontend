@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { api } from "@/services/api";
 import { MediaMapSection } from "@/components/MediaMapSection";
-import { SelectStreetDialog } from "@/components/SelectStreetDialog";
+import { AddressUpdateDialog } from "./AddressUpdateDialog";
 import { useToast } from "@/hooks/use-toast";
 
 // Radix Dialog (padrão que você já usa)
@@ -327,36 +327,41 @@ export function ExpandedRowAnalysis({
               </Button>
             </div>
 
-            {/* Trocar rua no mapa — atualiza localmente sem reload */}
             <div className="mt-4">
-              <SelectStreetDialog
+              <AddressUpdateDialog
                 occurrenceId={occurrence.id}
-                lat={parseFloat(localAddress.latitude || 0)}
-                lng={parseFloat(localAddress.longitude || 0)}
+                neighborhoods={neighborhoods}
+                currentNeighborhoodId={currentNeighborhoodId}
+                initialLat={
+                  Number(localAddress.latitude) ||
+                  Number(occurrence.address?.latitude) ||
+                  -10.9472
+                }
+                initialLng={
+                  Number(localAddress.longitude) ||
+                  Number(occurrence.address?.longitude) ||
+                  -37.0731
+                }
                 onSuccess={(updated) => {
-                  // se o componente retornar dados do endereço, refletimos na hora
-                  if (updated && typeof updated === "object") {
-                    setLocalAddress((prev) => ({
-                      ...prev,
-                      street: updated.street ?? prev.street,
-                      number: updated.number ?? prev.number,
-                      city: updated.city ?? prev.city,
-                      state: updated.state ?? prev.state,
-                      zipCode: updated.zipCode ?? prev.zipCode,
-                      latitude: updated.latitude ?? prev.latitude,
-                      longitude: updated.longitude ?? prev.longitude,
-                    }));
-                    toast({
-                      title: "Endereço atualizado",
-                      description: "Rua alterada com sucesso.",
-                    });
-                  } else {
-                    // fallback: só um toast
-                    toast({
-                      title: "Endereço atualizado",
-                      description: "Rua alterada com sucesso.",
-                    });
+                  setLocalAddress((prev) => ({
+                    ...prev,
+                    street: updated.street ?? prev.street,
+                    zipCode: updated.zipCode ?? prev.zipCode,
+                  }));
+                  if (updated.neighborhoodId) {
+                    setCurrentNeighborhoodId(updated.neighborhoodId);
+                    setCurrentNeighborhoodName(
+                      updated.neighborhoodName ||
+                        neighborhoods.find(
+                          (n) => n.id === updated.neighborhoodId
+                        )?.name ||
+                        "Atualizado"
+                    );
                   }
+                  toast?.({
+                    title: "Endereço atualizado",
+                    description: "Rua, CEP e bairro alterados com sucesso.",
+                  });
                 }}
               />
             </div>
