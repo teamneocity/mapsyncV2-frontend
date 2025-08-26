@@ -6,13 +6,12 @@ import { Timeline } from "./TimeLine";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import CloudShare from "@/assets/icons/cloudShare.svg?react";
 import FilePdf from "@/assets/icons/filePdf.svg?react";
-import Vector from "@/assets/icons/vector.svg?react";
 import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
 import { MediaMapSection } from "@/components/MediaMapSection";
-import { PDFDownloadLink, pdf } from "@react-pdf/renderer";
-import { ServiceOrderPdf } from "./ServiceOrderPdf";
+
 import { useToast } from "@/hooks/use-toast";
 import { Calendar } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import { api } from "@/services/api";
 
@@ -51,96 +50,10 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   const [newScheduledDate, setNewScheduledDate] = useState(null);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
 
+  const navigate = useNavigate();
+
   const [isRescheduleHistoryModalOpen, setIsRescheduleHistoryModalOpen] =
     useState(false);
-
-  // Abre o pdf
-  const handleOpenPdfInNewTab = async () => {
-    let base64Image = null;
-
-    try {
-      const photoPath = occurrence.occurrence?.photos?.initial?.[0];
-
-      if (photoPath) {
-        const url = `https://mapsync-media.s3.sa-east-1.amazonaws.com/${photoPath}`;
-        const response = await fetch(url);
-
-        if (!response.ok) throw new Error("Erro ao buscar imagem");
-
-        const blob = await response.blob();
-        base64Image = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(blob);
-        });
-      }
-    } catch (err) {
-      console.warn("⚠️ Imagem não pôde ser carregada. Continuando sem imagem.");
-      base64Image = null;
-    }
-
-    const pdfBlob = await pdf(
-      <ServiceOrderPdf occurrence={occurrence} imageBase64={base64Image} />
-    ).toBlob();
-
-    const url = URL.createObjectURL(pdfBlob);
-    window.open(url, "_blank");
-  };
-
-  //Baixa o pdf
-  const handleDownloadPdf = async () => {
-    let base64Image = null;
-
-    try {
-      const photoPath = occurrence.occurrence?.photos?.initial?.[0];
-      console.log("📸 Caminho da imagem:", photoPath);
-
-      if (photoPath) {
-        const url = `https://mapsync-media.s3.sa-east-1.amazonaws.com/${photoPath}`;
-        console.log("🌐 URL da imagem:", url);
-
-        const response = await fetch(url);
-        console.log("📡 Status da requisição:", response.status);
-
-        if (!response.ok) throw new Error("Erro ao buscar imagem");
-
-        const blob = await response.blob();
-        base64Image = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            console.log("✅ Base64 gerado:", reader.result?.slice(0, 100));
-            resolve(reader.result);
-          };
-          reader.readAsDataURL(blob);
-        });
-      }
-    } catch (err) {
-      console.warn("⚠️ Imagem não pôde ser carregada. Continuando sem imagem.");
-      base64Image = null;
-    }
-
-    const blob = await pdf(
-      <ServiceOrderPdf occurrence={occurrence} imageBase64={base64Image} />
-    ).toBlob();
-
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${occurrence.protocolNumber || "ordem-servico"}.pdf`;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
-  // Converte a imagem
-  const toBase64 = async (url) => {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.readAsDataURL(blob);
-    });
-  };
 
   // Inicia a ocorrencia
   const handleStartExecution = async () => {
@@ -203,7 +116,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
 
       const novoAttachmentId = replicateResponse?.data?.attachmentId;
 
-      // Armazena o ID do novo anexo para ser usado como imagem inicial
       setFormFotoId(novoAttachmentId || "");
 
       // Se for do setor de drenagem, pergunta se quer criar nova ocorrência
@@ -230,7 +142,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         throw new Error("Endereço ou setor não encontrado.");
       }
 
-      // corpo da ocorrência
       const body = {
         type: formTipo,
         description: formDescricao,
@@ -244,7 +155,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         initialPhotosUrls: formFotoId ? [formFotoId] : [],
       };
 
-      console.log("📦 Enviando:", body);
+      console.log(" Enviando:", body);
 
       const response = await api.post("/occurrences/employee", body);
 
@@ -268,7 +179,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         throw new Error("Falha inesperada ao criar a ocorrência.");
       }
     } catch (error) {
-      console.error("❌ Erro ao criar:", error);
+      console.error(" Erro ao criar:", error);
       toast({
         variant: "destructive",
         title: "Erro ao criar ocorrência",
@@ -395,17 +306,43 @@ export function ExpandedRowServiceOrder({ occurrence }) {
               <span className="text-[#787891] text-xs">Reagendar</span>
             </Button>
 
+            {/* IMPRIMIR — mesma aba, SEM auto-print */}
             <Button
-              onClick={handleOpenPdfInNewTab}
+              onClick={() => {
+                try {
+                  // NÃO queremos auto-print aqui
+                  sessionStorage.removeItem("print:auto");
+                  sessionStorage.setItem(
+                    `print:order:${occurrence.id}`,
+                    JSON.stringify(occurrence)
+                  );
+                } catch (e) {
+                  console.warn("sessionStorage falhou", e);
+                }
+                navigate(`/service-orders/print/${occurrence.id}`);
+              }}
               variant="ghost"
               className="flex flex-col items-center justify-center gap-1 h-[60px] hover:bg-[#DCDCDC] rounded-md"
             >
               <FilePdf className="w-5 h-5" />
-              <span className="text-[#787891] text-xs">Gerar PDF</span>
+              <span className="text-[#787891] text-xs">Imprimir</span>
             </Button>
 
+            {/* DOWNLOAD — nova aba, COM auto-print */}
             <Button
-              onClick={handleDownloadPdf}
+              onClick={() => {
+                try {
+                  sessionStorage.setItem("print:auto", "1"); // <- só o download seta
+                  sessionStorage.setItem(
+                    `print:order:${occurrence.id}`,
+                    JSON.stringify(occurrence)
+                  );
+                } catch (e) {
+                  console.warn("sessionStorage falhou", e);
+                }
+                const url = `/service-orders/print/${occurrence.id}`;
+                window.open(url, "_blank");
+              }}
               variant="ghost"
               className="flex flex-col items-center justify-center gap-1 h-[60px] hover:bg-[#DCDCDC] rounded-md"
             >

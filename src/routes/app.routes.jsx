@@ -17,6 +17,7 @@ import { ServicePlanning } from "@/pages/ServicePlanning"; // planejamento
 import { Feedback } from "@/pages/Feedback"; // feedback
 import { Settings } from "@/pages/Settings"; // configurações
 import NeighborhoodOccurrences from "@/pages/LiveAction"; // LiveAction
+import { ServiceOrderPrint } from "@/pages/ServiceOrder/ServiceOrderPrint"; 
 
 import { useAuth } from "@/hooks/auth";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -153,6 +154,7 @@ export function AppRoutes() {
       )}
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" />} />
+      <Route path="/service-orders/print/:id" element={<ServiceOrderPrint />} />
     </Routes>
   );
 }
