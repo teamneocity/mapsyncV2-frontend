@@ -135,7 +135,7 @@ export function Dashboard() {
       <div className="flex-1">
         {/* Título */}
         <div className="px-4 py-4">
-          <h4 c>Olá {name},</h4>
+          <h4>Olá {name},</h4>
           <h1 className="text-xl sm:text-4xl font-bold text-gray-800 mb-4">
             Bem vindo de volta 👋
           </h1>
