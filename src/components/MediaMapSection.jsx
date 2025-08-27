@@ -33,7 +33,7 @@ export function MediaMapSection({ photoUrls = [], lat, lng, className = "" }) {
     <div className={`w-full h-full ${className}`}>
       <div className="grid grid-cols-1 gap-4 min-h-[208px] md:h-full">
         <Dialog open={photoOpen} onOpenChange={setPhotoOpen}>
-          <div className="relative w-[510px] h-[444px] rounded-md border overflow-hidden bg-gray-100">
+          <div className="relative w-full h-[444px] rounded-md border overflow-hidden bg-gray-100">
             {/* Legenda da etapa */}
             <div className="absolute top-2 left-2 bg-white/80 px-2 py-1 text-xs font-semibold rounded shadow">
               {currentPhoto.label}
