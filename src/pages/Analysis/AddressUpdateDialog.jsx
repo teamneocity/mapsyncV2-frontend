@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { GoogleMaps } from "@/components/googleMaps";
 import { Button } from "@/components/ui/button";
+import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -114,6 +115,7 @@ export function AddressUpdateDialog({
       <DialogTrigger asChild>
         <Button className="w-full h-[55px] px-4 bg-[#E8F7FF] hover:bg-blue-100 text-[#00679D]">
           Ajuste o endereço Rua/Av.
+          <ThumbsUp className="w-4 h-4" />
         </Button>
       </DialogTrigger>
 
