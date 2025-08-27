@@ -112,8 +112,8 @@ export function AddressUpdateDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full h-[55px] px-4 bg-[#33CFFF] hover:bg-blue-700 text-white">
-          Alterar endereço
+        <Button className="w-full h-[55px] px-4 bg-[#E8F7FF] hover:bg-blue-100 text-[#00679D]">
+          Ajuste o endereço Rua/Av.
         </Button>
       </DialogTrigger>
 

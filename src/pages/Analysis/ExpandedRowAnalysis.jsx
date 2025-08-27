@@ -189,12 +189,8 @@ export function ExpandedRowAnalysis({
       });
 
       setConfirmNeighborhoodOpen(false);
-
-      // ✅ recarrega a página automaticamente após confirmar
       setTimeout(() => {
         window.location.reload();
-        // alternativa com SPA: navigate(0) se você usa react-router-dom v6
-        // navigate(0);
       }, 300);
     } catch (error) {
       console.error(error);
@@ -275,31 +271,10 @@ export function ExpandedRowAnalysis({
       {/* Coluna 2 - Edição */}
       <div className="flex flex-col justify-between space-y-4 h-full">
         <div className="space-y-4">
-          {/* Setor responsável */}
-          <div>
-            <label className="font-semibold block mb-1 text-[#787891]">
-              Setor responsável
+          <label className="font-semibold text-[18px] block mb-1 text-[#787891]">
+              Ajustes da ocorrência
             </label>
-            <select
-              value={editableSectorId ?? ""}
-              onChange={(e) => setEditableSectorId(e.target.value)}
-              className="w-full p-2 rounded h-[55px] text-[#787891]"
-            >
-              <option value="">Selecione o setor</option>
-              {sectors.map((sector) => (
-                <option key={sector.id} value={sector.id}>
-                  {sector.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Bairro da ocorrência + botão salvar (sem borda/fundo branco) */}
           <div>
-            <label className="font-semibold block mb-1 text-[#787891]">
-              Bairro da ocorrência
-            </label>
-
             <div className="flex gap-2">
               <select
                 value={editableNeighborhoodId}
@@ -315,7 +290,7 @@ export function ExpandedRowAnalysis({
               </select>
 
               <Button
-                className="h-[55px] px-4 bg-green-600 hover:bg-green-700 text-white"
+                className="h-[55px] px-4 bg-[#C9F2E9] hover:bg-green-700 text-[#1C7551]"
                 onClick={openConfirmNeighborhood}
                 disabled={
                   updatingNeighborhood ||
@@ -366,12 +341,28 @@ export function ExpandedRowAnalysis({
               />
             </div>
           </div>
+          <label className="font-semibold text-[18px] block mb-1 text-[#787891]">
+            Encaminhamento para análise
+          </label>
+
+          {/* Setor responsável */}
+          <div>
+            <select
+              value={editableSectorId ?? ""}
+              onChange={(e) => setEditableSectorId(e.target.value)}
+              className="w-full p-2 rounded h-[55px] text-[#787891]"
+            >
+              <option value="">Selecione o setor</option>
+              {sectors.map((sector) => (
+                <option key={sector.id} value={sector.id}>
+                  {sector.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {/* Classificação */}
           <div>
-            <label className="font-semibold block mb-1 text-[#787891]">
-              Classificação
-            </label>
             <select
               value={isEmergencialSelection ? "true" : "false"}
               onChange={(e) =>
@@ -386,20 +377,6 @@ export function ExpandedRowAnalysis({
               <option value="false">Não emergencial</option>
               <option value="true">Emergencial</option>
             </select>
-          </div>
-
-          {/* Anotações da ocorrência */}
-          <div>
-            <label className="font-semibold block mb-1">
-              Anotações da ocorrência
-            </label>
-            <textarea
-              rows={4}
-              value={editableDescription}
-              onChange={(e) => setEditableDescription(e.target.value)}
-              className="w-full p-2 rounded min-h-[55px]"
-              placeholder={occurrence.description}
-            />
           </div>
         </div>
 
@@ -429,7 +406,7 @@ export function ExpandedRowAnalysis({
         lng={parseFloat(localAddress.longitude || 0)}
       />
 
-      {/* Modal de confirmação — padrão Radix */}
+      {/* Modal de confirmação  */}
       <Dialog
         open={confirmNeighborhoodOpen}
         onOpenChange={setConfirmNeighborhoodOpen}
