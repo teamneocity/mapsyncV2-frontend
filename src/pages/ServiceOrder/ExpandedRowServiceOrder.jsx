@@ -17,8 +17,8 @@ import { api } from "@/services/api";
 
 export function ExpandedRowServiceOrder({ occurrence }) {
   const timeline = [
-    { label: "Solicitação", date: occurrence.createdAt },
-    { label: "Aceito", date: occurrence.updatedAt },
+    { label: "Solicitação", date: occurrence.acceptedAt },
+    { label: "Aceito", date: occurrence.createdAt },
     { label: "Iniciado", date: occurrence.startedAt },
     { label: "Finalizado", date: occurrence.finishedAt },
   ];
@@ -306,11 +306,9 @@ export function ExpandedRowServiceOrder({ occurrence }) {
               <span className="text-[#787891] text-xs">Reagendar</span>
             </Button>
 
-            {/* IMPRIMIR — mesma aba, SEM auto-print */}
             <Button
               onClick={() => {
                 try {
-                  // NÃO queremos auto-print aqui
                   sessionStorage.removeItem("print:auto");
                   sessionStorage.setItem(
                     `print:order:${occurrence.id}`,
@@ -328,11 +326,10 @@ export function ExpandedRowServiceOrder({ occurrence }) {
               <span className="text-[#787891] text-xs">Imprimir</span>
             </Button>
 
-            {/* DOWNLOAD — nova aba, COM auto-print */}
             <Button
               onClick={() => {
                 try {
-                  sessionStorage.setItem("print:auto", "1"); // <- só o download seta
+                  sessionStorage.setItem("print:auto", "1");
                   sessionStorage.setItem(
                     `print:order:${occurrence.id}`,
                     JSON.stringify(occurrence)
@@ -363,7 +360,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
           <Timeline timeline={timeline} />
         </div>
 
-        {/* BOTÃO DINÂMICO */}
         {!occurrence.startedAt ? (
           <Button
             onClick={() => setIsModalOpen(true)}

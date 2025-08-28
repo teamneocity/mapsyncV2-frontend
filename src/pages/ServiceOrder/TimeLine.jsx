@@ -10,7 +10,6 @@ export function Timeline({ timeline }) {
     <div className="relative mt-4 pl-6 z-0">
       <ul className="space-y-6">
         {timeline.map((step, index) => {
-          // Escolhe o ícone com base na posição fixa
           let Icon;
           if (index === 0) Icon = Start;
           else if (index === timeline.length - 1) Icon = End;

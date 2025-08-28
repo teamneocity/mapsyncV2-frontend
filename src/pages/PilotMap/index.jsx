@@ -13,8 +13,8 @@ import {
   Dialog,
   DialogContent,
   DialogTrigger,
-  DialogTitle,         // ⬅️ adicionar isso
-  DialogDescription,   // ⬅️ e isso
+  DialogTitle,         
+  DialogDescription,   
 } from "@/components/ui/dialog";
 
 import { GoogleMaps } from "@/components/googleMaps";
