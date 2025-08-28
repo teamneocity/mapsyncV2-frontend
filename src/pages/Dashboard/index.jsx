@@ -24,7 +24,7 @@ import Bars from "@/assets/icons/Bars.svg?react";
 import Airplane from "@/assets/icons/Airplane.svg?react";
 
 export function Dashboard() {
-  // Componente BlogBox local
+  
 
   const [users, setUsers] = useState([]);
   const { user } = useAuth();
@@ -83,7 +83,7 @@ export function Dashboard() {
   }, []);
 
   const BlogBox = () => (
-    <div className="flex flex-col justify-between gap-4 rounded-xl px-10 py-8 w-full h-full bg-white">
+    <div className="flex flex-col justify-between gap-4 rounded-xl px-10 py-10 w-full h-full bg-white">
       <div className="flex items-center justify-between w-full">
         <div className="flex -space-x-3">
           {users.slice(0, 5).map((user, index) => (
@@ -117,7 +117,7 @@ export function Dashboard() {
   );
 
   const SectorBox = () => (
-    <div className="flex items-start gap-4 rounded-xl px-10 py-8 w-full h-full bg-white">
+    <div className="flex items-start gap-4 rounded-xl px-10 py-10 w-full h-full bg-white">
       <div className="w-full">
         <div className="flex items-center justify-between w-full px-0 py-0">
           <div className="flex -space-x-3">
@@ -167,7 +167,7 @@ export function Dashboard() {
         </div>
 
         {/* Tutorial + Blog */}
-        <div className="flex flex-col xl:flex-row gap-4 w-full px-2 mb-4">
+        <div className="flex flex-col xl:flex-row gap-4 w-full px-4 mb-4">
           {/* Coluna esquerda - Tutorial */}
           <div className="flex-[3] flex">
             <div className="w-full">
@@ -187,9 +187,10 @@ export function Dashboard() {
         </div>
 
         {/* Gráficos */}
-        <div className=" mt-5 mb-10 grid grid-cols-1 xl:grid-cols-2 gap-3 ">
+
+        <div className="mt-5 mb-10 grid grid-cols-1 xl:grid-cols-2 gap-3 px-4">
           {/* Card 1 */}
-          <div className="  px-4 h-[340px] sm:h-[360px] xl:h-[408px]">
+          <div className="px-4 h-[340px] sm:h-[360px] xl:h-[408px]">
             <div className="w-full h-full">
               {loadingPilots ? (
                 <div className="w-full h-full flex items-center justify-center text-gray-500">
@@ -204,7 +205,7 @@ export function Dashboard() {
                   {pilotMetrics.slice(0, 4).map((p, idx) => {
                     const formatName = (fullName = "") => {
                       const parts = fullName.trim().split(" ");
-                      if (parts.length <= 1) return fullName; // se for só 1 palavra, mostra inteira
+                      if (parts.length <= 1) return fullName;
                       return `${parts[0]} ${parts[parts.length - 1]}`;
                     };
 

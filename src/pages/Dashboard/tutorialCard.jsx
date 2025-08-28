@@ -21,8 +21,7 @@ function countsToPercentsInt(items) {
   return items.map((it) => mapBack.get(it.status));
 }
 
-export function TutorialCard() {
-  // --- dados da API
+export function TutorialCard({ labelColors }) {
   const [statusRows, setStatusRows] = useState(null);
 
   useEffect(() => {
@@ -59,49 +58,96 @@ export function TutorialCard() {
   }, []);
 
   const labelFont = w < 380 ? 12 : w < 520 ? 16 : w < 760 ? 24 : 32;
-
   const minLabelPercent = w < 520 ? 10 : 5;
 
-  const { parts, labels, palette, legendNames, counts } = useMemo(() => {
-    const baseColors = [
-      "#1677FF",
-      "#3C8CFA",
-      "#6AA6F7",
-      "#9EC2FA",
-      "#C7DBFC",
-      "#E6F0FF",
-    ];
+  const { parts, labels, palette, labelPalette, legendNames, counts } =
+    useMemo(() => {
+      const baseColors = [
+        "#E8F2FF",
+        "#F6FFC6",
+        "#FFE8E8",
+        "#EBD4EA",
+        "#E9E4FC",
+        "#FFF1CB",
+        "#FFE8DC",
+        "#C9F2E9",
+        "#EDEDED",
+      ];
 
-    if (!statusRows || statusRows.length === 0) {
+      const baseLabelColorsDefault = [
+        "#4593F5",
+        "#79811C",
+        "#96132C",
+        "#5D2A61",
+        "#4F26F0",
+        "#845B00",
+        "#824F24",
+        "#1C7551",
+        "#5F5F5F",
+      ];
+
+      if (!statusRows || statusRows.length === 0) {
+        const mockParts = [25, 25, 18, 14, 10, 8, 3];
+        const mockLabels = ["25%", "25%", "18%", "14%", "10%", "8%", "3%"];
+        const pal = baseColors.slice(0, mockParts.length);
+
+        const labelBase =
+          Array.isArray(labelColors) && labelColors.length
+            ? labelColors
+            : baseLabelColorsDefault;
+
+        const labelPal =
+          mockParts.length <= labelBase.length
+            ? labelBase.slice(0, mockParts.length)
+            : Array.from(
+                { length: mockParts.length },
+                (_, i) => labelBase[i % labelBase.length]
+              );
+
+        return {
+          parts: mockParts,
+          labels: mockLabels,
+          palette: pal,
+          labelPalette: labelPal,
+          legendNames: ["A", "B", "C", "D", "E", "F", "G"],
+          counts: mockParts,
+        };
+      }
+
+      const ordered = [...statusRows].sort((a, b) => b.count - a.count);
+      const percents = countsToPercentsInt(ordered) ?? [100];
+
+      const lbls = percents.map((p) => (p >= minLabelPercent ? `${p}%` : ""));
+      const pal =
+        ordered.length <= baseColors.length
+          ? baseColors.slice(0, ordered.length)
+          : Array.from(
+              { length: ordered.length },
+              (_, i) => baseColors[i % baseColors.length]
+            );
+
+      const labelBase =
+        Array.isArray(labelColors) && labelColors.length
+          ? labelColors
+          : baseLabelColorsDefault;
+
+      const labelPal =
+        ordered.length <= labelBase.length
+          ? labelBase.slice(0, ordered.length)
+          : Array.from(
+              { length: ordered.length },
+              (_, i) => labelBase[i % labelBase.length]
+            );
+
       return {
-        parts: [25, 25, 18, 14, 10, 8, 3],
-        labels: ["25%", "25%", "18%", "14%", "10%", "8%", "3%"],
-        palette: baseColors,
-        legendNames: ["A", "B", "C", "D", "E", "F", "G"],
-        counts: [25, 25, 18, 14, 10, 8, 3], // mock
+        parts: percents,
+        labels: lbls,
+        palette: pal,
+        labelPalette: labelPal,
+        legendNames: ordered.map((it) => it.status),
+        counts: ordered.map((it) => it.count),
       };
-    }
-
-    const ordered = [...statusRows].sort((a, b) => b.count - a.count);
-    const percents = countsToPercentsInt(ordered) ?? [100];
-
-    const lbls = percents.map((p) => (p >= minLabelPercent ? `${p}%` : "")); 
-    const pal =
-      ordered.length <= baseColors.length
-        ? baseColors.slice(0, ordered.length)
-        : Array.from(
-            { length: ordered.length },
-            (_, i) => baseColors[i % baseColors.length]
-          );
-
-    return {
-      parts: percents,
-      labels: lbls,
-      palette: pal,
-      legendNames: ordered.map((it) => it.status),
-      counts: ordered.map((it) => it.count),
-    };
-  }, [statusRows, minLabelPercent]);
+    }, [statusRows, minLabelPercent, labelColors]);
 
   const series = parts.map((v, idx) => ({
     name: legendNames[idx],
@@ -113,9 +159,9 @@ export function TutorialCard() {
       show: Boolean(labels[idx]),
       position: "inside",
       formatter: labels[idx],
-      color: "#fff",
+      color: labelPalette[idx],
       fontSize: labelFont,
-      fontWeight: 200,
+      fontWeight: 600,
     },
     itemStyle: {
       color: palette[idx],
@@ -154,36 +200,34 @@ export function TutorialCard() {
   };
 
   return (
-  <div ref={wrapRef}>
-    <div className="w-full p-2 bg-white rounded-2xl shadow-md ">
-      {/* Wrapper que define a altura exata do gráfico em cada breakpoint */}
-      <div className="h-[260px]">
-        <ReactECharts
-          option={option}
-          style={{ width: "100%", height: "100%" }}
-          notMerge
-          lazyUpdate
-          opts={{ renderer: w < 520 ? "svg" : "canvas" }}
-        />
+    <div ref={wrapRef}>
+      <div className="w-full p-2 bg-white rounded-2xl shadow-md ">
+        <div className="h-[260px]">
+          <ReactECharts
+            option={option}
+            style={{ width: "100%", height: "100%" }}
+            notMerge
+            lazyUpdate
+            opts={{ renderer: w < 520 ? "svg" : "canvas" }}
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-3 sm:gap-4 mt-3">
+        {legendNames?.map((name, idx) => (
+          <div
+            key={`${name}-${idx}`}
+            className="flex items-center gap-2 text-xs sm:text-sm"
+          >
+            <span
+              className="w-3 h-3 rounded-full shrink-0"
+              style={{ backgroundColor: palette[idx] }}
+              aria-hidden
+            />
+            <span className="capitalize">{name}</span>
+          </div>
+        ))}
       </div>
     </div>
-
-    <div className="flex flex-wrap gap-3 sm:gap-4 mt-3">
-      {legendNames?.map((name, idx) => (
-        <div
-          key={`${name}-${idx}`}
-          className="flex items-center gap-2 text-xs sm:text-sm"
-        >
-          <span
-            className="w-3 h-3 rounded-full shrink-0"
-            style={{ backgroundColor: palette[idx] }}
-            aria-hidden
-          />
-          <span className="capitalize">{name}</span>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
+  );
 }
