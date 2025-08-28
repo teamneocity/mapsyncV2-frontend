@@ -37,13 +37,13 @@ export function OccurrenceList({
 
   const getStatusClasses = (status) => {
     const map = {
-      em_analise: "bg-[#E8F7FF] text-[#33CFFF]",
+      em_analise: "bg-[#D0E4FC] text-[#1678F2]",
       emergencial: "bg-[#FFE8E8] text-[#FF2222]",
-      aprovada: "bg-[#EFFBFF] text-[#33CFFF]",
+      aprovada: "bg-[#F6FFC6] text-[#79811C]",
       os_gerada: "bg-[#f0ddee] text-[#733B73]",
-      aguardando_execucao: "bg-[#f0ddee] text-[#733B73]",
-      em_execucao: "bg-[#FFF4D6] text-[#986F00]",
-      finalizada: "bg-[#DDF2EE] text-[#40C4AA]",
+      aguardando_execucao: "bg-[#EBD4EA] text-[#5D2A61]",
+      em_execucao: "bg-[#FFF1CB] text-[#845B00]",
+      finalizada: "bg-[#C9F2E9] text-[#1C7551]",
       pendente: "bg-[#E8F7FF] text-[#33CFFF]",
       aceita: "bg-[#FFF4D6] text-[#986F00]",
       verificada: "bg-[#DDF2EE] text-[#40C4AA]",
