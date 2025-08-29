@@ -24,8 +24,6 @@ import Bars from "@/assets/icons/Bars.svg?react";
 import Airplane from "@/assets/icons/Airplane.svg?react";
 
 export function Dashboard() {
-  
-
   const [users, setUsers] = useState([]);
   const { user } = useAuth();
   const [name] = useState(user.name);
@@ -83,13 +81,13 @@ export function Dashboard() {
   }, []);
 
   const BlogBox = () => (
-    <div className="flex flex-col justify-between gap-4 rounded-xl px-10 py-10 w-full h-full bg-white">
+    <div className="flex flex-col justify-between gap-4 rounded-xl px-10 xl:px-10 py-10 w-full h-full bg-white">
       <div className="flex items-center justify-between w-full">
-        <div className="flex -space-x-3">
-          {users.slice(0, 5).map((user, index) => (
+        <div className="flex -space-x-8">
+          {users.slice(0, 3).map((user, index) => (
             <div
               key={user.id}
-              className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-white`}
+              className={`w-16 h-[64px] rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-white`}
               style={{
                 zIndex: 4 - index,
                 backgroundColor: [
@@ -108,7 +106,7 @@ export function Dashboard() {
 
         <button
           onClick={() => navigate("/userManagement")}
-          className="px-4 py-2 h-[55px] border border-zinc-300 text-sm rounded-xl hover:bg-zinc-100 transition"
+          className="px-4 py-2 h-[64px] xl:w-[212px] sm:px border border-zinc-300 text-sm text-white rounded-xl bg-black hover:bg-[#262626] transition"
         >
           + Gerir usuário
         </button>
@@ -117,14 +115,14 @@ export function Dashboard() {
   );
 
   const SectorBox = () => (
-    <div className="flex items-start gap-4 rounded-xl px-10 py-10 w-full h-full bg-white">
+    <div className="flex items-start gap-4 rounded-xl px-5 xl:px-10 py-10 w-full h-full bg-white">
       <div className="w-full">
         <div className="flex items-center justify-between w-full px-0 py-0">
-          <div className="flex -space-x-3">
-            {chiefs.slice(0, 5).map((chief, index) => (
+          <div className="flex -space-x-8">
+            {chiefs.slice(0, 3).map((chief, index) => (
               <div
                 key={chief.id}
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-white`}
+                className={`w-16 h-[64px] rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-white`}
                 style={{
                   zIndex: 4 - index,
                   backgroundColor: [
@@ -143,7 +141,7 @@ export function Dashboard() {
 
           <button
             onClick={() => navigate("/sectorAdmin")}
-            className="px-4 py-2 h-[55px] border border-zinc-300 text-sm rounded-xl hover:bg-zinc-100 transition"
+            className="px-4 py-2 h-[64px] xl:w-[212px] sm:w-[150px] border border-zinc-300 text-sm rounded-xl hover:bg-zinc-100 transition"
           >
             + Gerir Setores
           </button>
