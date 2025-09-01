@@ -84,12 +84,12 @@ export function Dashboard() {
 
   const BlogBox = () => (
     <div className="flex flex-col justify-between gap-4 rounded-xl px-10 py-10 w-full h-full bg-white">
-      <div className="flex items-center justify-between w-full">
+      <div className="flex items-center justify-between w-full gap-2">
         <div className="flex -space-x-3">
           {users.slice(0, 3).map((user, index) => (
             <div
               key={user.id}
-              className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-white`}
+              className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm`}
               style={{
                 zIndex: 4 - index,
                 backgroundColor: [
@@ -119,19 +119,19 @@ export function Dashboard() {
 
   const SectorBox = () => (
     <div className="flex items-start gap-4 rounded-xl px-10 py-10 w-full h-full bg-white">
-      <div className="w-full">
-        <div className="flex items-center justify-between w-full px-0 py-0">
+      <div className="w-full ">
+        <div className="flex items-center gap-2 justify-between w-full px-0 py-0">
           <div className="flex -space-x-3">
             {chiefs.slice(0, 3).map((chief, index) => (
               <div
                 key={chief.id}
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-white`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold `}
                 style={{
                   zIndex: 4 - index,
-                  backgroundColor: ["#B5E0A2", "#D1C4E9", "#F8BBD0"][index % 5],
+                  backgroundColor: ["#E1E371", "#E37171", "#71E388"][index % 5],
                 }}
               >
-                {getInicials(chief.name)}
+                
               </div>
             ))}
           </div>
