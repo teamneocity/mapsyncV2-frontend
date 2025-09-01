@@ -41,6 +41,7 @@ export function TutorialCard({ labelColors }) {
   }, []);
 
   const wrapRef = useRef(null);
+  const chartRef = useRef(null);
   const [w, setW] = useState(0);
   const [h, setH] = useState(0);
 
@@ -56,6 +57,11 @@ export function TutorialCard({ labelColors }) {
     ro.observe(wrapRef.current);
     return () => ro.disconnect();
   }, []);
+
+  useEffect(() => {
+    const inst = chartRef.current?.getEchartsInstance?.();
+    if (inst) requestAnimationFrame(() => inst.resize());
+  }, [w, h]);
 
   const labelFont = w < 380 ? 12 : w < 520 ? 16 : w < 760 ? 24 : 32;
   const minLabelPercent = w < 520 ? 10 : 5;
@@ -199,11 +205,29 @@ export function TutorialCard({ labelColors }) {
     series,
   };
 
+  const mesRefLabel = useMemo(() => {
+    const now = new Date();
+    const mes = new Intl.DateTimeFormat("pt-BR", { month: "long" }).format(now);
+    return `${mes} `;
+  }, []);
+
   return (
-    <div ref={wrapRef}>
-      <div className="w-full p-2 bg-white rounded-2xl shadow-md ">
-        <div className="h-[260px]">
+    <div ref={wrapRef} className="relative min-w-0">
+      <span
+        className="
+          absolute -top-6 right-7
+          text-[11px] sm:text-xs text-black
+          px-2 py-1 rounded-md
+          select-none pointer-events-none whitespace-nowrap
+        "
+      >
+        Referente ao mês de {mesRefLabel}
+      </span>
+
+      <div className="w-full min-w-0 p-2 bg-white rounded-2xl shadow-md">
+        <div className="h-[260px] min-w-0">
           <ReactECharts
+            ref={chartRef}
             option={option}
             style={{ width: "100%", height: "100%" }}
             notMerge
@@ -213,7 +237,7 @@ export function TutorialCard({ labelColors }) {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3 sm:gap-4 mt-3">
+      <div className="flex flex-wrap gap-3 sm:gap-4 mt-3 min-w-0">
         {legendNames?.map((name, idx) => (
           <div
             key={`${name}-${idx}`}

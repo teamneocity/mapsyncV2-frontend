@@ -11,7 +11,7 @@ import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
 
 // Componentes locais
-import { TutorialCard } from "@/pages/Dashboard/tutorialCard.jsx";
+import { TutorialCard } from "@/pages/Dashboard/BarChart.jsx";
 import { NeighborhoodNightingale } from "@/pages/Dashboard/NeighborhoodNightingale";
 
 // Serviços e utilitários
@@ -83,13 +83,14 @@ export function Dashboard() {
   }, []);
 
   const BlogBox = () => (
-    <div className="flex flex-col justify-between gap-4 rounded-xl px-10 py-10 w-full h-full bg-white">
-      <div className="flex items-center justify-between w-full gap-2">
-        <div className="flex -space-x-3">
+    <div className="flex flex-col justify-between gap-4 rounded-xl px-10 py-10 w-full h-full bg-white overflow-visible">
+      <div className="flex items-center w-full gap-2">
+        {/* avatares: ocupam o resto, e podem encolher sem empurrar o botão */}
+        <div className="flex -space-x-3 flex-1 min-w-0">
           {users.slice(0, 3).map((user, index) => (
             <div
               key={user.id}
-              className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm`}
+              className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm"
               style={{
                 zIndex: 4 - index,
                 backgroundColor: [
@@ -106,42 +107,48 @@ export function Dashboard() {
           ))}
         </div>
 
+        {/* botão: fixo 212x64, empurrado pra direita via ml-auto */}
         <button
           onClick={() => navigate("/userManagement")}
-          className="flex items-center gap-2 px-2 py-2 h-[55px] border bg-black text-white text-sm rounded-xl hover:bg-[#545454] transition"
+          className="ml-auto flex items-center justify-center w-[212px] h-16 shrink-0 box-border border bg-black text-white rounded-xl hover:bg-[#545454] transition"
         >
-          <Dash className="w-6 h-6" />
-          Criar usuário
+          <div className="flex items-center gap-1.5 scale-90">
+            <Dash className="w-5 h-5" />
+            <span className="text-[13px] leading-none">Criar usuário</span>
+          </div>
         </button>
       </div>
     </div>
   );
 
   const SectorBox = () => (
-    <div className="flex items-start gap-4 rounded-xl px-10 py-10 w-full h-full bg-white">
+    <div className="flex items-start gap-4 rounded-xl px-4 sm:px-10 py-10 w-full h-full bg-white overflow-visible">
       <div className="w-full ">
-        <div className="flex items-center gap-2 justify-between w-full px-0 py-0">
-          <div className="flex -space-x-3">
+        <div className="flex flex-wrap items-center w-full gap-2">
+          {/* avatares: mesma regra */}
+          <div className="flex -space-x-3 flex-1 min-w-0">
             {chiefs.slice(0, 3).map((chief, index) => (
               <div
                 key={chief.id}
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold `}
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold"
                 style={{
                   zIndex: 4 - index,
                   backgroundColor: ["#E1E371", "#E37171", "#71E388"][index % 5],
                 }}
-              >
-                
-              </div>
+              />
             ))}
           </div>
 
+          {/* botão: fixo e com ml-auto; em telas muito estreitas, pode ocupar 100% */}
           <button
             onClick={() => navigate("/sectorAdmin")}
-            className="flex items-center gap-2 px-2 py-2 h-[55px] border border-[#787891] text-sm rounded-xl hover:bg-zinc-100 transition"
+            className="ml-auto flex items-center justify-center w-[212px] h-16 shrink-0 box-border border border-[#787891] rounded-xl hover:bg-zinc-100 transition
+               max-[360px]:w-full"
           >
-            <Dashg className="w-6 h-6" />
-            Criar Setores
+            <div className="flex items-center gap-1.5 scale-90">
+              <Dashg className="w-5 h-5" />
+              <span className="text-[13px] leading-none">Criar Setores</span>
+            </div>
           </button>
         </div>
       </div>
@@ -165,8 +172,8 @@ export function Dashboard() {
         {/* Tutorial + Blog */}
         <div className="flex flex-col xl:flex-row gap-4 w-full px-4 mb-4">
           {/* Coluna esquerda - Tutorial */}
-          <div className="flex-[3] flex">
-            <div className="w-full">
+          <div className="flex-[3] flex min-w-0">
+            <div className="w-full min-w-0">
               <TutorialCard />
             </div>
           </div>

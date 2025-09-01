@@ -114,10 +114,10 @@ export function AppRoutes() {
         path="/inspection"
         element={canSeeAll || isChief ? <Inspection /> : <Navigate to="/" />}
       />
-      <Route
+      {/* <Route
         path="/PilotMap"
         element={canSeeAll || isChief ? <PilotMap /> : <Navigate to="/" />}
-      />
+      /> */}
       {/* Rota: /reports */}
       <Route
         path="/reports"
