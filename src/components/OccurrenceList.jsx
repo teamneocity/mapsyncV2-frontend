@@ -20,7 +20,10 @@ export function OccurrenceList({
     serviceorders?.length > 0
       ? serviceorders.map((s) => ({
           ...s.occurrence,
+
           isEmergencial: s.occurrence?.isEmergencial,
+
+          isDelayed: s?.isDelayed === true,
         }))
       : occurrences;
 
@@ -61,7 +64,12 @@ export function OccurrenceList({
     LIMPA_FOSSA: "Limpa fossa",
   };
 
-  function StatusBadge({ status, isEmergencial, labelOverrides = {} }) {
+  function StatusBadge({
+    status,
+    isEmergencial,
+    isDelayed,
+    labelOverrides = {},
+  }) {
     const statusLabels = {
       em_analise: "Em análise",
       emergencial: "Emergencial",
@@ -76,10 +84,19 @@ export function OccurrenceList({
       rejeitada: "Rejeitada",
     };
 
-    const label =
+    const labelBase =
       (labelOverrides && labelOverrides[status]) ??
       statusLabels[status] ??
       status;
+
+    // ⏰ Se estiver atrasada, sobrescreve completamente (label e cores)
+    if (isDelayed) {
+      return (
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold break-words text-center bg-[#E9E4FC] text-[#4F26F0]">
+          Atrasada
+        </span>
+      );
+    }
 
     // 🔴 se for emergencial, força vermelho fixo
     const baseClass = isEmergencial
@@ -90,7 +107,7 @@ export function OccurrenceList({
       <span
         className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold break-words text-center ${baseClass}`}
       >
-        {label}
+        {labelBase}
       </span>
     );
   }
@@ -202,6 +219,7 @@ export function OccurrenceList({
                           <StatusBadge
                             status={occ.status}
                             isEmergencial={occ.isEmergencial}
+                            isDelayed={occ.isDelayed}
                             labelOverrides={statusLabelOverrides}
                           />
                         </div>
@@ -329,6 +347,7 @@ export function OccurrenceList({
                       <StatusBadge
                         status={occ.status}
                         isEmergencial={occ.isEmergencial}
+                        isDelayed={occ.isDelayed}
                         labelOverrides={statusLabelOverrides}
                       />
                     </div>
