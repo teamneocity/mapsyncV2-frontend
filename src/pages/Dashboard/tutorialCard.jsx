@@ -87,8 +87,8 @@ export function TutorialCard({ labelColors }) {
       ];
 
       if (!statusRows || statusRows.length === 0) {
-        const mockParts = [25, 25, 18, 14, 10, 8, 3];
-        const mockLabels = ["25%", "25%", "18%", "14%", "10%", "8%", "3%"];
+        const mockParts = [25, 25, 18, 14, 10, 8];
+        const mockLabels = ["25%", "25%", "18%", "14%", "10%", "8%"];
         const pal = baseColors.slice(0, mockParts.length);
 
         const labelBase =
