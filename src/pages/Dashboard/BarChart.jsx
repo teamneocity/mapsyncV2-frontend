@@ -20,6 +20,20 @@ function countsToPercentsInt(items) {
 export function TutorialCard({ labelColors }) {
   const [statusRows, setStatusRows] = useState(null);
 
+  const statusLabels = {
+    em_analise: "Em análise",
+    emergencial: "Emergencial",
+    aprovada: "Aprovada",
+    os_gerada: "O.S. gerada",
+    aguardando_execucao: "Agendada",
+    em_execucao: "Andamento",
+    finalizada: "Finalizada",
+    pendente: "Pendente",
+    aceita: "Aceita",
+    verificada: "Verificada",
+    rejeitada: "Rejeitada",
+  };
+
   useEffect(() => {
     let ignore = false;
     (async () => {
@@ -29,7 +43,7 @@ export function TutorialCard({ labelColors }) {
         setStatusRows(Array.isArray(data?.byStatus) ? data.byStatus : []);
       } catch (e) {
         console.warn("[TutorialCard] erro /occurrences/stats", e);
-        setStatusRows([]); // erro => trata como sem dados
+        setStatusRows([]);
       }
     })();
     return () => {
@@ -37,7 +51,6 @@ export function TutorialCard({ labelColors }) {
     };
   }, []);
 
-  // refs e resize
   const wrapRef = useRef(null);
   const chartRef = useRef(null);
   const [w, setW] = useState(0);
@@ -58,13 +71,14 @@ export function TutorialCard({ labelColors }) {
 
   useEffect(() => {
     const inst = chartRef.current?.getEchartsInstance?.();
-    if (inst) requestAnimationFrame(() => inst.resize());
+    if (!inst) return;
+    const t = setTimeout(() => inst.resize(), 120); // pequeno debounce
+    return () => clearTimeout(t);
   }, [w, h]);
 
   const labelFont = w < 380 ? 12 : w < 520 ? 16 : w < 760 ? 24 : 32;
   const minLabelPercent = w < 520 ? 10 : 5;
 
-  // se vier vazio OU só zeros, consideramos "sem dados"
   const hasData =
     Array.isArray(statusRows) && statusRows.some((r) => (r.count || 0) > 0);
 
@@ -95,7 +109,6 @@ export function TutorialCard({ labelColors }) {
       ];
 
       if (!Array.isArray(statusRows) || statusRows.length === 0) {
-        // sem dados => arrays vazios
         return {
           parts: [],
           labels: [],
@@ -107,7 +120,7 @@ export function TutorialCard({ labelColors }) {
       }
 
       const ordered = [...statusRows].sort((a, b) => b.count - a.count);
-      const percents = countsToPercentsInt(ordered); // se total=0 => tudo 0
+      const percents = countsToPercentsInt(ordered);
 
       const lbls = percents.map((p) => (p >= minLabelPercent ? `${p}%` : ""));
       const pal =
@@ -136,7 +149,7 @@ export function TutorialCard({ labelColors }) {
         labels: lbls,
         palette: pal,
         labelPalette: labelPal,
-        legendNames: ordered.map((it) => it.status),
+        legendNames: ordered.map((it) => statusLabels[it.status] || it.status),
         counts: ordered.map((it) => it.count),
       };
     }, [statusRows, minLabelPercent, labelColors]);
@@ -169,6 +182,10 @@ export function TutorialCard({ labelColors }) {
 
   const option = {
     animation: true,
+    animationDuration: 800,
+    animationEasing: "cubicOut",
+    animationDurationUpdate: 600,
+    animationEasingUpdate: "cubicOut",
     xAxis: { type: "value", min: 0, max: 100, show: false },
     yAxis: { type: "category", data: [""], show: false },
     grid: { left: 0, right: 0, top: 0, bottom: 0 },
@@ -222,7 +239,7 @@ export function TutorialCard({ labelColors }) {
               option={option}
               style={{ width: "100%", height: "100%" }}
               notMerge
-              lazyUpdate
+              lazyUpdate={true}
               opts={{ renderer: w < 520 ? "svg" : "canvas" }}
             />
           )}

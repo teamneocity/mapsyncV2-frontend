@@ -7,12 +7,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DateRange } from "./date-range";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Stroke from "@/assets/icons/Stroke.svg?react";
 import { api } from "@/services/api";
+
+// Usaremos apenas Popover do shadcn (que você já tem)
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 export function Filters({
   text,
@@ -27,13 +30,16 @@ export function Filters({
   subtitle = "Via aplicativo",
   contextType = "padrao",
 }) {
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedRecent, setSelectedRecent] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [selectedNeighborhood, setSelectedNeighborhood] = useState(null);
   const [selectedRange, setSelectedRange] = useState({ from: null, to: null });
   const [neighborhoods, setNeighborhoods] = useState([]);
+
+  // Busca e abertura do popover de Bairros
+  const [neighborhoodQuery, setNeighborhoodQuery] = useState("");
+  const [neighborhoodOpen, setNeighborhoodOpen] = useState(false);
 
   useEffect(() => {
     async function fetchNeighborhoods() {
@@ -44,7 +50,6 @@ export function Filters({
         console.error("Erro ao buscar bairros:", error);
       }
     }
-
     fetchNeighborhoods();
   }, []);
 
@@ -60,6 +65,7 @@ export function Filters({
 
   const handleNeighborhoodFilter = (neighborhoodId) => {
     setSelectedNeighborhood(neighborhoodId);
+    setNeighborhoodQuery(""); // limpa a busca após escolher
     onFilterNeighborhood(neighborhoodId);
   };
 
@@ -70,10 +76,27 @@ export function Filters({
 
   const handleDateRangeChange = (range) => {
     if (!range || !range.from || !range.to) return;
-
     if (range.from !== selectedRange.from || range.to !== selectedRange.to) {
       setSelectedRange(range);
       onFilterDateRange({ startDate: range.from, endDate: range.to });
+    }
+  };
+
+  // filtro local dos bairros pela busca
+  const filteredNeighborhoods = useMemo(() => {
+    const q = (neighborhoodQuery || "").trim().toLowerCase();
+    if (!q) return neighborhoods;
+    return neighborhoods.filter((n) => n.name?.toLowerCase().includes(q));
+  }, [neighborhoods, neighborhoodQuery]);
+
+  // Enter = seleciona o primeiro item
+  const handleNeighborhoodQueryKeyDown = (e) => {
+    if (e.key === "Enter") {
+      const first = filteredNeighborhoods?.[0];
+      if (first) {
+        handleNeighborhoodFilter(first.id);
+        setNeighborhoodOpen(false);
+      }
     }
   };
 
@@ -101,9 +124,7 @@ export function Filters({
       <div className="w-full flex items-center justify-between gap-2 md:gap-3 flex-wrap md:flex-nowrap rounded-xl overflow-x-auto overflow-y-hidden scrollbar-hide scroll-smooth">
         {/* Título */}
         <div className="flex flex-col mr-2 min-w-[160px]">
-          <span className="text-[18px] text-gray-700 leading-tight">
-            {title}
-          </span>
+          <span className="text-[18px] text-gray-700 leading-tight">{title}</span>
           <span className="text-[18px] font-semibold text-gray-900 leading-tight">
             {subtitle}
           </span>
@@ -118,34 +139,75 @@ export function Filters({
             className="text-sm h-12 w-full sm:flex-1 rounded-xl border-none shadow-sm placeholder:text-[#4B4B62] truncate"
           />
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          {/* BAIRRO — Popover + Input + lista nativa */}
+          <Popover open={neighborhoodOpen} onOpenChange={setNeighborhoodOpen}>
+            <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm text-[#4B4B62]"
               >
                 {selectedNeighborhood
-                  ? neighborhoods.find((n) => n.id === selectedNeighborhood)
-                      ?.name || "Bairro"
+                  ? neighborhoods.find((n) => n.id === selectedNeighborhood)?.name ||
+                    "Bairro"
                   : "Bairro"}
                 <ChevronDown className="ml-1 h-4 w-4" />
               </Button>
-            </DropdownMenuTrigger>
+            </PopoverTrigger>
 
-            <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[300px] overflow-y-auto">
-              <DropdownMenuItem onClick={() => handleNeighborhoodFilter(null)}>
-                Todos os bairros
-              </DropdownMenuItem>
-              {neighborhoods.map((n) => (
-                <DropdownMenuItem
-                  key={n.id}
-                  onClick={() => handleNeighborhoodFilter(n.id)}
-                >
-                  {n.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            <PopoverContent
+              align="start"
+              className="w-[var(--radix-popover-trigger-width)] p-0"
+            >
+              {/* Campo de busca */}
+              <div className="sticky top-0 bg-white p-2 border-b">
+                <Input
+                  autoFocus
+                  value={neighborhoodQuery}
+                  onChange={(e) => setNeighborhoodQuery(e.target.value)}
+                  onKeyDown={handleNeighborhoodQueryKeyDown}
+                  placeholder="Digite o nome do bairro…"
+                  className="h-9 text-sm"
+                />
+              </div>
+
+              {/* Lista scrollável */}
+              <div className="max-h-[320px] overflow-y-auto py-1">
+                <div className="px-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleNeighborhoodFilter(null);
+                      setNeighborhoodOpen(false);
+                    }}
+                    className="w-full text-left px-2 py-2 rounded-md hover:bg-accent hover:text-accent-foreground text-sm"
+                  >
+                    Todos os bairros
+                  </button>
+                </div>
+
+                {filteredNeighborhoods.length === 0 ? (
+                  <div className="px-2 py-2 text-sm text-muted-foreground">
+                    Nenhum bairro encontrado
+                  </div>
+                ) : (
+                  filteredNeighborhoods.map((n) => (
+                    <div key={n.id} className="px-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleNeighborhoodFilter(n.id);
+                          setNeighborhoodOpen(false);
+                        }}
+                        className="w-full text-left px-2 py-2 rounded-md hover:bg-accent hover:text-accent-foreground text-sm"
+                      >
+                        {n.name}
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* Recentes */}
@@ -160,14 +222,10 @@ export function Filters({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem
-              onClick={() => handleRecentFilter("Mais recentes")}
-            >
+            <DropdownMenuItem onClick={() => handleRecentFilter("Mais recentes")}>
               Mais recentes
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => handleRecentFilter("Mais antigos")}
-            >
+            <DropdownMenuItem onClick={() => handleRecentFilter("Mais antigos")}>
               Mais antigos
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -181,7 +239,6 @@ export function Filters({
               className="w-full sm:min-w-[200px] sm:max-w-[300px] gap-2 h-12 px-3 justify-between rounded-xl border-none shadow-sm text-[#4B4B62] truncate"
             >
               <span className="truncate">Tipo de ocorrência</span>
-
               <Stroke className="ml-1 h-4 w-4 shrink-0" />
             </Button>
           </DropdownMenuTrigger>

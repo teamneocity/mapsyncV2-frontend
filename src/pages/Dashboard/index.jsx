@@ -85,7 +85,6 @@ export function Dashboard() {
   const BlogBox = () => (
     <div className="flex flex-col justify-between gap-4 rounded-xl px-10 py-10 w-full h-full bg-white overflow-visible">
       <div className="flex items-center w-full gap-2">
-        {/* avatares: ocupam o resto, e podem encolher sem empurrar o botão */}
         <div className="flex -space-x-3 flex-1 min-w-0">
           {users.slice(0, 3).map((user, index) => (
             <div
@@ -107,7 +106,6 @@ export function Dashboard() {
           ))}
         </div>
 
-        {/* botão: fixo 212x64, empurrado pra direita via ml-auto */}
         <button
           onClick={() => navigate("/userManagement")}
           className="ml-auto flex items-center justify-center w-[212px] h-16 shrink-0 box-border border bg-black text-white rounded-xl hover:bg-[#545454] transition"
