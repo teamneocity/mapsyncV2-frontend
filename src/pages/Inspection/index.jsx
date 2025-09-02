@@ -39,14 +39,11 @@ export function Inspection() {
     endDate: null,
   });
 
-  // ✅ Padrão novo de paginação
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // carrega sempre que página OU filtros mudarem
   useEffect(() => {
     fetchServiceOrders(currentPage);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     currentPage,
     searchTerm,
@@ -61,14 +58,14 @@ export function Inspection() {
   const fetchServiceOrders = async (page = 1) => {
     try {
       const params = {
-        page, // ✅ só página; backend define pageSize
-        // limit removido (padrão novo)
+        page,
+
         street: searchTerm,
         districtId: filterNeighborhood,
         type: filterType,
         status: filterStatus,
         orderBy: filterRecent,
-        // Aqui mantive o formato "yyyy-MM-dd" que você já estava usando nesta tela
+
         startDate: filterDateRange.startDate
           ? format(filterDateRange.startDate, "yyyy-MM-dd")
           : undefined,
@@ -79,14 +76,9 @@ export function Inspection() {
 
       const { data } = await api.get("/service-orders", { params });
 
-      // Aceita os dois formatos de payload que já vimos no seu back:
-      // 1) { meta: { page, totalPages }, serviceorders: [...] }
-      // 2) { page, totalPages, serviceorders: [...] } (fallback)
       const list = data?.serviceorders ?? [];
-      const serverPage =
-        data?.meta?.page ?? data?.page ?? page;
-      const serverTotalPages =
-        data?.meta?.totalPages ?? data?.totalPages ?? 1;
+      const serverPage = data?.meta?.page ?? data?.page ?? page;
+      const serverTotalPages = data?.meta?.totalPages ?? data?.totalPages ?? 1;
 
       setOccurrences(list);
       setCurrentPage(serverPage);
@@ -103,7 +95,7 @@ export function Inspection() {
     }
   };
 
-  // ✅ no padrão novo, aplicar filtros sempre volta pra página 1
+
   const handleApplyFilters = () => {
     setCurrentPage(1);
   };

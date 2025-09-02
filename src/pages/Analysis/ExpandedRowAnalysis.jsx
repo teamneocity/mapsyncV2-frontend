@@ -7,6 +7,7 @@ import { api } from "@/services/api";
 import { MediaMapSection } from "@/components/MediaMapSection";
 import { AddressUpdateDialog } from "./AddressUpdateDialog";
 import { useToast } from "@/hooks/use-toast";
+import { Copy } from "lucide-react";
 
 // Radix Dialog (padrão que você já usa)
 import {
@@ -69,6 +70,24 @@ export function ExpandedRowAnalysis({
   const [isAddressHistoryOpen, setIsAddressHistoryOpen] = useState(false);
   const [addressAudits, setAddressAudits] = useState([]);
   const [loadingAddressAudits, setLoadingAddressAudits] = useState(false);
+
+  function handleCopyProtocol() {
+    const value = occurrence?.protocolNumber;
+    if (!value) {
+      toast({
+        title: "Nada para copiar",
+        description: "Esta ocorrência não possui protocolo.",
+        variant: "destructive",
+      });
+      return;
+    }
+    navigator.clipboard.writeText(value).then(() => {
+      toast({
+        title: "Copiado!",
+        description: "Protocolo copiado para a área de transferência.",
+      });
+    });
+  }
 
   useEffect(() => {
     async function fetchSectors() {
@@ -212,6 +231,20 @@ export function ExpandedRowAnalysis({
           <h3 className="font-semibold text-base mb-2 border-b pb-1">
             Informações sobre a ocorrência
           </h3>
+          <div className="space-y-1">
+            <button
+              type="button"
+              onClick={handleCopyProtocol}
+              className="w-full h-[58px] text-left text-black flex items-center justify-between gap-3 rounded-lg border px-3 py-2
+                 bg-[#D9DCE2] hover:bg-gray-300 "
+              aria-label="Copiar protocolo"
+            >
+              <span className="truncate ">
+                Protocolo : {occurrence?.protocolNumber || "—"}
+              </span>
+              <Copy className="w-4 h-4 shrink-0 opacity-70" />
+            </button>
+          </div>
           <p>
             <span className="text-gray-500 font-medium">Data:</span> {createdAt}
           </p>
@@ -242,10 +275,6 @@ export function ExpandedRowAnalysis({
             {occurrence.type}
           </p>
           <p>
-            <span className="text-gray-500 font-medium">Protocolo:</span>{" "}
-            {occurrence.protocolNumber}
-          </p>
-          <p>
             <span className="text-gray-500 font-medium">Latitude:</span>{" "}
             {localAddress.latitude}
           </p>
@@ -272,8 +301,8 @@ export function ExpandedRowAnalysis({
       <div className="flex flex-col justify-between space-y-4 h-full">
         <div className="space-y-4">
           <label className="font-semibold text-[18px] block mb-1 text-[#787891]">
-              Ajustes da ocorrência
-            </label>
+            Ajustes da ocorrência
+          </label>
           <div>
             <div className="flex gap-2">
               <select

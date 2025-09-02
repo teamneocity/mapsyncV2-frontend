@@ -4,19 +4,15 @@ import { api } from "@/services/api";
 
 function countsToPercentsInt(items) {
   const total = items.reduce((s, it) => s + (it.count || 0), 0);
-  if (!total) return null;
-
+  if (!total) return items.map(() => 0); // sem total => tudo 0 (sem mock)
   const withFracs = items.map((it) => {
     const raw = (it.count / total) * 100;
     return { ...it, raw, floor: Math.floor(raw), frac: raw - Math.floor(raw) };
   });
-
   let sumFloors = withFracs.reduce((s, it) => s + it.floor, 0);
   let diff = 100 - sumFloors;
-
   const sorted = [...withFracs].sort((a, b) => b.frac - a.frac);
   for (let i = 0; i < diff; i++) sorted[i % sorted.length].floor += 1;
-
   const mapBack = new Map(sorted.map((it) => [it.status, it.floor]));
   return items.map((it) => mapBack.get(it.status));
 }
@@ -33,6 +29,7 @@ export function TutorialCard({ labelColors }) {
         setStatusRows(Array.isArray(data?.byStatus) ? data.byStatus : []);
       } catch (e) {
         console.warn("[TutorialCard] erro /occurrences/stats", e);
+        setStatusRows([]); // erro => trata como sem dados
       }
     })();
     return () => {
@@ -40,6 +37,7 @@ export function TutorialCard({ labelColors }) {
     };
   }, []);
 
+  // refs e resize
   const wrapRef = useRef(null);
   const chartRef = useRef(null);
   const [w, setW] = useState(0);
@@ -65,6 +63,10 @@ export function TutorialCard({ labelColors }) {
 
   const labelFont = w < 380 ? 12 : w < 520 ? 16 : w < 760 ? 24 : 32;
   const minLabelPercent = w < 520 ? 10 : 5;
+
+  // se vier vazio OU só zeros, consideramos "sem dados"
+  const hasData =
+    Array.isArray(statusRows) && statusRows.some((r) => (r.count || 0) > 0);
 
   const { parts, labels, palette, labelPalette, legendNames, counts } =
     useMemo(() => {
@@ -92,36 +94,20 @@ export function TutorialCard({ labelColors }) {
         "#5F5F5F",
       ];
 
-      if (!statusRows || statusRows.length === 0) {
-        const mockParts = [25, 25, 18, 14, 10, 8];
-        const mockLabels = ["25%", "25%", "18%", "14%", "10%", "8%"];
-        const pal = baseColors.slice(0, mockParts.length);
-
-        const labelBase =
-          Array.isArray(labelColors) && labelColors.length
-            ? labelColors
-            : baseLabelColorsDefault;
-
-        const labelPal =
-          mockParts.length <= labelBase.length
-            ? labelBase.slice(0, mockParts.length)
-            : Array.from(
-                { length: mockParts.length },
-                (_, i) => labelBase[i % labelBase.length]
-              );
-
+      if (!Array.isArray(statusRows) || statusRows.length === 0) {
+        // sem dados => arrays vazios
         return {
-          parts: mockParts,
-          labels: mockLabels,
-          palette: pal,
-          labelPalette: labelPal,
-          legendNames: ["A", "B", "C", "D", "E", "F", "G"],
-          counts: mockParts,
+          parts: [],
+          labels: [],
+          palette: [],
+          labelPalette: [],
+          legendNames: [],
+          counts: [],
         };
       }
 
       const ordered = [...statusRows].sort((a, b) => b.count - a.count);
-      const percents = countsToPercentsInt(ordered) ?? [100];
+      const percents = countsToPercentsInt(ordered); // se total=0 => tudo 0
 
       const lbls = percents.map((p) => (p >= minLabelPercent ? `${p}%` : ""));
       const pal =
@@ -225,33 +211,41 @@ export function TutorialCard({ labelColors }) {
       </span>
 
       <div className="w-full min-w-0 p-2 bg-white rounded-2xl shadow-md">
-        <div className="h-[260px] min-w-0">
-          <ReactECharts
-            ref={chartRef}
-            option={option}
-            style={{ width: "100%", height: "100%" }}
-            notMerge
-            lazyUpdate
-            opts={{ renderer: w < 520 ? "svg" : "canvas" }}
-          />
+        <div className="h-[260px] min-w-0 flex items-center justify-center">
+          {statusRows === null ? (
+            <span className="text-gray-500 text-sm">Carregando…</span>
+          ) : !hasData ? (
+            <span className="text-gray-500 text-sm">Sem dados disponíveis</span>
+          ) : (
+            <ReactECharts
+              ref={chartRef}
+              option={option}
+              style={{ width: "100%", height: "100%" }}
+              notMerge
+              lazyUpdate
+              opts={{ renderer: w < 520 ? "svg" : "canvas" }}
+            />
+          )}
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3 sm:gap-4 mt-3 min-w-0">
-        {legendNames?.map((name, idx) => (
-          <div
-            key={`${name}-${idx}`}
-            className="flex items-center gap-2 text-xs sm:text-sm"
-          >
-            <span
-              className="w-3 h-3 rounded-full shrink-0"
-              style={{ backgroundColor: palette[idx] }}
-              aria-hidden
-            />
-            <span className="capitalize">{name}</span>
-          </div>
-        ))}
-      </div>
+      {hasData && legendNames?.length > 0 && (
+        <div className="flex flex-wrap gap-3 sm:gap-4 mt-3 min-w-0">
+          {legendNames.map((name, idx) => (
+            <div
+              key={`${name}-${idx}`}
+              className="flex items-center gap-2 text-xs sm:text-sm"
+            >
+              <span
+                className="w-3 h-3 rounded-full shrink-0"
+                style={{ backgroundColor: palette[idx] }}
+                aria-hidden
+              />
+              <span className="capitalize">{name}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

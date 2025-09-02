@@ -10,6 +10,7 @@ import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
 import { MediaMapSection } from "@/components/MediaMapSection";
 
 import { useToast } from "@/hooks/use-toast";
+import { Copy } from "lucide-react";
 import { Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -54,6 +55,24 @@ export function ExpandedRowServiceOrder({ occurrence }) {
 
   const [isRescheduleHistoryModalOpen, setIsRescheduleHistoryModalOpen] =
     useState(false);
+
+  function handleCopyProtocol() {
+    const value = occurrence?.protocolNumber;
+    if (!value) {
+      toast({
+        title: "Nada para copiar",
+        description: "Esta ocorrência não possui protocolo.",
+        variant: "destructive",
+      });
+      return;
+    }
+    navigator.clipboard.writeText(value).then(() => {
+      toast({
+        title: "Copiado!",
+        description: "Protocolo copiado para a área de transferência.",
+      });
+    });
+  }
 
   // Inicia a ocorrencia
   const handleStartExecution = async () => {
@@ -203,10 +222,24 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-white p-4 rounded-lg shadow-sm text-sm items-stretch">
       {/* Coluna 1 - Informações */}
       <div className="space-y-4 col-span-1 h-full">
-        <div>
+        <div className="flex flex-col space-y-3 pr-2">
           <h3 className="font-semibold text-[#787891] mb-2 pb-1">
             Informações sobre a ocorrência
           </h3>
+          <div className="space-y-1">
+            <button
+              type="button"
+              onClick={handleCopyProtocol}
+              className="w-full h-[58px] text-left flex items-center justify-between gap-3 rounded-lg border px-3 py-2
+                 bg-[#D9DCE2] hover:bg-gray-300 "
+              aria-label="Copiar protocolo"
+            >
+              <span className="truncate ">
+                Protocolo : {occurrence?.protocolNumber || "—"}
+              </span>
+              <Copy className="w-4 h-4 shrink-0 opacity-70" />
+            </button>
+          </div>
           <div className="grid grid-cols-2 gap-1 text-sm">
             <p>
               <strong>Solicitado por:</strong>{" "}

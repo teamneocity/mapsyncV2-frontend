@@ -38,8 +38,8 @@ export function InspectionCard({ serviceorder }) {
   };
 
   const statusLabel = {
-    os_gerada: "Solicitado",
-    aguardando_execucao: "Solicitada",
+    os_gerada: "Aprovada",
+    aguardando_execucao: "Aprovada",
     em_execucao: "Andamento",
     finalizada: "Finalizada",
   };

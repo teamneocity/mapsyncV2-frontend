@@ -7,6 +7,9 @@ import { MediaMapSection } from "@/components/MediaMapSection";
 import ThumbsUp from "@/assets/icons/thumbs-up.svg?react";
 import ThumbsDown from "@/assets/icons/thumbs-down.svg?react";
 
+import { Copy } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
 export function ExpandedRowT({
   occurrence,
   selectedValues,
@@ -18,6 +21,26 @@ export function ExpandedRowT({
   const values = selectedValues[occurrence.id] || {};
   const lat = parseFloat(occurrence.address?.latitude || 0);
   const lng = parseFloat(occurrence.address?.longitude || 0);
+
+  const { toast } = useToast();
+
+  function handleCopyProtocol() {
+    const value = occurrence?.protocolNumber;
+    if (!value) {
+      toast({
+        title: "Nada para copiar",
+        description: "Esta ocorrência não possui protocolo.",
+        variant: "destructive",
+      });
+      return;
+    }
+    navigator.clipboard.writeText(value).then(() => {
+      toast({
+        title: "Copiado!",
+        description: "Protocolo copiado para a área de transferência.",
+      });
+    });
+  }
 
   const firstInitialPhoto = occurrence?.photos?.initial?.[0];
   const photoUrl = firstInitialPhoto
@@ -40,6 +63,20 @@ export function ExpandedRowT({
           <h3 className="font-semibold text-[#787891] text-base mb-2 pb-1">
             Informações sobre a ocorrência
           </h3>
+          <div className="space-y-1">
+            <button
+              type="button"
+              onClick={handleCopyProtocol}
+              className="w-full h-[58px] text-left flex items-center justify-between gap-3 rounded-lg border px-3 py-2
+                 bg-[#D9DCE2] hover:bg-gray-300 "
+              aria-label="Copiar protocolo"
+            >
+              <span className="truncate ">
+                Protocolo : {occurrence?.protocolNumber || "—"}
+              </span>
+              <Copy className="w-4 h-4 shrink-0 opacity-70" />
+            </button>
+          </div>
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex flex-col items-start space-y-2 flex-1">
               <p>
@@ -63,10 +100,6 @@ export function ExpandedRowT({
               </p>
             </div>
           </div>
-           <p>
-            <span className="font-bold">Protocolo:</span>{" "}
-            {occurrence.protocolNumber || "—"}
-          </p>
 
           <p>
             <span className="font-bold">Descrição:</span>{" "}
