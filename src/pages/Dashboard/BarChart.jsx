@@ -4,7 +4,7 @@ import { api } from "@/services/api";
 
 function countsToPercentsInt(items) {
   const total = items.reduce((s, it) => s + (it.count || 0), 0);
-  if (!total) return items.map(() => 0); // sem total => tudo 0 (sem mock)
+  if (!total) return items.map(() => 0);
   const withFracs = items.map((it) => {
     const raw = (it.count / total) * 100;
     return { ...it, raw, floor: Math.floor(raw), frac: raw - Math.floor(raw) };
@@ -32,6 +32,33 @@ export function TutorialCard({ labelColors }) {
     aceita: "Aceita",
     verificada: "Verificada",
     rejeitada: "Rejeitada",
+  };
+
+  const STATUS_FILL = {
+    em_analise: "#D0E4FC",
+    emergencial: "#FFE8E8",
+    aprovada: "#F6FFC6",
+    os_gerada: "#f0ddee",
+    aguardando_execucao: "#EBD4EA",
+    em_execucao: "#FFF1CB",
+    finalizada: "#C9F2E9",
+    pendente: "#E8F7FF",
+    aceita: "#FFF4D6",
+    verificada: "#DDF2EE",
+    rejeitada: "#FFE8E8",
+  };
+  const STATUS_TEXT = {
+    em_analise: "#1678F2",
+    emergencial: "#FF2222",
+    aprovada: "#79811C",
+    os_gerada: "#733B73",
+    aguardando_execucao: "#5D2A61",
+    em_execucao: "#845B00",
+    finalizada: "#1C7551",
+    pendente: "#33CFFF",
+    aceita: "#986F00",
+    verificada: "#40C4AA",
+    rejeitada: "#9D0000",
   };
 
   useEffect(() => {
@@ -72,7 +99,7 @@ export function TutorialCard({ labelColors }) {
   useEffect(() => {
     const inst = chartRef.current?.getEchartsInstance?.();
     if (!inst) return;
-    const t = setTimeout(() => inst.resize(), 120); // pequeno debounce
+    const t = setTimeout(() => inst.resize(), 120);
     return () => clearTimeout(t);
   }, [w, h]);
 
@@ -123,26 +150,24 @@ export function TutorialCard({ labelColors }) {
       const percents = countsToPercentsInt(ordered);
 
       const lbls = percents.map((p) => (p >= minLabelPercent ? `${p}%` : ""));
-      const pal =
-        ordered.length <= baseColors.length
-          ? baseColors.slice(0, ordered.length)
-          : Array.from(
-              { length: ordered.length },
-              (_, i) => baseColors[i % baseColors.length]
-            );
+
+      const pal = ordered.map(
+        (it, i) => STATUS_FILL[it.status] ?? baseColors[i % baseColors.length]
+      );
 
       const labelBase =
         Array.isArray(labelColors) && labelColors.length
           ? labelColors
-          : baseLabelColorsDefault;
+          : ordered.map(
+              (it, i) =>
+                STATUS_TEXT[it.status] ??
+                baseLabelColorsDefault[i % baseLabelColorsDefault.length]
+            );
 
       const labelPal =
-        ordered.length <= labelBase.length
-          ? labelBase.slice(0, ordered.length)
-          : Array.from(
-              { length: ordered.length },
-              (_, i) => labelBase[i % labelBase.length]
-            );
+        Array.isArray(labelColors) && labelColors.length
+          ? ordered.map((_, i) => labelColors[i % labelColors.length])
+          : labelBase;
 
       return {
         parts: percents,
