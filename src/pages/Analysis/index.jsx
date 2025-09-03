@@ -223,6 +223,7 @@ export function Analysis() {
             setCurrentPage(1);
           }}
           handleApplyFilters={handleApplyFiltersClick}
+          showStatus={false}
         />
       </div>
 
