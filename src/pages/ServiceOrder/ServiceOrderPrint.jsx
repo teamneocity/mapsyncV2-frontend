@@ -17,7 +17,9 @@ export function ServiceOrderPrint() {
     }
   })();
 
-  const [order, setOrder] = useState(() => state?.order || storageOrder || null);
+  const [order, setOrder] = useState(
+    () => state?.order || storageOrder || null
+  );
   const [loading, setLoading] = useState(!(state?.order || storageOrder));
 
   useEffect(() => {
@@ -59,6 +61,16 @@ export function ServiceOrderPrint() {
     return statusLabels[key] ?? raw;
   };
 
+  // >>> ADD: formatador seguro de data/hora
+  const fmt = (d) => {
+    if (!d) return "—";
+    const dt = new Date(d);
+    if (isNaN(dt)) return "—";
+    const dia = dt.toLocaleDateString("pt-BR");
+    const hora = dt.toLocaleTimeString("pt-BR").slice(0, 5);
+    return `${dia} ${hora}`;
+  };
+
   const data = useMemo(() => {
     const o = order || {};
     const occurrence = o.occurrence || o?.raw?.occurrence || {};
@@ -70,6 +82,77 @@ export function ServiceOrderPrint() {
     const photoUrl = initialPath
       ? `https://mapsync-media.s3.sa-east-1.amazonaws.com/${initialPath}`
       : null;
+
+    const rawArrays = [
+      o.reschedules,
+      o.rescheduleHistory,
+      o?.timeline?.reschedules,
+      o?.scheduleChanges,
+      occurrence?.rescheduleHistory,
+    ].filter(Array.isArray);
+
+    const merged = rawArrays.flat();
+
+    const pickDate = (it, keys = []) => {
+      for (const k of keys) {
+        const v = it?.[k];
+        if (v) return new Date(v);
+      }
+      return null;
+    };
+
+    const normalizedReschedules = merged.map((it = {}) => {
+      const rawFrom =
+        pickDate(it, [
+          "previousScheduledDate",
+          "previousDate",
+          "oldDate",
+          "fromDate",
+          "from",
+          "scheduledDateBefore",
+          "scheduled_date_before",
+          "oldScheduledDate",
+          "before",
+        ]) || pickDate(it?.old, ["scheduledDate"]);
+
+      const rawTo =
+        pickDate(it, [
+          "newScheduledDate",
+          "newDate",
+          "toDate",
+          "to",
+          "scheduledDateAfter",
+          "scheduled_date_after",
+          "newScheduledDate",
+          "after",
+        ]) || pickDate(it?.new, ["scheduledDate"]);
+
+      const by =
+        it.rescheduledBy?.name ||
+        it.updatedBy?.name ||
+        it.user?.name ||
+        it.by ||
+        it.operator?.name ||
+        "—";
+
+      const reason = it.reason || it.notes || it.note || "—";
+
+      const at =
+        it.rescheduledAt ||
+        it.createdAt ||
+        it.updatedAt ||
+        it.at ||
+        it.timestamp ||
+        null;
+
+      return {
+        from: rawFrom ? fmt(rawFrom) : "—",
+        to: rawTo ? fmt(rawTo) : "—",
+        reason,
+        by,
+        at: at ? fmt(at) : "—",
+      };
+    });
 
     return {
       osNumber: o.protocolNumber || o.protocol || "—",
@@ -97,6 +180,8 @@ export function ServiceOrderPrint() {
       finishedAtStr: finishedAt ? finishedAt.toLocaleDateString("pt-BR") : "—",
 
       photoUrl,
+
+      reschedules: normalizedReschedules,
     };
   }, [order]);
 
@@ -145,7 +230,10 @@ export function ServiceOrderPrint() {
           </button>
         </div>
 
-        <div className="bg-white max-w-[210mm] mx-auto p-0 text-[10pt] font-sans text-neutral-900" id="print-area">
+        <div
+          className="bg-white max-w-[210mm] mx-auto p-0 text-[10pt] font-sans text-neutral-900"
+          id="print-area"
+        >
           <div className="border border-neutral-300 rounded-lg">
             <div className="flex items-center justify-between px-5 pt-3 print:hidden">
               <span>MapSync - OS Nº {data.osNumber}</span>
@@ -227,6 +315,34 @@ export function ServiceOrderPrint() {
               </div>
             </div>
           </div>
+
+          {data.reschedules.map((r, idx) => (
+            <div
+              key={idx}
+              className="px-3 py-2 text-[9.5pt] flex flex-col gap-1"
+            >
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-block rounded-md border border-neutral-300 px-2 py-[2px]">
+                  <b>De:</b> {r.from}
+                </span>
+                <span className="inline-block rounded-md border border-neutral-300 px-2 py-[2px]">
+                  <b>Para:</b> {r.to}
+                </span>
+                <span className="inline-block rounded-md border border-neutral-300 px-2 py-[2px]">
+                  <b>Em:</b> {r.at}
+                </span>
+                <span className="inline-block rounded-md border border-neutral-300 px-2 py-[2px]">
+                  <b>Por:</b> {r.by}
+                </span>
+              </div>
+              {r.reason && r.reason !== "—" && (
+                <div className="mt-1">
+                  <span className="font-semibold">Motivo: </span>
+                  <span className="text-neutral-800">{r.reason}</span>
+                </div>
+              )}
+            </div>
+          ))}
 
           <div className="mx-2">
             <div className="font-bold mb-1">ANOTAÇÕES:</div>
