@@ -17,9 +17,20 @@ import { useNavigate } from "react-router-dom";
 import { api } from "@/services/api";
 
 export function ExpandedRowServiceOrder({ occurrence }) {
+  const rescheduleSteps =
+    Array.isArray(occurrence?.rescheduleHistory) &&
+    occurrence.rescheduleHistory.length > 0
+      ? occurrence.rescheduleHistory.map((item) => ({
+          label: `Reagendado `,
+
+          date: item.newScheduledDate,
+        }))
+      : [];
+
   const timeline = [
     { label: "Solicitação", date: occurrence.acceptedAt },
     { label: "Aceito", date: occurrence.createdAt },
+    ...rescheduleSteps,
     { label: "Iniciado", date: occurrence.startedAt },
     { label: "Finalizado", date: occurrence.finishedAt },
   ];
@@ -221,112 +232,122 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-white p-4 rounded-lg shadow-sm text-sm items-stretch">
       {/* Coluna 1 - Informações */}
-      <div className="space-y-4 col-span-1 h-full">
-        <div className="flex flex-col space-y-3 pr-2">
-          <h3 className="font-semibold text-[#787891] mb-2 pb-1">
-            Informações sobre a ocorrência
-          </h3>
-          <div className="space-y-1">
-            <button
-              type="button"
-              onClick={handleCopyProtocol}
-              className="w-full h-[58px] text-left flex items-center justify-between gap-3 rounded-lg border px-3 py-2
-                 bg-[#D9DCE2] hover:bg-gray-300 "
-              aria-label="Copiar protocolo"
-            >
-              <span className="truncate ">
-                Protocolo : {occurrence?.protocolNumber || "—"}
-              </span>
-              <Copy className="w-4 h-4 shrink-0 opacity-70" />
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-1 text-sm">
-            <p>
-              <strong>Solicitado por:</strong>{" "}
-              {occurrence.occurrence?.author?.name || "—"}
-            </p>
-            <p>
-              <strong>Ocorrência:</strong>{" "}
-              {typeLabels[occurrence.occurrence?.type] ||
-                occurrence.occurrence?.type ||
-                "—"}
-            </p>
+      <div className="col-span-1 self-stretch h-full flex flex-col">
+        <div className="flex-1 flex flex-col space-y-4 pr-2">
+          {/* bloco de informações */}
+          <div className="flex flex-col space-y-3">
+            <div className="flex flex-col space-y-3 pr-2">
+              <h3 className="font-semibold text-[#787891] mb-2 pb-1">
+                Informações sobre a ocorrência
+              </h3>
+              <div className="space-y-1">
+                <button
+                  type="button"
+                  onClick={handleCopyProtocol}
+                  className="w-full h-[58px] text-left flex items-center justify-between gap-3 rounded-lg border px-3 py-2 bg-[#D9DCE2] hover:bg-gray-300 "
+                  aria-label="Copiar protocolo"
+                >
+                  <span className="truncate ">
+                    Protocolo : {occurrence?.protocolNumber || "—"}
+                  </span>
+                  <Copy className="w-4 h-4 shrink-0 opacity-70" />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-1 text-sm">
+                <p>
+                  <strong>Solicitado por:</strong>{" "}
+                  {occurrence.occurrence?.author?.name || "—"}
+                </p>
+                <p>
+                  <strong>Ocorrência:</strong>{" "}
+                  {typeLabels[occurrence.occurrence?.type] ||
+                    occurrence.occurrence?.type ||
+                    "—"}
+                </p>
 
-            <p>
-              <strong>Data:</strong>{" "}
-              {format(new Date(occurrence.createdAt), "dd/MM/yyyy 'às' HH:mm")}
-            </p>
-            {/* Data agendada estilizada como botão */}
-            <div>
-              <label className="text-sm text-[#787891] font-semibold mb-1 block">
-                Data agendada:
-              </label>
-              <button
-                onClick={() => setIsRescheduleHistoryModalOpen(true)}
-                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-left bg-[#F8F8F8] hover:bg-gray-200 transition"
-              >
-                {occurrence.scheduledDate
-                  ? format(
-                      new Date(occurrence.scheduledDate),
-                      "dd/MM/yyyy 'às' HH:mm"
-                    )
-                  : "—"}
-              </button>
+                <p>
+                  <strong>Data:</strong>{" "}
+                  {format(
+                    new Date(occurrence.createdAt),
+                    "dd/MM/yyyy 'às' HH:mm"
+                  )}
+                </p>
+                {/* Data agendada estilizada como botão */}
+                <div>
+                  <label className="text-sm text-[#787891] font-semibold mb-1 block">
+                    Data agendada:
+                  </label>
+                  <button
+                    onClick={() => setIsRescheduleHistoryModalOpen(true)}
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-left bg-[#F8F8F8] hover:bg-gray-200 transition"
+                  >
+                    {occurrence.scheduledDate
+                      ? format(
+                          new Date(occurrence.scheduledDate),
+                          "dd/MM/yyyy 'às' HH:mm"
+                        )
+                      : "—"}
+                  </button>
+                </div>
+                <p>
+                  <strong>Protocolo:</strong> {occurrence.protocolNumber || "—"}
+                </p>
+
+                <p>
+                  <strong>Enviado por:</strong>{" "}
+                  {occurrence.occurrence?.author?.name || "—"}
+                </p>
+                <p>
+                  <strong>Setor:</strong> {occurrence.sector?.name || "—"}
+                </p>
+                <p>
+                  <strong>Responsável:</strong>{" "}
+                  {occurrence.occurrence?.approvedBy?.name || "—"}
+                </p>
+                <p>
+                  <strong>Técnico:</strong> {occurrence.inspector?.name || "—"}
+                </p>
+                <p>
+                  <strong>Encarregado:</strong>{" "}
+                  {occurrence.foreman?.name || "—"}
+                </p>
+                <p>
+                  <strong>Equipe:</strong> {occurrence.team?.name || "—"}
+                </p>
+                <p>
+                  <strong>Natureza:</strong>{" "}
+                  {occurrence.serviceNature?.name || "—"}
+                </p>
+                <p className="col-span-2">
+                  <strong>Local:</strong>{" "}
+                  {occurrence.occurrence?.address?.street || ""},{" "}
+                  {occurrence.occurrence?.address?.number || ""}
+                </p>
+                <p>
+                  <strong>CEP:</strong>{" "}
+                  {occurrence.occurrence?.address?.zipCode || "—"}
+                </p>
+                <p>
+                  <strong>Região:</strong> {occurrence.occurrence?.zone || "—"}
+                </p>
+              </div>
             </div>
-            <p>
-              <strong>Protocolo:</strong> {occurrence.protocolNumber || "—"}
-            </p>
-
-            <p>
-              <strong>Enviado por:</strong>{" "}
-              {occurrence.occurrence?.author?.name || "—"}
-            </p>
-            <p>
-              <strong>Setor:</strong> {occurrence.sector?.name || "—"}
-            </p>
-            <p>
-              <strong>Responsável:</strong>{" "}
-              {occurrence.occurrence?.approvedBy?.name || "—"}
-            </p>
-            <p>
-              <strong>Técnico:</strong> {occurrence.inspector?.name || "—"}
-            </p>
-            <p>
-              <strong>Encarregado:</strong> {occurrence.foreman?.name || "—"}
-            </p>
-            <p>
-              <strong>Equipe:</strong> {occurrence.team?.name || "—"}
-            </p>
-            <p>
-              <strong>Natureza:</strong> {occurrence.serviceNature?.name || "—"}
-            </p>
-            <p className="col-span-2">
-              <strong>Local:</strong>{" "}
-              {occurrence.occurrence?.address?.street || ""},{" "}
-              {occurrence.occurrence?.address?.number || ""}
-            </p>
-            <p>
-              <strong>CEP:</strong>{" "}
-              {occurrence.occurrence?.address?.zipCode || "—"}
-            </p>
-            <p>
-              <strong>Região:</strong> {occurrence.occurrence?.zone || "—"}
-            </p>
           </div>
-        </div>
 
-        <div>
-          <h3 className="text-[#787891] font-semibold mb-2 border-b pb-1">
-            Anotações da ocorrência
-          </h3>
-          <div className="bg-[#F8F8F8] rounded-xl px-4 py-2 min-h-[133px] text-gray-700">
-            {occurrence?.occurrence?.description || "Sem anotações."}
+          {/* bloco de anotações que cresce para alinhar */}
+          <div className="flex-1 flex flex-col">
+            <h3 className="text-[#787891] font-semibold mb-2 border-b pb-1">
+              Anotações da ocorrência
+            </h3>
+            <div className="flex-1 bg-[#F8F8F8] rounded-xl px-4 py-2 text-gray-700">
+              {occurrence?.occurrence?.description || "Sem anotações."}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Coluna 2 - Ações e botão final */}
-      <div className="col-span-1 h-full flex flex-col justify-between">
+      <div className="col-span-1 self-stretch h-full flex flex-col justify-between">
         <div className="space-y-4">
           <h3 className="font-semibold text-[#787891] mb-2">Ações</h3>
           <div className="bg-[#ECECEC] rounded-xl grid grid-cols-4 gap-2 p-2">
@@ -416,24 +437,27 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       </div>
 
       {/* Coluna 3 - Imagem e mapa com modal */}
-      <MediaMapSection
-        photoUrls={[
-          {
-            label: "Inicial",
-            url:
-              occurrence?.occurrence?.photos?.initial?.[0] &&
-              `https://mapsync-media.s3.sa-east-1.amazonaws.com/${occurrence.occurrence.photos.initial[0]}`,
-          },
-          {
-            label: "Finalizada",
-            url:
-              occurrence?.occurrence?.photos?.final?.[0] &&
-              `https://mapsync-media.s3.sa-east-1.amazonaws.com/${occurrence.occurrence.photos.final[0]}`,
-          },
-        ]}
-        lat={parseFloat(occurrence.occurrence?.address?.latitude ?? 0)}
-        lng={parseFloat(occurrence.occurrence?.address?.longitude ?? 0)}
-      />
+      <div className="col-span-1 h-full">
+        <MediaMapSection
+          className="h-full"
+          photoUrls={[
+            {
+              label: "Inicial",
+              url:
+                occurrence?.occurrence?.photos?.initial?.[0] &&
+                `https://mapsync-media.s3.sa-east-1.amazonaws.com/${occurrence.occurrence.photos.initial[0]}`,
+            },
+            {
+              label: "Finalizada",
+              url:
+                occurrence?.occurrence?.photos?.final?.[0] &&
+                `https://mapsync-media.s3.sa-east-1.amazonaws.com/${occurrence.occurrence.photos.final[0]}`,
+            },
+          ]}
+          lat={parseFloat(occurrence.occurrence?.address?.latitude ?? 0)}
+          lng={parseFloat(occurrence.occurrence?.address?.longitude ?? 0)}
+        />
+      </div>
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
           <div className="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-lg space-y-5 text-center">
