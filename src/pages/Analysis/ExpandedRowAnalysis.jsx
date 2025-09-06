@@ -9,7 +9,6 @@ import { AddressUpdateDialog } from "./AddressUpdateDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Copy } from "lucide-react";
 
-// Radix Dialog (padrão que você já usa)
 import {
   Dialog,
   DialogContent,
@@ -38,12 +37,10 @@ export function ExpandedRowAnalysis({
 
   const [neighborhoods, setNeighborhoods] = useState([]);
 
-  // estado editável (select) — já existia
   const [editableNeighborhoodId, setEditableNeighborhoodId] = useState(
     occurrence.address?.neighborhoodId || ""
   );
 
-  // estados “visuais” para refletir a mudança sem recarregar
   const [currentNeighborhoodId, setCurrentNeighborhoodId] = useState(
     occurrence.address?.neighborhoodId || ""
   );
@@ -51,7 +48,6 @@ export function ExpandedRowAnalysis({
     occurrence.address?.neighborhoodName || "Não informado"
   );
 
-  // endereço local (para atualizar rua/número sem reload)
   const [localAddress, setLocalAddress] = useState({
     street: occurrence.address?.street || "",
     number: occurrence.address?.number || "",
@@ -62,14 +58,55 @@ export function ExpandedRowAnalysis({
     longitude: occurrence.address?.longitude || "",
   });
 
-  // estados do fluxo de salvar bairro
+  const REGION_OPTIONS = ["Norte", "Sul", "Central", "Expansão"];
+
+  const [region, setRegion] = useState(occurrence.address?.region || "");
+
   const [updatingNeighborhood, setUpdatingNeighborhood] = useState(false);
   const [confirmNeighborhoodOpen, setConfirmNeighborhoodOpen] = useState(false);
 
-  // histórico de endereço (bairro/rua/número)
   const [isAddressHistoryOpen, setIsAddressHistoryOpen] = useState(false);
   const [addressAudits, setAddressAudits] = useState([]);
   const [loadingAddressAudits, setLoadingAddressAudits] = useState(false);
+
+  const [externalCompany, setExternalCompany] = useState(""); // "", "SERGAS", "IGUA"
+  const [confirmExternalOpen, setConfirmExternalOpen] = useState(false);
+  const [archivingExternal, setArchivingExternal] = useState(false);
+
+  function openConfirmExternal() {
+    setConfirmExternalOpen(true);
+  }
+
+  async function handleConfirmExternalArchive() {
+    try {
+      setArchivingExternal(true);
+      const body = { note: "Encaminhado via análise" };
+      if (externalCompany) body.company = externalCompany; // só manda se tiver
+
+      await api.patch(`/occurrences/${occurrence.id}/forward-external`, body);
+
+      toast({
+        title: "Arquivado/Encaminhado",
+        description: externalCompany
+          ? `Ocorrência encaminhada para ${externalCompany}.`
+          : "Ocorrência arquivada sem empresa.",
+      });
+
+      setConfirmExternalOpen(false);
+
+      // 🔄 recarrega a página depois de 500ms (pra dar tempo de mostrar o toast)
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        title: "Falha ao arquivar/encaminhar",
+        description: error?.response?.data?.message || error.message,
+      });
+    } finally {
+      setArchivingExternal(false);
+    }
+  }
 
   function handleCopyProtocol() {
     const value = occurrence?.protocolNumber;
@@ -126,12 +163,10 @@ export function ExpandedRowAnalysis({
         setLoadingAddressAudits(true);
         const res = await api.get(`/occurrences/${occurrence.id}/audits`);
 
-        // A API pode retornar { audits: [...] } ou só [...]
         const list = Array.isArray(res.data)
           ? res.data
           : res.data?.audits || [];
 
-        // interessa só o que mexe no endereço
         const filtered = list.filter((a) =>
           (a.field || "").startsWith("address.")
         );
@@ -152,7 +187,6 @@ export function ExpandedRowAnalysis({
     ? format(new Date(occurrence.createdAt), "dd/MM/yyyy HH:mm")
     : "Data não informada";
 
-  // exibição usa os estados locais (sem depender de reload)
   const addressLine = localAddress.street
     ? `${localAddress.street}, ${localAddress.number || "s/n"} - ${
         localAddress.city || "Aracaju"
@@ -164,11 +198,19 @@ export function ExpandedRowAnalysis({
     currentNeighborhoodName ||
     neighborhoods.find((n) => n.id === currentNeighborhoodId)?.name ||
     "Não informado";
-  const regiao = localAddress.state || "Não informado";
+  const regiao = region || occurrence.address?.region || "Não informado";
 
-  // abre modal de confirmação (sem alert)
-  const openConfirmNeighborhood = () => {
-    if (!editableNeighborhoodId) {
+  const openConfirmAdjustments = () => {
+    if (nothingToSave) {
+      toast({
+        title: "Nada para atualizar",
+        description:
+          "Selecione um bairro e/ou região diferente para confirmar.",
+      });
+      return;
+    }
+
+    if (!willChangeRegion && !editableNeighborhoodId) {
       toast({
         variant: "destructive",
         title: "Selecione um bairro",
@@ -176,52 +218,69 @@ export function ExpandedRowAnalysis({
       });
       return;
     }
-    if (editableNeighborhoodId === currentNeighborhoodId) {
-      toast({
-        title: "Nada para atualizar",
-        description: "O bairro selecionado é o mesmo atual.",
-      });
-      return;
-    }
+
     setConfirmNeighborhoodOpen(true);
   };
 
-  // confirma no modal e salva de fato
-  const handleConfirmSaveNeighborhood = async () => {
+  async function handleConfirmSaveAdjustments() {
     try {
       setUpdatingNeighborhood(true);
 
-      await api.patch(`/occurrences/${occurrence.id}/neighborhood`, {
-        neighborhoodId: editableNeighborhoodId,
-      });
+      if ((region || "") !== (occurrence.address?.region || "")) {
+        await api.patch(`/occurrences/${occurrence.id}/address`, { region });
+      }
 
-      const newName =
-        neighborhoods.find((n) => n.id === editableNeighborhoodId)?.name ||
-        "Atualizado";
+      if (
+        !!editableNeighborhoodId &&
+        editableNeighborhoodId !== currentNeighborhoodId
+      ) {
+        await api.patch(`/occurrences/${occurrence.id}/neighborhood`, {
+          neighborhoodId: editableNeighborhoodId,
+        });
+        const newName =
+          neighborhoods.find((n) => n.id === editableNeighborhoodId)?.name ||
+          "Atualizado";
+        setCurrentNeighborhoodId(editableNeighborhoodId);
+        setCurrentNeighborhoodName(newName);
+      }
 
-      setCurrentNeighborhoodId(editableNeighborhoodId);
-      setCurrentNeighborhoodName(newName);
+      const changedParts = [
+        !!editableNeighborhoodId &&
+        editableNeighborhoodId !== currentNeighborhoodId
+          ? "bairro"
+          : null,
+        (region || "") !== (occurrence.address?.region || "") ? "região" : null,
+      ]
+        .filter(Boolean)
+        .join(" e ");
 
       toast({
-        title: "Bairro atualizado",
-        description: "A alteração foi salva com sucesso.",
+        title: "Ajustes salvos",
+        description: `Alterações de ${changedParts} aplicadas com sucesso.`,
       });
 
       setConfirmNeighborhoodOpen(false);
-      setTimeout(() => {
-        window.location.reload();
-      }, 300);
+      setTimeout(() => window.location.reload(), 300);
     } catch (error) {
       console.error(error);
       toast({
         variant: "destructive",
-        title: "Erro ao atualizar bairro",
+        title: "Erro ao salvar ajustes",
         description: error?.response?.data?.message || error.message,
       });
     } finally {
       setUpdatingNeighborhood(false);
     }
-  };
+  }
+
+  const willChangeNeighborhood =
+    !!editableNeighborhoodId &&
+    editableNeighborhoodId !== currentNeighborhoodId;
+
+  const willChangeRegion =
+    (region || "") !== (occurrence.address?.region || "");
+
+  const nothingToSave = !willChangeNeighborhood && !willChangeRegion;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 bg-[#F7F7F7] p-4 rounded-lg shadow-sm text-sm">
@@ -255,7 +314,7 @@ export function ExpandedRowAnalysis({
             </label>
             <button
               onClick={() => setIsAddressHistoryOpen(true)}
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-left bg-[#F8F8F8] hover:bg-gray-200 transition"
+              className="w-full h-[64px] border border-[#818898] rounded-xl px-3 py-2 text-left text-[#787891] bg-[#E4E4E4] hover:bg-gray-200 transition"
               title="Ver histórico de alterações de endereço"
             >
               {addressLine}
@@ -283,6 +342,34 @@ export function ExpandedRowAnalysis({
             {localAddress.longitude}
           </p>
         </div>
+
+        {/* Encaminhar para outra empresa */}
+        <div className="mt-2">
+          <label className="text-[16px] text-[#787891] font-semibold mb-1 block">
+            Classificacão
+          </label>
+
+          <div className="flex gap-2">
+            <select
+              value={externalCompany}
+              onChange={(e) => setExternalCompany(e.target.value)}
+              className="flex-1 p-2 rounded h-[55px] text-[#787891]"
+            >
+              <option value="">Classifique </option>
+              <option value="SERGAS">SERGAS</option>
+              <option value="IGUA">IGUA</option>
+            </select>
+
+            <Button
+              className="h-[55px] px-6 bg-[#EDEDED] hover:bg-gray-100 text-[#5F5F5F] flex items-center justify-center gap-2"
+              onClick={openConfirmExternal}
+              disabled={archivingExternal}
+            >
+              {archivingExternal ? "..." : "Arquivar"}
+            </Button>
+          </div>
+        </div>
+
         <Button
           className="w-full bg-[#FFE8E8] hover:bg-red-200 h-[64px] flex items-center justify-center gap-2"
           style={{ color: "#9D0000" }}
@@ -303,32 +390,22 @@ export function ExpandedRowAnalysis({
           <label className="font-semibold text-[18px] block mb-1 text-[#787891]">
             Ajustes da ocorrência
           </label>
-          <div>
+          <div className="space-y-3">
             <div className="flex gap-2">
               <select
                 value={editableNeighborhoodId}
                 onChange={(e) => setEditableNeighborhoodId(e.target.value)}
-                className="w-full p-2 rounded h-[55px] text-[#787891] flex-1"
+                className="w-full p-2 rounded h-[55px] text-[#787891] text-left flex-1"
               >
-                <option value="">Selecione o bairro</option>
+                <option className="" value="">
+                  Altere o bairro se necessário for
+                </option>
                 {neighborhoods.map((neighborhood) => (
                   <option key={neighborhood.id} value={neighborhood.id}>
                     {neighborhood.name}
                   </option>
                 ))}
               </select>
-
-              <Button
-                className="h-[55px] px-4 bg-[#C9F2E9] hover:bg-green-700 text-[#1C7551]"
-                onClick={openConfirmNeighborhood}
-                disabled={
-                  updatingNeighborhood ||
-                  !editableNeighborhoodId ||
-                  editableNeighborhoodId === currentNeighborhoodId
-                }
-              >
-                {updatingNeighborhood ? "Salvando..." : "Salvar"}
-              </Button>
             </div>
 
             <div className="mt-4">
@@ -368,7 +445,37 @@ export function ExpandedRowAnalysis({
                   });
                 }}
               />
+
+              {/* Salva região */}
+              <div className="mt-3 space-y-2">
+                <select
+                  value={region}
+                  onChange={(e) => setRegion(e.target.value)}
+                  className="w-full p-2 rounded h-[55px] text-[#787891]"
+                >
+                  <option value="">Selecione a região</option>
+                  {REGION_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
+            <Button
+              className="h-[55px] w-full px-4 bg-[#E8F7FF] hover:bg-blue-100 text-[#00679D] flex items-center justify-center gap-2"
+              onClick={openConfirmAdjustments}
+              disabled={updatingNeighborhood || nothingToSave}
+            >
+              {updatingNeighborhood ? (
+                "Salvando..."
+              ) : (
+                <>
+                  <span>Confirmar ajustes</span>
+                  <ThumbsUp className="w-4 h-4" />
+                </>
+              )}
+            </Button>
           </div>
           <label className="font-semibold text-[18px] block mb-1 text-[#787891]">
             Encaminhamento para análise
@@ -435,6 +542,48 @@ export function ExpandedRowAnalysis({
         lng={parseFloat(localAddress.longitude || 0)}
       />
 
+      {/* Modal de arquivamento */}
+      <Dialog open={confirmExternalOpen} onOpenChange={setConfirmExternalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {externalCompany
+                ? "Encaminhar para empresa"
+                : "Arquivar sem empresa"}
+            </DialogTitle>
+            <DialogDescription>
+              {externalCompany ? (
+                <>
+                  A ocorrência será encaminhada para{" "}
+                  <strong>{externalCompany}</strong>. Deseja continuar?
+                </>
+              ) : (
+                <>
+                  A ocorrência será <strong>arquivada</strong> sem selecionar
+                  uma empresa. Deseja continuar?
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setConfirmExternalOpen(false)}
+              disabled={archivingExternal}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="bg-green-600 hover:bg-green-700 text-white"
+              onClick={handleConfirmExternalArchive}
+              disabled={archivingExternal}
+            >
+              {archivingExternal ? "Salvando..." : "Confirmar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Modal de confirmação  */}
       <Dialog
         open={confirmNeighborhoodOpen}
@@ -444,12 +593,31 @@ export function ExpandedRowAnalysis({
           <DialogHeader>
             <DialogTitle>Confirmar alteração de bairro</DialogTitle>
             <DialogDescription>
-              Esta ocorrência passará a pertencer ao bairro{" "}
-              <strong>
-                {neighborhoods.find((n) => n.id === editableNeighborhoodId)
-                  ?.name || "selecionado"}
-              </strong>
-              . Deseja continuar?
+              {willChangeNeighborhood && willChangeRegion ? (
+                <>
+                  Esta ocorrência terá o <strong>bairro</strong> alterado para{" "}
+                  <strong>
+                    {neighborhoods.find((n) => n.id === editableNeighborhoodId)
+                      ?.name || "selecionado"}
+                  </strong>{" "}
+                  e a <strong>região</strong> alterada para{" "}
+                  <strong>{region}</strong>. Deseja continuar?
+                </>
+              ) : willChangeNeighborhood ? (
+                <>
+                  Esta ocorrência passará a pertencer ao bairro{" "}
+                  <strong>
+                    {neighborhoods.find((n) => n.id === editableNeighborhoodId)
+                      ?.name || "selecionado"}
+                  </strong>
+                  . Deseja continuar?
+                </>
+              ) : (
+                <>
+                  Esta ocorrência terá a <strong>região</strong> alterada para{" "}
+                  <strong>{region}</strong>. Deseja continuar?
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-2">
@@ -462,7 +630,7 @@ export function ExpandedRowAnalysis({
             </Button>
             <Button
               className="bg-green-600 hover:bg-green-700 text-white"
-              onClick={handleConfirmSaveNeighborhood}
+              onClick={handleConfirmSaveAdjustments}
               disabled={updatingNeighborhood}
             >
               {updatingNeighborhood ? "Salvando..." : "Confirmar"}
@@ -470,6 +638,7 @@ export function ExpandedRowAnalysis({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
       {/* Modal - Histórico de alterações de endereço */}
       <Dialog
         open={isAddressHistoryOpen}
@@ -488,7 +657,6 @@ export function ExpandedRowAnalysis({
           ) : addressAudits.length > 0 ? (
             <ul className="space-y-3 max-h-96 overflow-y-auto pr-2">
               {addressAudits.map((a) => {
-                // mapeia campo em rótulo legível
                 const fieldLabel =
                   a.field === "address.neighborhoodId"
                     ? "Bairro"
@@ -498,7 +666,6 @@ export function ExpandedRowAnalysis({
                     ? "Número"
                     : a.field?.replace("address.", "") || "Endereço";
 
-                // valores antigos/novos com fallback
                 const fromVal =
                   a.oldNeighborhoodName ||
                   a.oldValue ||

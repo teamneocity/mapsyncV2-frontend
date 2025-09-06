@@ -58,7 +58,7 @@ export function Analysis() {
 
   useEffect(() => {
     fetchOccurrences(currentPage);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  
   }, [
     currentPage,
     searchTerm,
@@ -79,10 +79,10 @@ export function Analysis() {
       const response = await api.get("/occurrences/in-analysis", {
         params: {
           page,
-          street: searchTerm, // rua
-          districtId: filterNeighborhood, // bairro
+          street: searchTerm, 
+          districtId: filterNeighborhood, 
           type: filterType,
-          orderBy: filterRecent || "recent", // sempre manda algo
+          orderBy: filterRecent || "recent", 
           startDate: filterDateRange.startDate
             ? new Date(
                 new Date(filterDateRange.startDate).setHours(0, 0, 0, 0)

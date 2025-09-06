@@ -113,9 +113,8 @@ export function AddressUpdateDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full h-[55px] px-4 bg-[#E8F7FF] hover:bg-blue-100 text-[#00679D]">
-          Ajuste o endereço Rua/Av.
-          <ThumbsUp className="w-4 h-4" />
+        <Button className="w-full h-[55px] px-4 bg-white hover:bg-gray-100 text-[#787891] justify-start">
+          Altere o endereço se necessário for
         </Button>
       </DialogTrigger>
 
