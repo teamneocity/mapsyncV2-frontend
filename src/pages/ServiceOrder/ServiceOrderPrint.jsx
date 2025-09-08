@@ -299,7 +299,7 @@ export function ServiceOrderPrint() {
               <img
                 src={data.photoUrl}
                 alt="Foto da OS"
-                className="w-full h-[300px] object-cover border border-neutral-300 mb-2"
+                className="block mx-auto w-auto h-auto max-w-full print:max-w-full max-h-[180mm] object-contain border border-neutral-300 rounded mb-2"
               />
             )}
 
