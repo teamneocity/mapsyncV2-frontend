@@ -151,60 +151,65 @@
 }
 
 
-/* Estilo base para a barra de rolagem */
+
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
-  background-color: transparent; /* Torna o fundo da barra transparente */
+  background-color: transparent; 
 }
 
-/* Track */
+
 ::-webkit-scrollbar-track {
-  background: transparent; /* Torna o track transparente */
+  background: transparent; 
 }
 
-/* Handle */
+
 ::-webkit-scrollbar-thumb {
   background: #d5d5d5;
   border-radius: 2px;
-  opacity: 0; /* Inicialmente invisível */
-  transition: opacity 0.3s ease; /* Transição suave para a opacidade */
+  opacity: 0; 
+  transition: opacity 0.3s ease; 
 }
 
-/* Handle on hover */
+
 ::-webkit-scrollbar-thumb:hover {
   background: #b6b6b6;
 }
 
-/* Classe para elementos com rolagem */
+
 .scrollable {
   overflow: auto;
-  scrollbar-width: thin; /* Para Firefox */
-  scrollbar-color: transparent transparent; /* Para Firefox */
+  scrollbar-width: thin; 
+  scrollbar-color: transparent transparent; 
 }
 
-/* Mostrar a barra de rolagem quando o mouse está sobre o elemento */
+
 .scrollable:hover::-webkit-scrollbar-thumb {
   opacity: 1;
 }
 
-/* Para navegadores que suportam, ocultar a barra de rolagem, mas manter a funcionalidade */
-@media (hover: hover) {
-  .scrollable {
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
-  }
-  
-  .scrollable::-webkit-scrollbar {
-    display: none; /* Chrome, Safari and Opera */
-  }
-  
-  .scrollable:hover {
-    scrollbar-width: thin; /* Firefox */
-    -ms-overflow-style: auto; /* IE and Edge */
-  }
-  
-  .scrollable:hover::-webkit-scrollbar {
-    display: block; /* Chrome, Safari and Opera */
-  }
+
+::-webkit-scrollbar {
+  width: 14px;   
+  height: 14px;  
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted)); 
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground));
+  border-radius: 8px;
+  border: 3px solid hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--foreground));
+}
+
+
+* {
+  scrollbar-width: auto;
+  scrollbar-color: hsl(var(--muted-foreground)) hsl(var(--muted));
 }

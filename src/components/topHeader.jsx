@@ -1,17 +1,15 @@
 import { Link, useNavigate } from "react-router-dom";
-import { LogOut } from "lucide-react";
-import emurb from "@/assets/emurb.svg"; // ajuste o caminho se necessário
-
 import { useAuth } from "@/hooks/auth";
-import { Button } from "@/components/ui/button";
+import emurb from "@/assets/emurb.svg";
 import Leave from "@/assets/icons/leave.svg?react";
 import Bell from "@/assets/icons/bell.svg?react";
 import { useState } from "react";
+import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 
 export function TopHeader() {
   const { signOut } = useAuth();
-  const [showTooltip, setShowTooltip] = useState(false);
   const navigate = useNavigate();
+  const [openNotif, setOpenNotif] = useState(false);
 
   const handleSignOut = (e) => {
     e.preventDefault();
@@ -34,27 +32,24 @@ export function TopHeader() {
 
       {/* Botões do lado direito */}
       <div className="flex items-center gap-4">
-        
-
-        {/* Botão de notificações */}
-
-        {/* Botão de notificações com tooltip (sem link) */}
+        {/* Botão de notificações + Dropdown */}
         <div className="relative">
           <button
-            onClick={() => {
-              setShowTooltip(true);
-              setTimeout(() => setShowTooltip(false), 2000);
-            }}
-            className="rounded-full bg-white p-2 hover:bg-zinc-100"
+            onClick={() => setOpenNotif((v) => !v)}
+            className="rounded-full bg-white p-2 hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+            aria-haspopup="dialog"
+            aria-expanded={openNotif}
+            aria-controls="notifications-dropdown"
           >
             <Bell className="w-5 h-5 shrink-0" />
           </button>
 
-          {showTooltip && (
-            <div className="absolute right-0 mt-2 w-max text-xs bg-gray-800 text-white px-3 py-1 rounded shadow z-50">
-              Sem notificações no momento
-            </div>
-          )}
+          <div id="notifications-dropdown">
+            <NotificationsDropdown
+              open={openNotif}
+              onClose={() => setOpenNotif(false)}
+            />
+          </div>
         </div>
 
         {/* Botão de sair */}

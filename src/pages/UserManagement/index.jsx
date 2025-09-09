@@ -243,29 +243,29 @@ export function UserManagement() {
 
           <form
             onSubmit={handleCreateUser}
-            className="flex-1 grid grid-cols-1 bg-white p-2 border-b rounded-xl sm:grid-cols-2 gap-1"
+            className="flex-1 grid grid-cols-1 bg-white p-2 border-b rounded-xl sm:grid-cols-2 gap-4"
           >
             <Input
-              className="h-[64px]"
+              className="h-full rounded-xl"
               placeholder="Nome completo"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
             />
             <Input
-              className="h-[64px]"
+              className="h-full rounded-xl"
               placeholder="Email"
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}
             />
             <Input
-              className="h-[64px]"
+              className="h-full rounded-xl"
               placeholder="Senha"
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
             <select
-              className="h-[64px] rounded-md border border-gray-300 px-4 text-sm"
+              className="h-full rounded-xl border border-gray-300 px-4 text-sm"
               value={newRole}
               onChange={(e) => setNewRole(e.target.value)}
             >
@@ -280,9 +280,9 @@ export function UserManagement() {
             <div className="col-span-full">
               <Button
                 type="submit"
-                className="h-[55px] w-full bg-[#A6E0FF] hover:bg-[#87CEEB] text-[#00679D]"
+                className="h-full w-full bg-[#A6E0FF] hover:bg-[#87CEEB] text-[#00679D]"
               >
-                Criar usuário
+                Cadastrar
               </Button>
             </div>
           </form>

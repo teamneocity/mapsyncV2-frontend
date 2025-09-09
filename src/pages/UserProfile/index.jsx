@@ -208,19 +208,19 @@ export function UserProfile() {
           </div>
 
           {/* Coluna dos inputs */}
-          <form className="flex-1 grid grid-cols-1 bg-white p-2 border-b rounded-xl sm:grid-cols-2 gap-1">
-            <Input className="h-[94px]" disabled value={name} />
+          <form className="flex-1 grid grid-cols-1 bg-white p-2 border-b rounded-xl sm:grid-cols-2 gap-4">
+            <Input className="h-full rounded-xl" disabled value={name} />
             <Input
-              className="h-[94px]"
+              className="h-full rounded-xl"
               disabled
               value={user?.birthDate || "Não definido"}
             />
             <Input
-              className="h-[94px]"
+              className="h-full rounded-xl"
               disabled
               value={user?.sector?.name || "Não definido"}
             />
-            <Input className="h-[94px]" disabled value={email} />
+            <Input className="h-full rounded-xl" disabled value={email} />
           </form>
         </section>
 
