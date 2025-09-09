@@ -27,7 +27,7 @@ import {
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/auth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getInicials } from "@/lib/utils";
 import { api } from "@/services/api";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -38,6 +38,32 @@ export function Sidebar() {
   const [email] = useState(user.email);
   const [name] = useState(user.name);
   const userInitials = getInicials(user.name);
+
+  // URL inicial
+  const initialAvatarSrc = user?.avatar
+    ? user.avatar.startsWith("http")
+      ? user.avatar
+      : `${api.defaults.baseURL}/avatar/${user.avatar}`
+    : undefined;
+
+  const [avatarUrl, setAvatarUrl] = useState(initialAvatarSrc);
+
+  const S3_BASE = "https://mapsync-media.s3.sa-east-1.amazonaws.com";
+
+  async function loadSidebarAvatarUrl() {
+    try {
+      const res = await api.get("/employees/me/avatar/url");
+      const key = typeof res.data === "string" ? res.data : res.data?.url;
+
+      if (key) {
+        setAvatarUrl(`${S3_BASE}/${key}`);
+      }
+    } catch (err) {}
+  }
+
+  useEffect(() => {
+    loadSidebarAvatarUrl();
+  }, []);
 
   const { isAdmin, isSupervisor, isAnalyst, isInspector, isChief } =
     usePermissions();
@@ -249,10 +275,13 @@ export function Sidebar() {
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
                 <AvatarImage
-                  src={`${api.defaults.baseURL}/avatar/${user.avatar}`}
+                  src={avatarUrl}
+                  alt={name}
+                  onError={() => setAvatarUrl(undefined)}
                 />
                 <AvatarFallback>{userInitials}</AvatarFallback>
               </Avatar>
+
               <div className="flex flex-col">
                 <div className="flex items-center gap-1">
                   <span className="font-semibold text-sm text-gray-900">
@@ -398,10 +427,13 @@ export function Sidebar() {
                         <div className="flex items-center gap-3">
                           <Avatar className="h-10 w-10">
                             <AvatarImage
-                              src={`${api.defaults.baseURL}/avatar/${user.avatar}`}
+                              src={avatarUrl}
+                              alt={name}
+                              onError={() => setAvatarUrl(undefined)}
                             />
                             <AvatarFallback>{userInitials}</AvatarFallback>
                           </Avatar>
+
                           <div className="flex flex-col">
                             <div className="flex items-center gap-1">
                               <span className="font-semibold text-sm text-gray-900">
