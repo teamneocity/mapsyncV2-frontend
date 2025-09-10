@@ -17,6 +17,8 @@ import TaskChecklist from "@/assets/icons/TaskChecklist.svg?react";
 import IconFeedback from "@/assets/icons/IconFeedback.svg?react";
 import { Icon, PanelLeftClose } from "lucide-react";
 import PurpleCheck from "@/assets/icons/PurpleCheck.svg?react";
+import DesktopIcon from "@/assets/icons/desktop.svg?react";
+
 import {
   Tooltip,
   TooltipContent,
@@ -182,6 +184,19 @@ export function Sidebar() {
               )}
             </div>
           </div>
+          {isAdmin && (
+            <div className="w-full border-b pb-3 mt-3">
+              <p className="text-base font-normal mb-2 text-[#4B4B62]">Admin</p>
+              <div className="flex flex-col gap-1 text-[#787891]">
+                <Link
+                  to="/panelAdm"
+                  className="flex gap-2 items-center py-1.5 px-2 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                >
+                  <DesktopIcon className="w-5 h-5 shrink-0" /> Administrador
+                </Link>
+              </div>
+            </div>
+          )}
 
           {/* <div className="w-full border-b pb-3">
             <p className="text-base font-normal mb-2 text-[#4B4B62]">Ajustes</p>
@@ -413,6 +428,19 @@ export function Sidebar() {
                     </Link>
                   )} */}
                 </div>
+                {isAdmin && (
+                  <div className="mt-3 pt-3 ">
+                    <p className="text-base font-normal mb-2 text-[#4B4B62]">
+                      Admin
+                    </p>
+                    <Link
+                      to="/panelAdm"
+                      className="flex gap-2 items-center py-2 px-3 rounded-lg hover:bg-[#EDEDEE] hover:text-gray-900"
+                    >
+                      <DesktopIcon className="w-5 h-5 shrink-0" /> Administrador
+                    </Link>
+                  </div>
+                )}
               </nav>
 
               <div className="mt-auto w-full">

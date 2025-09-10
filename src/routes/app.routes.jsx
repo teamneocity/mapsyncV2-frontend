@@ -11,13 +11,14 @@ import { CreateOccurrencePage } from "@/pages/Pilot";
 import { CreateOccurrenceTPage } from "@/pages/PilotT";
 import { Inspection } from "@/pages/Inspection"; // fiscalização
 import { SectorAdmin } from "@/pages/SectorAdmin"; // setor
+import { PanelAdm } from "@/pages/PanelAdm"; // painel adm
 import { UserManagement } from "@/pages/UserManagement"; // usuários
 import { PilotMap } from "@/pages/PilotMap"; // mapa de percurso
 import { ServicePlanning } from "@/pages/ServicePlanning"; // planejamento
 import { Feedback } from "@/pages/Feedback"; // feedback
 import { Settings } from "@/pages/Settings"; // configurações
 import NeighborhoodOccurrences from "@/pages/LiveAction"; // LiveAction
-import { ServiceOrderPrint } from "@/pages/ServiceOrder/ServiceOrderPrint"; 
+import { ServiceOrderPrint } from "@/pages/ServiceOrder/ServiceOrderPrint";
 
 import { useAuth } from "@/hooks/auth";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -128,6 +129,10 @@ export function AppRoutes() {
         path="/userManagement"
         element={isAdmin || isChief ? <UserManagement /> : <Navigate to="/" />}
       />
+      <Route
+        path="/panelAdm"
+        element={isAdmin ? <PanelAdm /> : <Navigate to="/" />}
+      />
       {/* Rota: /feedback */}
       {/* <Route
         path="/feedback"
@@ -138,7 +143,13 @@ export function AppRoutes() {
       <Route path="/userprofile" element={<UserProfile />} />
       <Route
         path="/dashboard"
-        element={canSeeAll || isChief || isInspector ? <Dashboard/> : <Navigate to="/userprofile"/>} 
+        element={
+          canSeeAll || isChief || isInspector ? (
+            <Dashboard />
+          ) : (
+            <Navigate to="/userprofile" />
+          )
+        }
       />
 
       {/* <Route path="/settings" element={<Settings />} /> */}

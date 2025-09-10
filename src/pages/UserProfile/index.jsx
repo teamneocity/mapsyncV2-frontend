@@ -58,14 +58,15 @@ export function UserProfile() {
     }
   }
 
-  async function uploadAvatar() {
-    if (!avatarFile) {
+  async function uploadAvatar(fileParam) {
+    const file = fileParam || avatarFile;
+    if (!file) {
       alert("Selecione uma imagem primeiro.");
       return;
     }
     try {
       const form = new FormData();
-      form.append("file", avatarFile);
+      form.append("file", file);
 
       await api.patch("/employees/me/avatar", form, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -90,6 +91,9 @@ export function UserProfile() {
       if (prev && prev.startsWith("blob:")) URL.revokeObjectURL(prev);
       return preview;
     });
+
+   
+    uploadAvatar(file);
   }
 
   async function handleChangePassword(e) {
@@ -181,7 +185,7 @@ export function UserProfile() {
 
             {/* Upload + salvar (layout mínimo) */}
             <div className="mt-2 flex items-center gap-2 justify-center">
-              <span className="text-[11px] font-medium text-zinc-700 bg-white rounded-full px-3 py-1 shadow-sm">
+              <span className="text-[14px]  font-medium text-zinc-700 bg-white rounded-full px-3 py-1 shadow-sm">
                 Upload da imagem
               </span>
 
@@ -193,17 +197,9 @@ export function UserProfile() {
                   className="hidden"
                 />
                 <div className="bg-white hover:bg-zinc-100 p-2 rounded-full shadow-sm">
-                  <CloudUploadAlt className="w-4 h-4 text-zinc-600" />
+                  <CloudUploadAlt className="w-6 h-6 text-zinc-600" />
                 </div>
               </label>
-
-              <Button
-                onClick={uploadAvatar}
-                disabled={!avatarFile}
-                className="h-9 px-3 bg-[#A6E0FF] hover:bg-[#87CEEB] text-[#00679D]"
-              >
-                Salvar
-              </Button>
             </div>
           </div>
 
