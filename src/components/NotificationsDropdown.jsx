@@ -41,7 +41,6 @@ export function NotificationsDropdown({
   const page = pageProp ?? pageHook;
   const hasNext = hasNextProp ?? hasNextHook;
 
-  // Helpers para compatibilizar formatos (antigo vs novo paginado)
   const getTitle = (n) => n?.notification?.title ?? n?.title ?? "Sem título";
   const getBody = (n) => n?.notification?.body ?? n?.body ?? "";
   const isRead = (n) =>
@@ -109,18 +108,18 @@ export function NotificationsDropdown({
 
       <div
         className="mt-2 w-[374px] h-[524px] rounded-[24px] shadow-xl border overflow-hidden
-                   bg-[#BABABA]/80 backdrop-blur-[1px]"
+                   bg-[#BABABA]/80 backdrop-blur-[1px] flex flex-col"
         role="dialog"
         aria-label="Notificações"
       >
-        <div className="h-full overflow-y-auto p-3">
-          {/* Loading */}
+        {/* corpo scrollável */}
+        <div className="flex-1 overflow-y-auto p-3">
           {loading && (
             <ul className="space-y-3 animate-pulse">
               {Array.from({ length: 4 }).map((_, i) => (
                 <li
                   key={i}
-                  className="bg-white rounded-[17px] shadow-sm border p-3"
+                  className="bg-[#FAFAFA] rounded-[17px] shadow-sm border p-3"
                 >
                   <div className="h-4 bg-zinc-200 rounded w-3/4" />
                 </li>
@@ -128,7 +127,6 @@ export function NotificationsDropdown({
             </ul>
           )}
 
-          {/* Erro */}
           {!loading && error && (
             <div className="w-full h-full flex items-center justify-center">
               <span className="text-sm text-red-700 text-center">
@@ -152,7 +150,7 @@ export function NotificationsDropdown({
                   {notifications.map((n) => (
                     <li
                       key={n.id}
-                      className="bg-white rounded-[17px] shadow-sm border p-3"
+                      className="bg-[#FAFAFA] rounded-[17px] shadow-sm border p-3"
                     >
                       <div className="grid items-center grid-cols-[24px_1fr_24px] gap-2">
                         <label className="flex items-center justify-center cursor-pointer select-none">
@@ -168,9 +166,7 @@ export function NotificationsDropdown({
                         </label>
 
                         <div className="text-center">
-                          <p className="text-sm text-zinc-900">
-                            {getTitle(n)}
-                          </p>
+                          <p className="text-sm text-zinc-900">{getTitle(n)}</p>
                           <p className="text-xs text-zinc-600 mt-1">
                             {getBody(n)}
                           </p>
@@ -182,29 +178,29 @@ export function NotificationsDropdown({
                   ))}
                 </ul>
               )}
-
-              {/* Paginação */}
-              <div className="mt-4 flex items-center justify-between">
-                <button
-                  onClick={handlePrev}
-                  disabled={loading || page <= 1}
-                  className="px-3 py-1 rounded-md text-sm border bg-white disabled:opacity-50"
-                >
-                  Anterior
-                </button>
-
-                <span className="text-xs text-zinc-700">Página {page}</span>
-
-                <button
-                  onClick={handleNext}
-                  disabled={loading || !hasNext}
-                  className="px-3 py-1 rounded-md text-sm border bg-white disabled:opacity-50"
-                >
-                  Próxima
-                </button>
-              </div>
             </>
           )}
+        </div>
+
+        {/* paginação sempre no final */}
+        <div className="mt-auto p-3 border-t bg-white flex items-center justify-between">
+          <button
+            onClick={handlePrev}
+            disabled={loading || page <= 1}
+            className="px-3 py-1 rounded-md text-sm border bg-white disabled:opacity-50"
+          >
+            Anterior
+          </button>
+
+          <span className="text-xs text-zinc-700">Página {page}</span>
+
+          <button
+            onClick={handleNext}
+            disabled={loading || !hasNext}
+            className="px-3 py-1 rounded-md text-sm border bg-white disabled:opacity-50"
+          >
+            Próxima
+          </button>
         </div>
       </div>
     </div>
