@@ -1,15 +1,29 @@
+import { useEffect, useState } from "react"; // ⬅️ precisa do useEffect
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/auth";
 import emurb from "@/assets/emurb.svg";
 import Leave from "@/assets/icons/leave.svg?react";
 import Bell from "@/assets/icons/bell.svg?react";
-import { useState } from "react";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
+import { api } from "@/services/api"; 
 
 export function TopHeader() {
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const [openNotif, setOpenNotif] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    if (!openNotif) return;
+    (async () => {
+      try {
+        const resp = await api.get("/notifications");
+        setNotifications(resp.data?.items ?? []); 
+      } catch (err) {
+        console.error("Erro ao buscar notificações:", err);
+      }
+    })();
+  }, [openNotif]);
 
   const handleSignOut = (e) => {
     e.preventDefault();
@@ -48,6 +62,7 @@ export function TopHeader() {
             <NotificationsDropdown
               open={openNotif}
               onClose={() => setOpenNotif(false)}
+              notifications={notifications}
             />
           </div>
         </div>

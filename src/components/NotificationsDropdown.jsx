@@ -41,11 +41,15 @@ export function NotificationsDropdown({
   const page = pageProp ?? pageHook;
   const hasNext = hasNextProp ?? hasNextHook;
 
+  // Helpers para compatibilizar formatos (antigo vs novo paginado)
+  const getTitle = (n) => n?.notification?.title ?? n?.title ?? "Sem título";
+  const getBody = (n) => n?.notification?.body ?? n?.body ?? "";
+  const isRead = (n) =>
+    typeof n?.read === "boolean" ? n.read : Boolean(n?.readAt);
+
   const allRead =
     notifications && notifications.length > 0
-      ? notificationsProp
-        ? notifications.every((n) => n.read === true)
-        : allReadHook
+      ? notifications.every((n) => isRead(n))
       : false;
 
   const handleToggleAllRead = (e) => {
@@ -156,16 +160,19 @@ export function NotificationsDropdown({
                             type="checkbox"
                             className="appearance-none w-3 h-3 rounded-full border border-zinc-400
                                        checked:bg-red-600 checked:border-red-700 transition"
-                            checked={!!n.read}
+                            checked={isRead(n)}
                             onChange={() => handleToggleOne(n.id)}
-                            aria-checked={!!n.read}
-                            aria-label={n.read ? "Já lida" : "Marcar como lida"}
+                            aria-checked={isRead(n)}
+                            aria-label={isRead(n) ? "Já lida" : "Marcar como lida"}
                           />
                         </label>
 
                         <div className="text-center">
                           <p className="text-sm text-zinc-900">
-                            {n.title ?? "Sem título"}
+                            {getTitle(n)}
+                          </p>
+                          <p className="text-xs text-zinc-600 mt-1">
+                            {getBody(n)}
                           </p>
                         </div>
 
