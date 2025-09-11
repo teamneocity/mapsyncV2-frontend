@@ -19,6 +19,7 @@ import { Feedback } from "@/pages/Feedback"; // feedback
 import { Settings } from "@/pages/Settings"; // configurações
 import NeighborhoodOccurrences from "@/pages/LiveAction"; // LiveAction
 import { ServiceOrderPrint } from "@/pages/ServiceOrder/ServiceOrderPrint";
+import PilotsDashboard from "@/pages/Dashboard/PilotsDashboard";
 
 import { useAuth } from "@/hooks/auth";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -133,6 +134,7 @@ export function AppRoutes() {
         path="/panelAdm"
         element={isAdmin ? <PanelAdm /> : <Navigate to="/" />}
       />
+      <Route path="/pilots/dashboard" element={<PilotsDashboard />} />
       {/* Rota: /feedback */}
       {/* <Route
         path="/feedback"

@@ -257,7 +257,19 @@ export function Dashboard() {
                           <span className="text-sm text-gray-600">
                             Ocorrências
                           </span>
-                          <span className="text-gray-400">→</span>
+
+                          {/* Botão da setinha: navega para o dashboard de pilotos com o pilotId */}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              navigate(`/pilots/dashboard?pilotId=${p.pilotId}`)
+                            }
+                            className="text-gray-400 hover:text-gray-800 transition rounded-full px-2 py-1 focus:outline-none focus:ring"
+                            aria-label={`Abrir dashboard de ${p.pilotName}`}
+                            title="Ver métricas"
+                          >
+                            →
+                          </button>
                         </div>
                       </div>
                     );
