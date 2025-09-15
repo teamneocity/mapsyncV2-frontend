@@ -145,7 +145,7 @@ export function Filters({
         {/* Rua + Bairro */}
         <div className="flex flex-col sm:flex-row gap-2 flex-1 md:min-w-[320px]">
           <Input
-            placeholder="Pesquise pela rua ou avenida"
+            placeholder="Pesquise pela rua ou avenida ou número de protocolo"
             onChange={(e) => onSearch(e.target.value)}
             hideRing
             className="text-sm h-12 w-full sm:flex-1 rounded-xl border-none shadow-sm placeholder:text-[#4B4B62] truncate"

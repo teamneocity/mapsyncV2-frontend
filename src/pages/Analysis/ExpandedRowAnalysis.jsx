@@ -453,7 +453,7 @@ export function ExpandedRowAnalysis({
               {/* Salva região */}
               <div className="mt-3 space-y-2">
                 <SelectField
-                  placeholder="Selecione a região"
+                  placeholder="Informe a Zona / Região"
                   value={regionValue}
                   options={REGION_OPTIONS.map((r) => ({ value: r, label: r }))}
                   onChange={(value) => setRegion(value)}
