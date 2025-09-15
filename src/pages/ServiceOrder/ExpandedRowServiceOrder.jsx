@@ -230,7 +230,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-white p-4 rounded-lg shadow-sm text-sm items-stretch">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6  p-4  text-sm items-stretch">
       {/* Coluna 1 - Informações */}
       <div className="col-span-1 self-stretch h-full flex flex-col">
         <div className="flex-1 flex flex-col space-y-4 pr-2">
@@ -240,31 +240,24 @@ export function ExpandedRowServiceOrder({ occurrence }) {
               <h3 className="font-semibold text-[#787891] mb-2 pb-1">
                 Informações sobre a ocorrência
               </h3>
+
+              {/* Botão copiar protocolo */}
               <div className="space-y-1">
                 <button
                   type="button"
                   onClick={handleCopyProtocol}
-                  className="w-full h-[58px] text-left flex items-center justify-between gap-3 rounded-lg border px-3 py-2 bg-[#D9DCE2] hover:bg-gray-300 "
+                  className="w-full h-[58px] text-left flex items-center justify-between gap-3 rounded-lg border px-3 py-2 bg-[#D9DCE2] hover:bg-gray-300"
                   aria-label="Copiar protocolo"
                 >
-                  <span className="truncate ">
+                  <span className="truncate">
                     Protocolo : {occurrence?.protocolNumber || "—"}
                   </span>
                   <Copy className="w-4 h-4 shrink-0 opacity-70" />
                 </button>
               </div>
-              <div className="grid grid-cols-2 gap-1 text-sm">
-                <p>
-                  <strong>Solicitado por:</strong>{" "}
-                  {occurrence.occurrence?.author?.name || "—"}
-                </p>
-                <p>
-                  <strong>Ocorrência:</strong>{" "}
-                  {typeLabels[occurrence.occurrence?.type] ||
-                    occurrence.occurrence?.type ||
-                    "—"}
-                </p>
 
+              {/* Data e Ocorrência lado a lado */}
+              <div className="grid grid-cols-2 gap-2 text-sm">
                 <p>
                   <strong>Data:</strong>{" "}
                   {format(
@@ -272,27 +265,16 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                     "dd/MM/yyyy 'às' HH:mm"
                   )}
                 </p>
-                {/* Data agendada estilizada como botão */}
-                <div>
-                  <label className="text-sm text-[#787891] font-semibold mb-1 block">
-                    Data agendada:
-                  </label>
-                  <button
-                    onClick={() => setIsRescheduleHistoryModalOpen(true)}
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-left bg-[#F8F8F8] hover:bg-gray-200 transition"
-                  >
-                    {occurrence.scheduledDate
-                      ? format(
-                          new Date(occurrence.scheduledDate),
-                          "dd/MM/yyyy 'às' HH:mm"
-                        )
-                      : "—"}
-                  </button>
-                </div>
                 <p>
-                  <strong>Protocolo:</strong> {occurrence.protocolNumber || "—"}
+                  <strong>Ocorrência:</strong>{" "}
+                  {typeLabels[occurrence.occurrence?.type] ||
+                    occurrence.occurrence?.type ||
+                    "—"}
                 </p>
+              </div>
 
+              {/* Restante em coluna única */}
+              <div className="space-y-1 text-sm">
                 <p>
                   <strong>Enviado por:</strong>{" "}
                   {occurrence.occurrence?.author?.name || "—"}
@@ -301,8 +283,18 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                   <strong>Setor:</strong> {occurrence.sector?.name || "—"}
                 </p>
                 <p>
-                  <strong>Responsável:</strong>{" "}
-                  {occurrence.occurrence?.approvedBy?.name || "—"}
+                  <strong>Chefe de Setor:</strong>{" "}
+                  {occurrence.sector?.chiefs &&
+                  occurrence.sector.chiefs.length > 0
+                    ? occurrence.sector.chiefs
+                        .map((chief) => chief.name)
+                        .join(", ")
+                    : "—"}
+                </p>
+
+                <p>
+                  <strong>Natureza:</strong>{" "}
+                  {occurrence.serviceNature?.name || "—"}
                 </p>
                 <p>
                   <strong>Técnico:</strong> {occurrence.inspector?.name || "—"}
@@ -315,14 +307,14 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                   <strong>Equipe:</strong> {occurrence.team?.name || "—"}
                 </p>
                 <p>
-                  <strong>Natureza:</strong>{" "}
-                  {occurrence.serviceNature?.name || "—"}
-                </p>
-                <p className="col-span-2">
                   <strong>Local:</strong>{" "}
                   {occurrence.occurrence?.address?.street || ""},{" "}
                   {occurrence.occurrence?.address?.number || ""}
                 </p>
+              </div>
+
+              {/* CEP e Região lado a lado */}
+              <div className="grid grid-cols-2 gap-2 text-sm">
                 <p>
                   <strong>CEP:</strong>{" "}
                   {occurrence.occurrence?.address?.zipCode || "—"}
@@ -331,16 +323,18 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                   <strong>Região:</strong> {occurrence.occurrence?.zone || "—"}
                 </p>
               </div>
-            </div>
-          </div>
 
-          {/* bloco de anotações que cresce para alinhar */}
-          <div className="flex-1 flex flex-col">
-            <h3 className="text-[#787891] font-semibold mb-2 border-b pb-1">
-              Anotações da ocorrência
-            </h3>
-            <div className="flex-1 bg-[#F8F8F8] rounded-xl px-4 py-2 text-gray-700">
-              {occurrence?.occurrence?.description || "Sem anotações."}
+              {/* Latitude e Longitude lado a lado */}
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <p>
+                  <strong>Latitude:</strong>{" "}
+                  {occurrence.occurrence?.address?.latitude || "—"}
+                </p>
+                <p>
+                  <strong>Longitude:</strong>{" "}
+                  {occurrence.occurrence?.address?.longitude || "—"}
+                </p>
+              </div>
             </div>
           </div>
         </div>
