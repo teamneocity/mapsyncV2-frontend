@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { SelectField } from "./selectField";
+import { SelectField } from "../../components/selectField";
 import { DatePicker } from "./datePicker";
 import { MediaMapSection } from "@/components/MediaMapSection";
 
@@ -178,6 +178,7 @@ export function ExpandedRowT({
                     },
                   }))
                 }
+                className="h-[55px] border border-[#FFFFFF]"
               />
               <SelectField
                 placeholder="Inspetor responsável"
@@ -192,6 +193,7 @@ export function ExpandedRowT({
                     },
                   }))
                 }
+                className="h-[55px] border border-[#FFFFFF]"
               />
               <SelectField
                 placeholder="Encarregado"
@@ -206,6 +208,7 @@ export function ExpandedRowT({
                     },
                   }))
                 }
+                className="h-[55px] border border-[#FFFFFF]"
               />
               <SelectField
                 placeholder="Equipe"
@@ -220,6 +223,7 @@ export function ExpandedRowT({
                     },
                   }))
                 }
+                className="h-[55px] border border-[#FFFFFF]"
               />
               <DatePicker
                 className="h-[55px]"

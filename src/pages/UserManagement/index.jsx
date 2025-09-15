@@ -11,7 +11,7 @@ import { TopHeader } from "@/components/topHeader";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-// REMOVIDO: import { Pagination } from "@/components/pagination";
+import { SelectField } from "@/components/selectField";
 
 // Serviços e utilitários
 import { api } from "@/services/api";
@@ -264,18 +264,20 @@ export function UserManagement() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
-            <select
-              className="h-full rounded-xl border border-gray-300 px-4 text-sm"
+            <SelectField
+              placeholder="Perfil"
               value={newRole}
-              onChange={(e) => setNewRole(e.target.value)}
-            >
-              <option value="SECTOR_CHIEF">Chefe de Setor</option>
-              <option value="CHIEF">Gestor</option>
-              <option value="ANALYST">Analista</option>
-              <option value="INSPECTOR">Inspetor</option>
-              <option value="PILOT">Piloto</option>
-              <option value="DRONE_OPERATOR">Operador de Drone</option>
-            </select>
+              options={[
+                { value: "SECTOR_CHIEF", label: "Chefe de Setor" },
+                { value: "CHIEF", label: "Gestor" },
+                { value: "ANALYST", label: "Analista" },
+                { value: "INSPECTOR", label: "Inspetor" },
+                { value: "PILOT", label: "Piloto" },
+                { value: "DRONE_OPERATOR", label: "Operador de Drone" },
+              ]}
+              onChange={(val) => setNewRole(val)}
+              className="rounded-xl h-full border border-gray-300 px-4 text-sm" 
+            />
 
             <div className="col-span-full">
               <Button

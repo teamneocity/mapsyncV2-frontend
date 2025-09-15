@@ -1,13 +1,15 @@
-// src/pages/Analysis/ExpandedRowAnalysis.jsx
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { ThumbsDown, ThumbsUp } from "lucide-react";
-import { api } from "@/services/api";
-import { MediaMapSection } from "@/components/MediaMapSection";
-import { AddressUpdateDialog } from "./AddressUpdateDialog";
+
 import { useToast } from "@/hooks/use-toast";
-import { Copy } from "lucide-react";
+
+import { api } from "@/services/api";
+
+import { Button } from "@/components/ui/button";
+import { SelectField } from "@/components/selectField";
+import { MediaMapSection } from "@/components/MediaMapSection";
+
+import { AddressUpdateDialog } from "./AddressUpdateDialog";
 
 import {
   Dialog,
@@ -18,17 +20,16 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
+import { ThumbsDown, ThumbsUp, Copy } from "lucide-react";
+
 export function ExpandedRowAnalysis({
   occurrence,
   editableSectorId,
-  editableDescription,
   setEditableSectorId,
-  setEditableDescription,
   setSelectedOccurrenceId,
   setIsIgnoreOcurrenceModalOpen,
   setSelectedOccurrenceStatus,
   handleForwardOccurrence,
-  handleDeleteImage,
 }) {
   const { toast } = useToast();
 
@@ -69,7 +70,7 @@ export function ExpandedRowAnalysis({
   const [addressAudits, setAddressAudits] = useState([]);
   const [loadingAddressAudits, setLoadingAddressAudits] = useState(false);
 
-  const [externalCompany, setExternalCompany] = useState(""); // "", "SERGAS", "IGUA"
+  const [externalCompany, setExternalCompany] = useState("");
   const [confirmExternalOpen, setConfirmExternalOpen] = useState(false);
   const [archivingExternal, setArchivingExternal] = useState(false);
 
@@ -282,6 +283,9 @@ export function ExpandedRowAnalysis({
 
   const nothingToSave = !willChangeNeighborhood && !willChangeRegion;
 
+  const regionClean = (region ?? "").trim();
+  const regionValue = REGION_OPTIONS.includes(regionClean) ? regionClean : "";
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 bg-[#F7F7F7] p-4 rounded-lg shadow-sm text-sm">
       {/* Coluna 1 - Informações */}
@@ -350,15 +354,17 @@ export function ExpandedRowAnalysis({
           </label>
 
           <div className="flex gap-2">
-            <select
-              value={externalCompany}
-              onChange={(e) => setExternalCompany(e.target.value)}
-              className="flex-1 p-2 rounded h-[55px] text-[#787891]"
-            >
-              <option value="">Classifique </option>
-              <option value="SERGAS">SERGAS</option>
-              <option value="IGUA">IGUA</option>
-            </select>
+            <div className="flex-1">
+              <SelectField
+                placeholder="Classifique"
+                value={externalCompany || ""}
+                options={[
+                  { value: "SERGAS", label: "SERGAS" },
+                  { value: "IGUA", label: "IGUA" },
+                ]}
+                onChange={(value) => setExternalCompany(value)}
+                className="h-[55px] border border-[#FFFFFF]"              />
+            </div>
 
             <Button
               className="h-[55px] px-6 bg-[#EDEDED] hover:bg-gray-100 text-[#5F5F5F] flex items-center justify-center gap-2"
@@ -392,20 +398,18 @@ export function ExpandedRowAnalysis({
           </label>
           <div className="space-y-3">
             <div className="flex gap-2">
-              <select
-                value={editableNeighborhoodId}
-                onChange={(e) => setEditableNeighborhoodId(e.target.value)}
-                className="w-full p-2 rounded h-[55px] text-[#787891] text-left flex-1"
-              >
-                <option className="" value="">
-                  Altere o bairro se necessário for
-                </option>
-                {neighborhoods.map((neighborhood) => (
-                  <option key={neighborhood.id} value={neighborhood.id}>
-                    {neighborhood.name}
-                  </option>
-                ))}
-              </select>
+              <div className="flex-1">
+                <SelectField
+                  placeholder="Altere o bairro se necessário for"
+                  value={editableNeighborhoodId || ""}
+                  options={neighborhoods.map((n) => ({
+                    id: n.id,
+                    name: n.name,
+                  }))}
+                  onChange={(value) => setEditableNeighborhoodId(value)}
+                  className="h-[55px] border border-[#FFFFFF]"
+                />
+              </div>
             </div>
 
             <div className="mt-4">
@@ -448,18 +452,13 @@ export function ExpandedRowAnalysis({
 
               {/* Salva região */}
               <div className="mt-3 space-y-2">
-                <select
-                  value={region}
-                  onChange={(e) => setRegion(e.target.value)}
-                  className="w-full p-2 rounded h-[55px] text-[#787891]"
-                >
-                  <option value="">Selecione a região</option>
-                  {REGION_OPTIONS.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
+                <SelectField
+                  placeholder="Selecione a região"
+                  value={regionValue}
+                  options={REGION_OPTIONS.map((r) => ({ value: r, label: r }))}
+                  onChange={(value) => setRegion(value)}
+                  className="h-[55px] border border-[#FFFFFF]"
+                />
               </div>
             </div>
             <Button
@@ -483,36 +482,30 @@ export function ExpandedRowAnalysis({
 
           {/* Setor responsável */}
           <div>
-            <select
+            <SelectField
+              placeholder="Selecione o setor"
               value={editableSectorId ?? ""}
-              onChange={(e) => setEditableSectorId(e.target.value)}
-              className="w-full p-2 rounded h-[55px] text-[#787891]"
-            >
-              <option value="">Selecione o setor</option>
-              {sectors.map((sector) => (
-                <option key={sector.id} value={sector.id}>
-                  {sector.name}
-                </option>
-              ))}
-            </select>
+              options={sectors.map((s) => ({
+                id: s.id,
+                name: s.name,
+              }))}
+              onChange={(value) => setEditableSectorId(value)}
+              className="h-[55px] border border-[#FFFFFF]"
+            />
           </div>
 
           {/* Classificação */}
           <div>
-            <select
+            <SelectField
+              placeholder="Classificação"
               value={isEmergencialSelection ? "true" : "false"}
-              onChange={(e) =>
-                setIsEmergencialSelection(e.target.value === "true")
-              }
-              className={`w-full p-2 rounded text-sm h-[55px] ${
-                isEmergencialSelection
-                  ? "text-red-600 font-semibold"
-                  : "text-[#787891]"
-              }`}
-            >
-              <option value="false">Não emergencial</option>
-              <option value="true">Emergencial</option>
-            </select>
+              options={[
+                { value: "false", label: "Não emergencial" },
+                { value: "true", label: "Emergencial" },
+              ]}
+              onChange={(value) => setIsEmergencialSelection(value === "true")}
+              className="h-[55px] border border-[#FFFFFF]"
+            />
           </div>
         </div>
 

@@ -371,7 +371,7 @@ export default function PilotsDashboard() {
                 <div className="flex-1 min-h-0 flex items-center justify-center">
                   <p
                     className="font-extrabold leading-none"
-                    style={{ fontSize: "200px", lineHeight: "1" }}
+                    style={{ fontSize: "150px", lineHeight: "1" }}
                   >
                     {selectedPilotTotal ?? 0}
                   </p>
