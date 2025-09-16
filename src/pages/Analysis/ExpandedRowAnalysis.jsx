@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/dialog";
 
 import { ThumbsDown, ThumbsUp, Copy } from "lucide-react";
+import Location from "@/assets/icons/Location.svg?react";
+import Folder from "@/assets/icons/Folder.svg?react";
 
 export function ExpandedRowAnalysis({
   occurrence,
@@ -311,17 +313,28 @@ export function ExpandedRowAnalysis({
           <p>
             <span className="text-gray-500 font-medium">Data:</span> {createdAt}
           </p>
-
+          <p>
+            <span className="text-gray-500 font-medium">Tipo:</span>{" "}
+            {occurrence.type}
+          </p>
           <div>
             <label className="text-sm text-[#787891] font-semibold mb-1 block">
               Local:
             </label>
             <button
               onClick={() => setIsAddressHistoryOpen(true)}
-              className="w-full h-[64px] border border-[#818898] rounded-xl px-3 py-2 text-left text-[#787891] bg-[#E4E4E4] hover:bg-gray-200 transition"
+              className="w-full h-[64px] border border-[#818898] rounded-xl px-3 py-2
+             bg-[#E4E4E4] hover:bg-gray-200 transition
+             flex items-center justify-between gap-3"
               title="Ver histórico de alterações de endereço"
             >
-              {addressLine}
+              {/* texto do endereço à esquerda, com ellipsis */}
+              <span className="text-left text-[#787891] truncate">
+                {addressLine}
+              </span>
+
+              {/* ícone à direita */}
+              <Location className="w-5 h-5 opacity-70 shrink-0" />
             </button>
           </div>
           <p>
@@ -333,10 +346,7 @@ export function ExpandedRowAnalysis({
           <p>
             <span className="text-gray-500 font-medium">Região:</span> {regiao}
           </p>
-          <p>
-            <span className="text-gray-500 font-medium">Tipo:</span>{" "}
-            {occurrence.type}
-          </p>
+
           <p>
             <span className="text-gray-500 font-medium">Latitude:</span>{" "}
             {localAddress.latitude}
@@ -363,7 +373,8 @@ export function ExpandedRowAnalysis({
                   { value: "IGUA", label: "IGUA" },
                 ]}
                 onChange={(value) => setExternalCompany(value)}
-                className="h-[55px] border border-[#FFFFFF]"              />
+                className="h-[55px] border border-[#FFFFFF]"
+              />
             </div>
 
             <Button
@@ -372,6 +383,7 @@ export function ExpandedRowAnalysis({
               disabled={archivingExternal}
             >
               {archivingExternal ? "..." : "Arquivar"}
+              <Folder className="w-4 h-4 shrink-0 opacity-70" />
             </Button>
           </div>
         </div>
