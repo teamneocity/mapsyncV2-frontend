@@ -21,6 +21,7 @@ export function TutorialCard({ labelColors }) {
   const [statusRows, setStatusRows] = useState(null);
 
   const statusLabels = {
+    encaminhada_externa: "Outros",
     em_analise: "Em análise",
     emergencial: "Emergencial",
     aprovada: "Aprovada",
@@ -35,6 +36,7 @@ export function TutorialCard({ labelColors }) {
   };
 
   const STATUS_FILL = {
+    encaminhada_externa: "#cfcfcfff",
     em_analise: "#D0E4FC",
     emergencial: "#FFE8E8",
     aprovada: "#F6FFC6",
@@ -48,6 +50,7 @@ export function TutorialCard({ labelColors }) {
     rejeitada: "#FFE8E8",
   };
   const STATUS_TEXT = {
+    encaminhada_externa: "#5f5d5dff",
     em_analise: "#1678F2",
     emergencial: "#FF2222",
     aprovada: "#79811C",
