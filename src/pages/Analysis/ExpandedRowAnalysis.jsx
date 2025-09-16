@@ -323,7 +323,7 @@ export function ExpandedRowAnalysis({
             </label>
             <button
               onClick={() => setIsAddressHistoryOpen(true)}
-              className="w-full h-[64px] border border-[#818898] rounded-xl px-3 py-2
+              className="w-full h-[64px] rounded-xl px-3 py-2
              bg-[#E4E4E4] hover:bg-gray-200 transition
              flex items-center justify-between gap-3"
               title="Ver histórico de alterações de endereço"
