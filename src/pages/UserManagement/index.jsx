@@ -39,7 +39,6 @@ export function UserManagement() {
 
   const [users, setUsers] = useState([]);
 
-  // paginação local
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(true);
 
@@ -51,8 +50,12 @@ export function UserManagement() {
   const { toast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [roleFilter, setRoleFilter] = useState("ALL");
-  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+
+  const [allUsers, setAllUsers] = useState([]);
+  const [allLoaded, setAllLoaded] = useState(false);
+  const [loadingAll, setLoadingAll] = useState(false);
 
   const normalize = (s = "") =>
     s
@@ -60,10 +63,43 @@ export function UserManagement() {
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "");
 
+  async function loadAllUsersOnce() {
+    if (loadingAll || allLoaded) return;
+    setLoadingAll(true);
+    try {
+      let page = 1;
+      const acc = [];
+
+      while (true) {
+        const res = await api.get(`/employees?page=${page}`);
+        const list = res.data.employees || [];
+        if (list.length === 0) break;
+        acc.push(...list);
+        page += 1;
+      }
+      setAllUsers(acc);
+      setAllLoaded(true);
+    } catch (err) {
+      console.error("Erro ao carregar todos os usuários:", err);
+    } finally {
+      setLoadingAll(false);
+    }
+  }
+
+  const isFilterActive = Boolean(
+    (searchTerm && searchTerm.trim()) || roleFilter || statusFilter
+  );
+
+  useEffect(() => {
+    if (isFilterActive && !allLoaded && !loadingAll) {
+      loadAllUsersOnce();
+    }
+  }, [isFilterActive]);
+
   const filteredUsers = useMemo(() => {
     const q = normalize(searchTerm);
 
-    let base = users;
+    let base = isFilterActive ? (allLoaded ? allUsers : users) : users;
 
     if (q) {
       base = base.filter((u) => {
@@ -74,11 +110,11 @@ export function UserManagement() {
       });
     }
 
-    if (roleFilter !== "ALL") {
+    if (roleFilter) {
       base = base.filter((u) => (u.role || "") === roleFilter);
     }
 
-    if (statusFilter !== "ALL") {
+    if (statusFilter) {
       const wantActive = statusFilter === "ATIVO";
       base = base.filter((u) => {
         const isActive = !u.deletedAt;
@@ -87,7 +123,15 @@ export function UserManagement() {
     }
 
     return base;
-  }, [users, searchTerm, roleFilter, statusFilter]);
+  }, [
+    users,
+    allUsers,
+    allLoaded,
+    isFilterActive,
+    searchTerm,
+    roleFilter,
+    statusFilter,
+  ]);
 
   async function handleCreateUser(e) {
     e.preventDefault();
@@ -327,7 +371,7 @@ export function UserManagement() {
 
         {/* SEÇÃO 3 - Lista de usuários */}
         <section className="max-w-[1500px] w-full mx-auto">
-          {/* Filtro */}
+          {/* Filtros */}
           <div className="mb-5 p-2 flex items-center justify-between gap-3 h-[71px] bg-[#F7F7F7] rounded-xl">
             {/* Filtro por nome */}
             <Input
@@ -337,13 +381,12 @@ export function UserManagement() {
               className="bg-white rounded-xl h-[55px] placeholder:text-center flex-1"
             />
 
-            {/* Filtro por cargo */}
+            {/* Filtro por cargo  */}
             <SelectField
-              placeholder="por cargo"
+              placeholder="Por cargo"
               value={roleFilter}
               onChange={(val) => setRoleFilter(val)}
               options={[
-                { value: "ALL", label: "Por cargo" },
                 { value: "SECTOR_CHIEF", label: "Chefe de Setor" },
                 { value: "CHIEF", label: "Gestor" },
                 { value: "ANALYST", label: "Analista" },
@@ -351,24 +394,27 @@ export function UserManagement() {
                 { value: "PILOT", label: "Piloto" },
                 { value: "DRONE_OPERATOR", label: "Operador de Drone" },
               ]}
-              className="rounded-xl h-[55px] border border-gray-300 px-4 text-sm bg-white"
+              className="rounded-xl h-[55px] border border-gray-300 px-4 text-sm bg-white w-[180px]"
             />
 
-            {/* Filtro por status */}
+            {/* Filtro por status  */}
             <SelectField
-              placeholder="por status"
+              placeholder="Por status"
               value={statusFilter}
               onChange={(val) => setStatusFilter(val)}
               options={[
-                { value: "ALL", label: "Por status" },
                 { value: "ATIVO", label: "Ativo" },
                 { value: "BLOQUEADO", label: "Bloqueado" },
               ]}
-              className="rounded-xl h-[55px] border border-gray-300 px-4 text-sm bg-white"
+              className="rounded-xl h-[55px] border border-gray-300 px-4 text-sm bg-white w-[160px]"
             />
 
-            {/* contador */}
-            {searchTerm || roleFilter !== "ALL" || statusFilter !== "ALL" ? (
+            {/* contador  */}
+            {isFilterActive && !allLoaded ? (
+              <span className="text-xs text-gray-500 shrink-0">
+                Carregando todos os usuários…
+              </span>
+            ) : searchTerm || roleFilter || statusFilter ? (
               <span className="text-xs text-gray-500 shrink-0">
                 {filteredUsers.length} resultado
                 {filteredUsers.length === 1 ? "" : "s"}
@@ -388,7 +434,13 @@ export function UserManagement() {
 
           {filteredUsers.length === 0 && (
             <div className="bg-white border border-gray-200 rounded-xl p-6 text-center text-sm text-zinc-600">
-              Nenhum usuário encontrado{searchTerm ? " para esse filtro." : "."}
+              {isFilterActive && !allLoaded
+                ? "Carregando…"
+                : `Nenhum usuário encontrado${
+                    searchTerm || roleFilter || statusFilter
+                      ? " para esse filtro."
+                      : "."
+                  }`}
             </div>
           )}
 
@@ -504,34 +556,35 @@ export function UserManagement() {
         </section>
 
         {/* Paginação com o MESMO visual do seu componente */}
-        <footer className="bg-[#EBEBEB] p-4 mt-4">
-          <div className="max-w-[1500px] mx-auto">
-            <div className="flex items-center justify-between mt-4">
-              <span className="text-sm text-gray-500">
-                Página {currentPage}
-              </span>
-
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={goPrev}
-                  disabled={!canGoPrev}
-                >
-                  Anterior
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={goNext}
-                  disabled={!canGoNext}
-                >
-                  Próxima
-                </Button>
+        {!isFilterActive && (
+          <footer className="bg-[#EBEBEB] p-4 mt-4">
+            <div className="max-w-[1500px] mx-auto">
+              <div className="flex items-center justify-between mt-4">
+                <span className="text-sm text-gray-500">
+                  Página {currentPage}
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={goPrev}
+                    disabled={!canGoPrev}
+                  >
+                    Anterior
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={goNext}
+                    disabled={!canGoNext}
+                  >
+                    Próxima
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        </footer>
+          </footer>
+        )}
       </main>
     </div>
   );
