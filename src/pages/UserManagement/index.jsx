@@ -1,5 +1,5 @@
 // React e bibliotecas externas
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Hooks customizados
@@ -41,7 +41,7 @@ export function UserManagement() {
 
   // paginação local
   const [currentPage, setCurrentPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(true); // controlado por lookahead
+  const [hasNextPage, setHasNextPage] = useState(true);
 
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [removeModalOpen, setRemoveModalOpen] = useState(false);
@@ -49,6 +49,45 @@ export function UserManagement() {
   const [selectedUser, setSelectedUser] = useState(null);
 
   const { toast } = useToast();
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+
+  const normalize = (s = "") =>
+    s
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+  const filteredUsers = useMemo(() => {
+    const q = normalize(searchTerm);
+
+    let base = users;
+
+    if (q) {
+      base = base.filter((u) => {
+        const name = normalize(u.name || "");
+        const email = normalize(u.email || "");
+        const role = normalize(u.role || "");
+        return name.includes(q) || email.includes(q) || role.includes(q);
+      });
+    }
+
+    if (roleFilter !== "ALL") {
+      base = base.filter((u) => (u.role || "") === roleFilter);
+    }
+
+    if (statusFilter !== "ALL") {
+      const wantActive = statusFilter === "ATIVO";
+      base = base.filter((u) => {
+        const isActive = !u.deletedAt;
+        return wantActive ? isActive : !isActive;
+      });
+    }
+
+    return base;
+  }, [users, searchTerm, roleFilter, statusFilter]);
 
   async function handleCreateUser(e) {
     e.preventDefault();
@@ -68,7 +107,7 @@ export function UserManagement() {
       setNewEmail("");
       setNewPassword("");
       setNewRole("SECTOR_CHIEF");
-      // Recarrega do início para garantir lista atualizada
+
       await fetchUsers(1);
     } catch (error) {
       console.error(error);
@@ -84,7 +123,6 @@ export function UserManagement() {
     fetchUsers(1);
   }, []);
 
-  // Busca a página "page" e faz lookahead em page+1 para decidir o estado do botão "Próxima"
   async function fetchUsers(page = 1) {
     try {
       const res = await api.get(`/employees?page=${page}`);
@@ -93,13 +131,11 @@ export function UserManagement() {
       setUsers(list);
       setCurrentPage(page);
 
-      // lookahead: consulta próxima página para saber se existe "Próxima"
       try {
         const nextRes = await api.get(`/employees?page=${page + 1}`);
         const nextList = nextRes.data.employees || [];
         setHasNextPage(nextList.length > 0);
       } catch {
-        // se der erro no lookahead, por segurança desabilita "Próxima"
         setHasNextPage(false);
       }
     } catch (error) {
@@ -112,7 +148,6 @@ export function UserManagement() {
     }
   }
 
-  // mesmo visual/comportamento do seu componente Pagination, sem totalPages
   const canGoPrev = currentPage > 1;
   const canGoNext = hasNextPage;
 
@@ -276,7 +311,7 @@ export function UserManagement() {
                 { value: "DRONE_OPERATOR", label: "Operador de Drone" },
               ]}
               onChange={(val) => setNewRole(val)}
-              className="rounded-xl h-full border border-gray-300 px-4 text-sm" 
+              className="rounded-xl h-full border border-gray-300 px-4 text-sm"
             />
 
             <div className="col-span-full">
@@ -292,6 +327,55 @@ export function UserManagement() {
 
         {/* SEÇÃO 3 - Lista de usuários */}
         <section className="max-w-[1500px] w-full mx-auto">
+          {/* Filtro */}
+          <div className="mb-5 p-2 flex items-center justify-between gap-3 h-[71px] bg-[#F7F7F7] rounded-xl">
+            {/* Filtro por nome */}
+            <Input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Pesquise por nome"
+              className="bg-white rounded-xl h-[55px] placeholder:text-center flex-1"
+            />
+
+            {/* Filtro por cargo */}
+            <SelectField
+              placeholder="por cargo"
+              value={roleFilter}
+              onChange={(val) => setRoleFilter(val)}
+              options={[
+                { value: "ALL", label: "Por cargo" },
+                { value: "SECTOR_CHIEF", label: "Chefe de Setor" },
+                { value: "CHIEF", label: "Gestor" },
+                { value: "ANALYST", label: "Analista" },
+                { value: "INSPECTOR", label: "Inspetor" },
+                { value: "PILOT", label: "Piloto" },
+                { value: "DRONE_OPERATOR", label: "Operador de Drone" },
+              ]}
+              className="rounded-xl h-[55px] border border-gray-300 px-4 text-sm bg-white"
+            />
+
+            {/* Filtro por status */}
+            <SelectField
+              placeholder="por status"
+              value={statusFilter}
+              onChange={(val) => setStatusFilter(val)}
+              options={[
+                { value: "ALL", label: "Por status" },
+                { value: "ATIVO", label: "Ativo" },
+                { value: "BLOQUEADO", label: "Bloqueado" },
+              ]}
+              className="rounded-xl h-[55px] border border-gray-300 px-4 text-sm bg-white"
+            />
+
+            {/* contador */}
+            {searchTerm || roleFilter !== "ALL" || statusFilter !== "ALL" ? (
+              <span className="text-xs text-gray-500 shrink-0">
+                {filteredUsers.length} resultado
+                {filteredUsers.length === 1 ? "" : "s"}
+              </span>
+            ) : null}
+          </div>
+
           <div className="hidden xl:block bg-[#D9DCE2] text-[#020231] font-semibold rounded-xl px-4 py-5 border border-gray-200 mb-2 text-sm">
             <div className="grid grid-cols-12 gap-4 items-center">
               <div className="col-span-3">Nome</div>
@@ -302,13 +386,13 @@ export function UserManagement() {
             </div>
           </div>
 
-          {users.length === 0 && (
+          {filteredUsers.length === 0 && (
             <div className="bg-white border border-gray-200 rounded-xl p-6 text-center text-sm text-zinc-600">
-              Nenhum usuário encontrado.
+              Nenhum usuário encontrado{searchTerm ? " para esse filtro." : "."}
             </div>
           )}
 
-          {users.map((user) => {
+          {filteredUsers.map((user) => {
             const status = user.deletedAt ? "bloqueado" : "ativo";
 
             return (
@@ -348,7 +432,13 @@ export function UserManagement() {
                               <button className="text-blue-600 hover:underline text-xs">
                                 Editar
                               </button>
-                              <button className="text-red-500 hover:underline text-xs">
+                              <button
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setRemoveModalOpen(true);
+                                }}
+                                className="text-red-500 hover:underline text-xs"
+                              >
                                 Remover
                               </button>
                             </div>

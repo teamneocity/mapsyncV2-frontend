@@ -193,7 +193,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         const novaOcorrenciaId = response.data.data;
 
         // Aprova para setor de pavimentação
-        const setorPavimentacaoId = "3500cd38-d37c-44dc-9e85-f94290a7881a"; // ID fixo
+        const setorPavimentacaoId = "3500cd38-d37c-44dc-9e85-f94290a7881a"; 
 
         await api.post("/occurrences/approve", {
           occurrenceId: novaOcorrenciaId,
