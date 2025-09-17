@@ -33,6 +33,7 @@ export function TutorialCard({ labelColors }) {
     aceita: "Aceita",
     verificada: "Verificada",
     rejeitada: "Rejeitada",
+    recusada: "Recusada",
   };
 
   const STATUS_FILL = {
@@ -48,6 +49,7 @@ export function TutorialCard({ labelColors }) {
     aceita: "#FFF4D6",
     verificada: "#DDF2EE",
     rejeitada: "#ffc7c7ff",
+    recusada: "#ffc7c7ff",
   };
   const STATUS_TEXT = {
     encaminhada_externa: "#5f5d5dff",
@@ -62,6 +64,7 @@ export function TutorialCard({ labelColors }) {
     aceita: "#986F00",
     verificada: "#40C4AA",
     rejeitada: "#9D0000",
+    recusada: "#9D0000",
   };
 
   useEffect(() => {
