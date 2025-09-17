@@ -47,7 +47,7 @@ export function TutorialCard({ labelColors }) {
     pendente: "#E8F7FF",
     aceita: "#FFF4D6",
     verificada: "#DDF2EE",
-    rejeitada: "#FFE8E8",
+    rejeitada: "#ffc7c7ff",
   };
   const STATUS_TEXT = {
     encaminhada_externa: "#5f5d5dff",
