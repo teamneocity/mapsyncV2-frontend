@@ -14,6 +14,7 @@ import { OccurrenceList } from "@/components/OccurrenceList";
 
 // Componentes locais
 import { DailyPlanningPDF } from "./DailyPlanningPDF";
+import { ExpandedRowPlanning } from "./ExpandedRowPlanning"; // export nomeado
 
 // Serviços e utilitários
 import { api } from "@/services/api";
@@ -47,10 +48,9 @@ export function ServicePlanning() {
   const fetchPlanning = async (selectedDate) => {
     try {
       const formatted = formatTz(selectedDate, "yyyy-MM-dd", {
-        timeZone: "America/Maceio", // ou "America/Sao_Paulo"
+        timeZone: "America/Maceio",
       });
 
-      // monta os parâmetros da URL com base nos filtros
       const queryParams = new URLSearchParams({
         date: formatted,
         ...(street && { street }),
@@ -69,7 +69,6 @@ export function ServicePlanning() {
         const address = occ.address || {};
 
         return {
-          // para uso na tela
           id: order.id,
           createdAt: order.createdAt,
           protocol: order.protocolNumber,
@@ -86,7 +85,6 @@ export function ServicePlanning() {
           approvedBy: occ.approvedBy,
           pilot: order.inspector,
 
-          // para o PDF
           ordem: index + 1,
           scheduledDate: order.scheduledDate,
           inspector: order.inspector,
@@ -126,7 +124,7 @@ export function ServicePlanning() {
           onFilterType={(value) => setOccurrenceType(value)}
           onFilterRecent={(value) => setStatus(value)}
           onFilterNeighborhood={(value) => setNeighborhoodId(value)}
-          onFilterSector={(value) => setSectorId(value)} // novo filtro
+          onFilterSector={(value) => setSectorId(value)}
           onFilterDateRange={(range) => {
             if (range?.startDate) setDate(range.startDate);
           }}
@@ -136,10 +134,10 @@ export function ServicePlanning() {
 
       <OccurrenceList
         occurrences={serviceOrders}
-        statusLabelOverrides={{
-          aguardando_execucao: "Agendada",
-        }}
+        statusLabelOverrides={{ aguardando_execucao: "Agendada" }}
+        renderExpandedRow={(occ) => <ExpandedRowPlanning occurrence={occ} />}
       />
+
       <div className="flex justify-end gap-3 px-6 pb-10 mt-4">
         <button
           onClick={handlePrint}

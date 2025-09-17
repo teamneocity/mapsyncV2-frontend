@@ -31,9 +31,9 @@ export function OccurrencesA() {
 
 
   const handleToggleDateOrder = (orderValue) => {
-    setOrder(orderValue); // 'recent' ou 'oldest'
+    setOrder(orderValue);
     setCurrentPage(1);
-    fetchInspections(); // recarrega já com nova ordem
+    fetchInspections(); 
   };
 
   const fetchInspections = async () => {
@@ -89,7 +89,7 @@ export function OccurrencesA() {
             setStartDate(range?.startDate || null);
             setEndDate(range?.endDate || null);
           }}
-          onFilterStatus={(value) => setStatus(value)} // se tiver disponível no componente
+          onFilterStatus={(value) => setStatus(value)} 
           handleApplyFilters={() => {
             setCurrentPage(1);
             fetchInspections();
@@ -99,8 +99,8 @@ export function OccurrencesA() {
 
       <OccurrenceList
         occurrences={occurrences}
-        dateOrder={order || "recent"} // nova prop
-        onToggleDateOrder={handleToggleDateOrder} // nova prop
+        dateOrder={order || "recent"}
+        onToggleDateOrder={handleToggleDateOrder} 
         renderExpandedRow={(occ) => <ExpandedRowA occurrence={occ} />}
       />
 
