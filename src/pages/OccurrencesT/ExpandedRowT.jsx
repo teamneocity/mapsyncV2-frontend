@@ -136,7 +136,7 @@ export function ExpandedRowT({
         {/* Devolver */}
         {occurrence.status == "aprovada" && (
           <Button
-            className="w-full h-[58px] min-h-[58px] py-0 flex items-center justify-center gap-2 bg-[#FFE8E8] hover:bg-red-200 text-[#9D0000]"
+            className="w-full h-[64px] min-h-[58px] py-0 flex items-center justify-center gap-2 bg-[#FFE8E8] hover:bg-red-200 text-[#9D0000]"
             onClick={() => onOpenReturnModal(occurrence.id)}
           >
             Devolver
@@ -241,8 +241,15 @@ export function ExpandedRowT({
         {occurrence.status !== "os_gerada" &&
           occurrence.status !== "em_execucao" &&
           occurrence.status !== "finalizada" && (
+            // Foi o único jeito de forçar esse botão a ter 64px de altura 
             <Button
-              className="w-full h-[58px] min-h-[58px] py-0 flex items-center justify-center gap-2 bg-[#C9F2E9] hover:bg-green-200 text-[#1C7551]"
+              style={{
+                height: 64,
+                minHeight: 64,
+                maxHeight: 64,
+                lineHeight: "64px",
+              }}
+              className="w-full !py-0 flex items-center justify-center gap-2 bg-[#C9F2E9] hover:bg-green-200 text-[#1C7551]"
               onClick={() => onGenerateOS(occurrence.id)}
             >
               Gerar O.S.
