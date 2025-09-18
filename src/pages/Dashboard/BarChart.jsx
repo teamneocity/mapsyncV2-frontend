@@ -21,7 +21,7 @@ export function TutorialCard({ labelColors }) {
   const [statusRows, setStatusRows] = useState(null);
 
   const statusLabels = {
-    encaminhada_externa: "Outros",
+    encaminhada_externa: "Externa",
     em_analise: "Em análise",
     emergencial: "Emergencial",
     aprovada: "Aprovada",
