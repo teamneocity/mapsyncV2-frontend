@@ -167,7 +167,7 @@ export function Filters({
 
               <PopoverContent
                 align="start"
-                className="w-[var(--radix-popover-trigger-width)] p-0"
+                className="w-[200px] p-0"
               >
                 {/* Campo de busca */}
                 <div className="sticky top-0 bg-white p-2 border-b">
