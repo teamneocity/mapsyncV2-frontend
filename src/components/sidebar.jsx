@@ -41,7 +41,9 @@ export function Sidebar() {
   const userInitials = getInicials(user.name);
 
   const initialAvatarSrc = user?.avatar
-    ? (user.avatar.startsWith("http") ? user.avatar : `${api.defaults.baseURL}/avatar/${user.avatar}`)
+    ? user.avatar.startsWith("http")
+      ? user.avatar
+      : `${api.defaults.baseURL}/avatar/${user.avatar}`
     : undefined;
 
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarSrc);
@@ -60,7 +62,8 @@ export function Sidebar() {
     loadSidebarAvatarUrl();
   }, []);
 
-  const { isAdmin, isSupervisor, isAnalyst, isInspector, isChief } = usePermissions();
+  const { isAdmin, isSupervisor, isAnalyst, isInspector, isChief } =
+    usePermissions();
   const canSeeAll = isAdmin || isSupervisor;
 
   const roleLabel =
@@ -73,13 +76,17 @@ export function Sidebar() {
       FIELD_AGENT: "Agente de Campo",
     }[user?.role] || "Cargo desconhecido";
 
-  const baseItem = "flex gap-2 items-center py-1.5 px-2 rounded-lg text-md transition-colors";
+  const baseItem =
+    "flex gap-2 items-center py-1.5 px-2 rounded-lg text-md transition-colors";
   const activeItem = "bg-[#D1D5DB] text-gray-900";
-  const hoverItem  = "hover:bg-[#EDEDEE] hover:text-gray-900";
-  const linkClass = ({ isActive }) => `${baseItem} ${isActive ? activeItem : hoverItem}`;
+  const hoverItem = "hover:bg-[#EDEDEE] hover:text-gray-900";
+  const linkClass = ({ isActive }) =>
+    `${baseItem} ${isActive ? activeItem : hoverItem}`;
 
-  const baseItemMobile = "flex gap-2 items-center py-2 px-3 rounded-lg transition-colors";
-  const linkClassMobile = ({ isActive }) => `${baseItemMobile} ${isActive ? activeItem : hoverItem}`;
+  const baseItemMobile =
+    "flex gap-2 items-center py-2 px-3 rounded-lg transition-colors";
+  const linkClassMobile = ({ isActive }) =>
+    `${baseItemMobile} ${isActive ? activeItem : hoverItem}`;
 
   const { pathname } = useLocation();
   const isDashboardActive = (p) =>
@@ -91,18 +98,28 @@ export function Sidebar() {
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-[250px] sm:flex bg-[#EBEBEB] text-[#787891] flex-col font-inter max-h-screen overflow-y-auto">
         <div className="px-4 py-5">
           <NavLink to="/" end>
-            <img src={logoAju1 || "/placeholder.svg"} alt="Logo" width={"159px"} />
+            <img
+              src={logoAju1 || "/placeholder.svg"}
+              alt="Logo"
+              width={"159px"}
+            />
           </NavLink>
         </div>
 
         <nav className="flex flex-col px-4 py-1">
           <div>
-            <p className="text-base font-normal mb-2 text-[#4B4B62]">Workspace</p>
+            <p className="text-base font-normal mb-2 text-[#4B4B62]">
+              Workspace
+            </p>
             <div className="flex flex-col gap-1 text-[#787891] border-b pb-3">
               {(canSeeAll || isChief) && (
                 <NavLink
                   to="/dashboard"
-                  className={() => `${baseItem} ${isDashboardActive(pathname) ? activeItem : hoverItem}`}
+                  className={() =>
+                    `${baseItem} ${
+                      isDashboardActive(pathname) ? activeItem : hoverItem
+                    }`
+                  }
                 >
                   <HouseCheckIcon className="w-5 h-5 shrink-0" /> Dashboard
                 </NavLink>
@@ -127,7 +144,8 @@ export function Sidebar() {
                     <DroneIcon className="w-5 h-5 shrink-0" /> Mapeamento Aéreo
                   </NavLink>
                   <NavLink to="/occurrencest" className={linkClass}>
-                    <TrackIcon className="w-5 h-5 shrink-0" /> Mapeamento Terrestre
+                    <TrackIcon className="w-5 h-5 shrink-0" /> Mapeamento
+                    Terrestre
                   </NavLink>
                 </>
               )}
@@ -289,13 +307,20 @@ export function Sidebar() {
               </Button>
             </SheetTrigger>
 
-            <SheetContent side="left" className="sm:max-w-xs flex flex-col max-w-80">
+            <SheetContent
+              side="left"
+              className="sm:max-w-xs flex flex-col max-w-80"
+            >
               <nav className="grid text-sm font-small">
                 <div className="flex flex-col gap-1 text-[#787891] border-b pb-5">
                   {(canSeeAll || isChief) && (
                     <NavLink
                       to="/dashboard"
-                      className={() => `${baseItemMobile} ${isDashboardActive(pathname) ? activeItem : hoverItem}`}
+                      className={() =>
+                        `${baseItemMobile} ${
+                          isDashboardActive(pathname) ? activeItem : hoverItem
+                        }`
+                      }
                     >
                       <HouseCheckIcon className="w-5 h-5 shrink-0" /> Dashboard
                     </NavLink>
@@ -308,7 +333,7 @@ export function Sidebar() {
                   </NavLink>
                   */}
 
-                  {(isAnalyst || isAdmin || isChief) && (
+                  {(isAdmin || isAnalyst) && (
                     <NavLink to="/analysis" className={linkClassMobile}>
                       <AlertIcon className="w-5 h-5 shrink-0" /> Análises
                     </NavLink>
@@ -317,10 +342,12 @@ export function Sidebar() {
                   {(canSeeAll || isInspector || isChief) && (
                     <>
                       <NavLink to="/occurrencesa" className={linkClassMobile}>
-                        <DroneIcon className="w-5 h-5 shrink-0" /> Mapeamento Aéreo
+                        <DroneIcon className="w-5 h-5 shrink-0" /> Mapeamento
+                        Aéreo
                       </NavLink>
                       <NavLink to="/occurrencest" className={linkClassMobile}>
-                        <TrackIcon className="w-5 h-5 shrink-0" /> Mapeamento Terrestre
+                        <TrackIcon className="w-5 h-5 shrink-0" /> Mapeamento
+                        Terrestre
                       </NavLink>
                     </>
                   )}
@@ -331,12 +358,17 @@ export function Sidebar() {
                         <TaskChecklist className="w-5 h-5 shrink-0" /> O.S.
                       </NavLink>
 
-                      <NavLink to="/servicePlanning" className={linkClassMobile}>
-                        <CalendarIcon className="w-5 h-5 shrink-0" /> Planejamento
+                      <NavLink
+                        to="/servicePlanning"
+                        className={linkClassMobile}
+                      >
+                        <CalendarIcon className="w-5 h-5 shrink-0" />{" "}
+                        Planejamento
                       </NavLink>
 
                       <NavLink to="/inspection" className={linkClassMobile}>
-                        <AssessmentIcon className="w-5 h-5 shrink-0" /> Fiscalização
+                        <AssessmentIcon className="w-5 h-5 shrink-0" />{" "}
+                        Fiscalização
                       </NavLink>
 
                       {/* Mapa de Percurso */}
@@ -355,7 +387,9 @@ export function Sidebar() {
 
                 {isAdmin && (
                   <div className="mt-3 pt-3 ">
-                    <p className="text-base font-normal mb-2 text-[#4B4B62]">Admin</p>
+                    <p className="text-base font-normal mb-2 text-[#4B4B62]">
+                      Admin
+                    </p>
                     <NavLink to="/panelAdm" className={linkClassMobile}>
                       <DesktopIcon className="w-5 h-5 shrink-0" /> Administrador
                     </NavLink>
@@ -384,11 +418,15 @@ export function Sidebar() {
 
                           <div className="flex flex-col">
                             <div className="flex items-center gap-1">
-                              <span className="font-semibold text-sm text-gray-900">{name}</span>
+                              <span className="font-semibold text-sm text-gray-900">
+                                {name}
+                              </span>
                               <PurpleCheck className="w-4 h-4 shrink-0" />
                             </div>
                             <span className="text-xs text-gray-500">
-                              {email.length > 20 ? `${email.slice(0, 20)}...` : email}
+                              {email.length > 20
+                                ? `${email.slice(0, 20)}...`
+                                : email}
                             </span>
                           </div>
                         </div>

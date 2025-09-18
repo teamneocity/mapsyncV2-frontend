@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { getInicials } from "@/lib/utils";
 import { format } from "date-fns";
+import DoubleArrow from "@/assets/icons/DoubleArrow.svg?react";
 
 export function OccurrenceList({
   occurrences,
@@ -117,7 +118,7 @@ export function OccurrenceList({
       {/* Header apenas para desktop */}
       <div className="hidden xl:block bg-[#D9DCE2] text-[#020231] font-semibold rounded-xl px-4 py-5 border border-gray-200 mb-2 md:text-sm">
         <div className="grid grid-cols-12 gap-4 items-center">
-          <div className="col-span-1 pl-6" title="Data">
+          <div className="col-span-1 pl-0" title="Data">
             <button
               type="button"
               onClick={() =>
@@ -125,14 +126,16 @@ export function OccurrenceList({
                   dateOrder === "recent" ? "oldest" : "recent"
                 )
               }
-              className="group inline-flex items-center gap-1 select-none"
+              className="group inline-flex items-center gap-4 select-none"
             >
-              Data
-              <ChevronDown
+               <ChevronDown
                 className={`h-4 w-4 transition-transform ${
                   dateOrder === "recent" ? "" : "rotate-180"
                 }`}
               />
+              Data
+              <DoubleArrow/>
+             
             </button>
           </div>
 
