@@ -311,14 +311,14 @@ export function ExpandedRowAnalysis({
             </button>
           </div>
           <p>
-            <span className="text-gray-500 font-medium">Data:</span> {createdAt}
+            <span className="text-black font-medium">Data:</span> {createdAt}
           </p>
           <p>
-            <span className="text-gray-500 font-medium">Tipo:</span>{" "}
+            <span className="text-black font-medium">Tipo:</span>{" "}
             {occurrence.type}
           </p>
           <div>
-            <label className="text-sm text-[#787891] font-semibold mb-1 block">
+            <label className="text-sm text-black font-semibold mb-1 block">
               Local:
             </label>
             <button
@@ -329,7 +329,7 @@ export function ExpandedRowAnalysis({
               title="Ver histórico de alterações de endereço"
             >
               {/* texto do endereço à esquerda, com ellipsis */}
-              <span className="text-left text-[#787891] truncate">
+              <span className="text-left text-black truncate">
                 {addressLine}
               </span>
 
@@ -338,21 +338,21 @@ export function ExpandedRowAnalysis({
             </button>
           </div>
           <p>
-            <span className="text-gray-500 font-medium">CEP:</span> {zip}
+            <span className="text-black font-medium">CEP:</span> {zip}
           </p>
           <p>
-            <span className="text-gray-500 font-medium">Bairro:</span> {bairro}
+            <span className="text-black font-medium">Bairro:</span> {bairro}
           </p>
           <p>
-            <span className="text-gray-500 font-medium">Região:</span> {regiao}
+            <span className="text-black font-medium">Região:</span> {regiao}
           </p>
 
           <p>
-            <span className="text-gray-500 font-medium">Latitude:</span>{" "}
+            <span className="text-black font-medium">Latitude:</span>{" "}
             {localAddress.latitude}
           </p>
           <p>
-            <span className="text-gray-500 font-medium">Longitude:</span>{" "}
+            <span className="text-black font-medium">Longitude:</span>{" "}
             {localAddress.longitude}
           </p>
         </div>
