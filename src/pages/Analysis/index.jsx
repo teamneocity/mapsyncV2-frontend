@@ -11,6 +11,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useUserSector } from "@/hooks/useUserSector";
 import { useAuth } from "@/hooks/auth";
+import { useAnalysisNotification } from "@/hooks/useAnalysisNotification";
 
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
@@ -53,12 +54,29 @@ export function Analysis() {
     useState(null);
   const [allSectors, setAllSectors] = useState([]);
 
+  // 🔔 Notificação de "novas análises"
+  // Aqui eu NÃO pauso o hook, porque o Sidebar já pausa quando está em /analysis.
+  // Assim, esta página pega o totalCount atual e já marca como visto.
+  const { currentCount, lastSeenCount, markAsSeen } = useAnalysisNotification({
+    userId: user?.id,
+  });
+
+  // Assim que o hook obtiver o totalCount (currentCount),
+  // se for diferente do "visto" anterior, a gente sincroniza.
+  // Isso apaga o "vermelho" do ícone no Sidebar.
+  useEffect(() => {
+    if (typeof currentCount === "number" && currentCount >= 0) {
+      if (lastSeenCount !== currentCount) {
+        markAsSeen();
+      }
+    }
+  }, [currentCount, lastSeenCount, markAsSeen]);
+
   const [isIgnoreOcurrenceModalOpen, setIsIgnoreOcurrenceModalOpen] =
     useState(false);
 
   useEffect(() => {
     fetchOccurrences(currentPage);
-  
   }, [
     currentPage,
     searchTerm,
@@ -79,10 +97,10 @@ export function Analysis() {
       const response = await api.get("/occurrences/in-analysis", {
         params: {
           page,
-          street: searchTerm, 
-          districtId: filterNeighborhood, 
+          street: searchTerm,
+          districtId: filterNeighborhood,
           type: filterType,
-          orderBy: filterRecent || "recent", 
+          orderBy: filterRecent || "recent",
           startDate: filterDateRange.startDate
             ? new Date(
                 new Date(filterDateRange.startDate).setHours(0, 0, 0, 0)

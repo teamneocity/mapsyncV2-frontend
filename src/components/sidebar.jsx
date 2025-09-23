@@ -17,6 +17,7 @@ import IconFeedback from "@/assets/icons/IconFeedback.svg?react";
 import { PanelLeftClose } from "lucide-react";
 import PurpleCheck from "@/assets/icons/PurpleCheck.svg?react";
 import DesktopIcon from "@/assets/icons/desktop.svg?react";
+import { useAnalysisNotification } from "@/hooks/useAnalysisNotification";
 
 import {
   Tooltip,
@@ -36,6 +37,16 @@ import logoAju1 from "../assets/logoAju1.png";
 
 export function Sidebar() {
   const { user } = useAuth();
+  const { pathname } = useLocation();
+
+  // detecta se está na rota de análise para pausar o polling
+  const isOnAnalysis = pathname.startsWith("/analysis");
+
+  const { hasNew } = useAnalysisNotification({
+    userId: user?.id, // id do usuário logado
+    paused: isOnAnalysis, // pausa polling enquanto está na tela de análise
+  });
+
   const [email] = useState(user.email);
   const [name] = useState(user.name);
   const userInitials = getInicials(user.name);
@@ -76,6 +87,7 @@ export function Sidebar() {
       FIELD_AGENT: "Agente de Campo",
     }[user?.role] || "Cargo desconhecido";
 
+  // classes desktop
   const baseItem =
     "flex gap-2 items-center py-1.5 px-2 rounded-lg text-md transition-colors";
   const activeItem = "bg-[#D1D5DB] text-gray-900";
@@ -83,12 +95,13 @@ export function Sidebar() {
   const linkClass = ({ isActive }) =>
     `${baseItem} ${isActive ? activeItem : hoverItem}`;
 
+  // classes mobile
   const baseItemMobile =
     "flex gap-2 items-center py-2 px-3 rounded-lg transition-colors";
   const linkClassMobile = ({ isActive }) =>
     `${baseItemMobile} ${isActive ? activeItem : hoverItem}`;
 
-  const { pathname } = useLocation();
+  // helper pra saber se dashboard está ativo
   const isDashboardActive = (p) =>
     p === "/" || p === "/dashboard" || p.startsWith("/dashboard/");
 
@@ -134,7 +147,20 @@ export function Sidebar() {
 
               {(isAdmin || isAnalyst) && (
                 <NavLink to="/analysis" className={linkClass}>
-                  <AlertIcon className="w-5 h-5 shrink-0" /> Análises
+                  {/* wrapper força cor vermelha em tudo quando hasNew */}
+                  <span
+                    className={`flex items-center gap-2 ${
+                      hasNew ? "!text-red-600" : ""
+                    }`}
+                  >
+                    <AlertIcon className="w-5 h-5 shrink-0" />
+                    {/* pinta o texto explicitamente também */}
+                    <span
+                      className={hasNew ? "!text-red-600 font-semibold" : ""}
+                    >
+                      Análises
+                    </span>
+                  </span>
                 </NavLink>
               )}
 
@@ -335,7 +361,20 @@ export function Sidebar() {
 
                   {(isAdmin || isAnalyst) && (
                     <NavLink to="/analysis" className={linkClassMobile}>
-                      <AlertIcon className="w-5 h-5 shrink-0" /> Análises
+                      <span
+                        className={`flex items-center gap-2 ${
+                          hasNew ? "!text-red-600" : ""
+                        }`}
+                      >
+                        <AlertIcon className="w-5 h-5 shrink-0" />
+                        <span
+                          className={
+                            hasNew ? "!text-red-600 font-semibold" : ""
+                          }
+                        >
+                          Análises
+                        </span>
+                      </span>
                     </NavLink>
                   )}
 
