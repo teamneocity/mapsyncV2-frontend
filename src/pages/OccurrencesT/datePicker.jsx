@@ -22,7 +22,7 @@ export function DatePicker({ date, onChange, className }) {
           {date ? (
             format(date, "dd/MM/yyyy")
           ) : (
-            <span className="text-[#787891]">Escolha uma data</span>
+            <span className="text-[#787891]">Agendar serviço</span>
           )}
           <CalendarIcon className="opacity-40" />
         </Button>
