@@ -13,6 +13,10 @@ import { TopHeader } from "@/components/topHeader";
 // Componentes locais
 import MapaDeCalor from "./MapaDeCalor";
 import GraficoDeOcorrencias from "./GraficoDeOcorrencias";
+//Gráficos novos
+import PieChartOcorrencias from "./PieChartOcorrencias";
+import GraficoDeBairros from "./GraficoDeBairros";
+import PdfResultado from "./PdfResultado";
 
 // Assets
 import ImgUsers from "@/assets/icons/imgUsers.svg";
@@ -272,7 +276,28 @@ export function Reports() {
                     <p className="text-sm text-gray-500 mb-2">
                       {response.text}
                     </p>
-                    <GraficoDeOcorrencias dados={response.dados} />
+
+                    {/* Checa os campos dos dados para decidir o gráfico */}
+                    {response?.dados?.[0]?.bairro !== undefined ? (
+                      // gráfico de barras para bairros
+                      <GraficoDeBairros dados={response.dados} />
+                    ) : response?.dados?.[0]?.total !== undefined ? (
+                      // gráfico de pizza para status + total
+                      <PieChartOcorrencias dados={response.dados} />
+                    ) : (
+                      // gráfico antigo
+                      <GraficoDeOcorrencias dados={response.dados} />
+                    )}
+                  </div>
+                ) : response?.type === "pdf" ? (
+                  <div className="w-full mt-4 rounded-xl overflow-hidden">
+                    <p className="text-sm text-gray-500 mb-3 whitespace-pre-line">
+                      {response.text}
+                    </p>
+                    <PdfResultado
+                      base64={response?.dados?.pdf_base64 || ""}
+                      filename={response?.dados?.filename || "relatorio.pdf"}
+                    />
                   </div>
                 ) : response?.type === "texto" ? (
                   <div className="self-start max-w-[75%] bg-white text-sm text-gray-800 p-3 rounded-xl rounded-tl-sm shadow">

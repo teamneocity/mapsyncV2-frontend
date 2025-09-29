@@ -1,107 +1,121 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 import "leaflet.heat";
+import { Maximize2, X } from "lucide-react";
 
-import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
-
-function HeatmapLayer({ points }) {
+function HeatLayer({ points = [], options = {} }) {
   const map = useMap();
-  const layerRef = useRef(null);
 
   useEffect(() => {
-    if (!map || !window.L || points.length === 0) return;
+    if (!map || !points.length) return;
 
-    if (layerRef.current) {
-      map.removeLayer(layerRef.current);
-    }
-
-    const heatLayer = window.L.heatLayer(points, {
-      radius: 50,
-      blur: 30,
-      maxZoom: 17,
-      max: 1,
-      gradient: {
-        0.0: "green",
-        0.4: "yellow",
-        0.7: "orange",
-        1.0: "red",
-      },
+    const layer = L.heatLayer(points, {
+      radius: 25,
+      blur: 15,
+      maxZoom: 18,
+      minOpacity: 0.3,
+      ...options,
     }).addTo(map);
 
-    layerRef.current = heatLayer;
-
-    if (points.length > 1) {
-      const bounds = window.L.latLngBounds(
-        points.map(([lat, lng]) => [lat, lng])
-      );
-      map.fitBounds(bounds, { padding: [20, 20] });
+    const latlngs = points.map(([lat, lng]) => [lat, lng]);
+    if (latlngs.length > 0) {
+      const bounds = L.latLngBounds(latlngs);
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [40, 40] });
+      }
     }
 
     return () => {
-      if (layerRef.current) {
-        map.removeLayer(layerRef.current);
-      }
+      layer.remove();
     };
-  }, [points, map]);
+  }, [map, points, options]);
 
   return null;
 }
 
-function MapaBase({ altura = "400px", dadosApi = [] }) {
-  const [dados, setDados] = useState([]);
-
+function InvalidateOnMount() {
+  const map = useMap();
   useEffect(() => {
-    const pontos = dadosApi.flatMap((item) => {
-      const lat = item.address.latitude;
-      const lng = item.address.longitude;
-      return [[lat, lng, dadosApi.length === 1 ? 20 : 5]];
-    });
-
-    setDados(pontos);
-  }, [dadosApi]);
-
-  // Zoom mínimo se só tiver um ponto
-  const zoomInicial = dadosApi.length === 1 ? 11 : 13;
-  const centro = [-10.9472, -37.0731];
-
-  return (
-    <div
-      style={{ height: altura, width: "100%" }}
-      className="rounded-lg overflow-hidden shadow"
-    >
-      <MapContainer
-        center={centro}
-        zoom={zoomInicial}
-        scrollWheelZoom={false}
-        style={{ width: "100%", height: "100%" }}
-      >
-        <TileLayer
-          attribution="&copy; OpenStreetMap"
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <HeatmapLayer points={dados} />
-      </MapContainer>
-    </div>
-  );
+    const t = setTimeout(() => map.invalidateSize(), 50);
+    return () => clearTimeout(t);
+  }, [map]);
+  return null;
 }
 
 export default function MapaDeCalor({ dados = [] }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const heatPoints = useMemo(() => {
+    return dados
+      .filter((p) => typeof p.lat === "number" && typeof p.lng === "number")
+      .map((p) => [p.lat, p.lng, 1]); // peso fixo = 1
+  }, [dados]);
+
+  const center = useMemo(() => {
+    if (heatPoints.length) return [heatPoints[0][0], heatPoints[0][1]];
+    return [-10.9472, -37.0731]; 
+  }, [heatPoints]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      {!isOpen && (
-        <DialogTrigger asChild>
-          <div className="cursor-pointer w-full h-[400px]">
-            <MapaBase altura="100%" dadosApi={dados} />
-          </div>
-        </DialogTrigger>
+    <>
+      {/* mapa normal */}
+      {!isExpanded && (
+        <div className="relative w-full h-[420px] rounded-xl overflow-hidden shadow">
+          <MapContainer
+            center={center}
+            zoom={12}
+            style={{ height: "100%", width: "100%" }}
+          >
+            <TileLayer
+              attribution="&copy; OpenStreetMap contributors"
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <HeatLayer points={heatPoints} />
+          </MapContainer>
+
+          {/* botão expandir */}
+          <button
+            onClick={() => setIsExpanded(true)}
+            className="absolute top-3 right-3 z-50 bg-white p-2 rounded-full shadow hover:bg-gray-100 transition pointer-events-auto"
+            style={{ zIndex: 1001 }}
+            aria-label="Expandir mapa"
+          >
+            <Maximize2 className="w-5 h-5 text-gray-700" />
+          </button>
+        </div>
       )}
 
-      <DialogContent className="max-w-[95vw] h-[90vh] p-2">
-        <MapaBase altura="100%" dadosApi={dados} />
-      </DialogContent>
-    </Dialog>
+      {/* modal fullscreen */}
+      {isExpanded && (
+        <div className="fixed inset-0 bg-black/70 z-[9999] flex items-center justify-center">
+          <div className="relative w-full h-full">
+            <MapContainer
+              center={center}
+              zoom={12}
+              style={{ height: "100%", width: "100%" }}
+            >
+              <TileLayer
+                attribution="&copy; OpenStreetMap contributors"
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <HeatLayer points={heatPoints} />
+              <InvalidateOnMount />
+            </MapContainer>
+
+            {/* botão fechar */}
+            <button
+              onClick={() => setIsExpanded(false)}
+              className="absolute top-4 right-4 z-50 bg-white p-2 rounded-full shadow hover:bg-gray-100 transition pointer-events-auto"
+              style={{ zIndex: 1001 }}
+              aria-label="Fechar mapa"
+            >
+              <X className="w-6 h-6 text-gray-700" />
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
