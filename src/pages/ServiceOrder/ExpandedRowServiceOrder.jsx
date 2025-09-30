@@ -35,6 +35,12 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     { label: "Finalizado", date: occurrence.finishedAt },
   ];
 
+    const scheduledStart =
+    occurrence?.scheduledStart || occurrence?.scheduledDate || null;
+
+  const scheduledEnd = occurrence?.scheduledEnd || null;
+
+
   const [photoOpen, setPhotoOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
   const { toast } = useToast();
@@ -193,7 +199,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         const novaOcorrenciaId = response.data.data;
 
         // Aprova para setor de pavimentação
-        const setorPavimentacaoId = "3500cd38-d37c-44dc-9e85-f94290a7881a"; 
+        const setorPavimentacaoId = "3500cd38-d37c-44dc-9e85-f94290a7881a";
 
         await api.post("/occurrences/approve", {
           occurrenceId: novaOcorrenciaId,
@@ -311,6 +317,16 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                   {occurrence.occurrence?.address?.street || ""},{" "}
                   {occurrence.occurrence?.address?.number || ""}
                 </p>
+                <p>
+                  <strong>Período agendado:</strong>{" "}
+                  {scheduledStart
+                    ? format(new Date(scheduledStart), "dd/MM/yyyy 'às' HH:mm")
+                    : "—"}
+                  {scheduledStart && scheduledEnd ? " até " : ""}
+                  {scheduledEnd
+                    ? format(new Date(scheduledEnd), "dd/MM/yyyy 'às' HH:mm")
+                    : ""}
+                </p>
               </div>
 
               {/* CEP e Região lado a lado */}
@@ -348,6 +364,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
             <Button
               onClick={() => setIsRescheduleModalOpen(true)}
               variant="ghost"
+              disabled
               className="flex flex-col items-center justify-center gap-1 h-[60px] hover:bg-[#DCDCDC] rounded-md"
             >
               <Calendar className="w-5 h-5" />

@@ -81,7 +81,7 @@ export function OccurrencesT() {
           districtId: filterNeighborhood, // bairro
           street: searchTerm, // rua
           type: filterType,
-          orderBy: filterRecent, 
+          orderBy: filterRecent,
           startDate: filterDateRange.startDate
             ? new Date(
                 new Date(filterDateRange.startDate).setHours(0, 0, 0, 0)
@@ -180,14 +180,19 @@ export function OccurrencesT() {
       return;
     }
 
-    const { serviceNatureId, inspectorId, foremanId, teamId, scheduledDate } =
+    const { serviceNatureId, inspectorId, foremanId, teamId, scheduledWindow } =
       values;
 
-    if (!foremanId || !teamId || !scheduledDate) {
+    if (
+      !foremanId ||
+      !teamId ||
+      !scheduledWindow?.start ||
+      !scheduledWindow?.end
+    ) {
       toast({
         variant: "destructive",
         title: "Campos obrigatórios",
-        description: "Preencha encarregado, equipe e data agendada.",
+        description: "Preencha encarregado, equipe e o período (início e fim).",
       });
       return;
     }
@@ -197,7 +202,10 @@ export function OccurrencesT() {
       sectorId: occurrence.sector.id,
       foremanId,
       teamId,
-      scheduledDate: new Date(scheduledDate).toISOString(),
+      scheduledWindow: {
+        start: new Date(scheduledWindow.start).toISOString(),
+        end: new Date(scheduledWindow.end).toISOString(),
+      },
     };
 
     if (serviceNatureId) payload.serviceNatureId = serviceNatureId;

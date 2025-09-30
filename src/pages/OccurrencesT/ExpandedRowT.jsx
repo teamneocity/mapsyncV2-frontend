@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { SelectField } from "../../components/selectField";
 import { DatePicker } from "./datePicker";
+import { DateRangePicker } from "./dateRangePicker";
 import { MediaMapSection } from "@/components/MediaMapSection";
 
 import ThumbsUp from "@/assets/icons/thumbs-up.svg?react";
@@ -42,6 +43,23 @@ export function ExpandedRowT({
     });
   }
 
+  function setWindowPart(part, date) {
+    setSelectedValues((prev) => {
+      const current = prev[occurrence.id] || {};
+      const window = current.scheduledWindow || {};
+      return {
+        ...prev,
+        [occurrence.id]: {
+          ...current,
+          scheduledWindow: {
+            ...window,
+            [part]: date,
+          },
+        },
+      };
+    });
+  }
+
   const firstInitialPhoto = occurrence?.photos?.initial?.[0];
   const photoUrl = firstInitialPhoto
     ? `https://mapsync-media.s3.sa-east-1.amazonaws.com/${firstInitialPhoto}`
@@ -55,6 +73,11 @@ export function ExpandedRowT({
     LIMPA_FOSSA: "Limpa fossa",
   };
 
+  const canGenerate =
+    occurrence.status !== "os_gerada" &&
+    occurrence.status !== "em_execucao" &&
+    occurrence.status !== "finalizada";
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 bg-[#F7F7F7] rounded-lg text-sm">
       {/* Coluna 1 - Informações */}
@@ -64,16 +87,16 @@ export function ExpandedRowT({
             <button
               type="button"
               onClick={handleCopyProtocol}
-              className="w-full h-[58px] text-left flex items-center justify-between gap-3 rounded-lg border px-3 py-2
-                 bg-[#D9DCE2] hover:bg-gray-300 "
+              className="w-full h-[58px] text-left flex items-center justify-between gap-3 rounded-lg border px-3 py-2 bg-[#D9DCE2] hover:bg-gray-300"
               aria-label="Copiar protocolo"
             >
-              <span className="truncate ">
+              <span className="truncate">
                 Protocolo : {occurrence?.protocolNumber || "—"}
               </span>
               <Copy className="w-4 h-4 shrink-0 opacity-70" />
             </button>
           </div>
+
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex flex-col items-start space-y-2 flex-1">
               <h3 className="font-semibold text-[#787891] text-base mb-1 pb-0">
@@ -89,7 +112,7 @@ export function ExpandedRowT({
               </p>
               <p>
                 <span className="font-bold">Enviado por:</span>{" "}
-                {occurrence.author.name || "—"}
+                {occurrence.author?.name || "—"}
               </p>
               <p>
                 <span className="font-bold">Aprovado por:</span>{" "}
@@ -117,17 +140,18 @@ export function ExpandedRowT({
               </p>
             </div>
           </div>
+
           <div className="flex flex-col md:flex-row justify-between gap-4">
             <div className="flex flex-col space-y-2 flex-1">
               <p>
                 <span className="font-bold">Latitude:</span>{" "}
-                {occurrence.address.latitude}
+                {occurrence.address?.latitude}
               </p>
             </div>
             <div className="flex flex-col space-y-2 flex-1">
               <p>
                 <span className="font-bold">Longitude:</span>{" "}
-                {occurrence.address.longitude}
+                {occurrence.address?.longitude}
               </p>
             </div>
           </div>
@@ -148,9 +172,7 @@ export function ExpandedRowT({
       {/* Coluna 2 - Geração de OS */}
       <div className="flex flex-col justify-between space-y-4 h-full">
         <div className="space-y-2 h-full">
-          {occurrence.status !== "os_gerada" &&
-          occurrence.status !== "em_execucao" &&
-          occurrence.status !== "finalizada" ? (
+          {canGenerate ? (
             <>
               <h3 className="font-semibold text-[#787891] text-base mb-2 pb-1">
                 Programar e gerar O.S
@@ -171,6 +193,7 @@ export function ExpandedRowT({
                 }
                 className="h-[55px] border border-[#FFFFFF]"
               />
+
               <SelectField
                 placeholder="Inspetor responsável"
                 value={values.inspectorId || ""}
@@ -186,6 +209,7 @@ export function ExpandedRowT({
                 }
                 className="h-[55px] border border-[#FFFFFF]"
               />
+
               <SelectField
                 placeholder="Encarregado"
                 value={values.foremanId || ""}
@@ -201,6 +225,7 @@ export function ExpandedRowT({
                 }
                 className="h-[55px] border border-[#FFFFFF]"
               />
+
               <SelectField
                 placeholder="Equipe"
                 value={values.teamId || ""}
@@ -216,19 +241,25 @@ export function ExpandedRowT({
                 }
                 className="h-[55px] border border-[#FFFFFF]"
               />
-              <DatePicker
-                className="h-[55px]"
-                date={values.scheduledDate || null}
-                onChange={(date) =>
-                  setSelectedValues((prev) => ({
-                    ...prev,
-                    [occurrence.id]: {
-                      ...prev[occurrence.id],
-                      scheduledDate: date,
-                    },
-                  }))
-                }
-              />
+
+              
+              <div className="grid grid-cols-1 gap-2">
+                {/* ALTERAÇÃO: campo para período (início e fim) */}
+                <DateRangePicker
+                  className="h-[55px]"
+                  placeholder="Selecione um período de execução"
+                  value={values.scheduledWindow || { start: null, end: null }}
+                  onChange={(range) =>
+                    setSelectedValues((prev) => ({
+                      ...prev,
+                      [occurrence.id]: {
+                        ...prev[occurrence.id],
+                        scheduledWindow: { start: range.start, end: range.end },
+                      },
+                    }))
+                  }
+                />
+              </div>
             </>
           ) : (
             <p className="text-gray-500 italic">
@@ -238,24 +269,36 @@ export function ExpandedRowT({
         </div>
 
         {/* Gerar O.S. */}
-        {occurrence.status !== "os_gerada" &&
-          occurrence.status !== "em_execucao" &&
-          occurrence.status !== "finalizada" && (
-            // Foi o único jeito de forçar esse botão a ter 64px de altura 
-            <Button
-              style={{
-                height: 64,
-                minHeight: 64,
-                maxHeight: 64,
-                lineHeight: "64px",
-              }}
-              className="w-full !py-0 flex items-center justify-center gap-2 bg-[#C9F2E9] hover:bg-green-200 text-[#1C7551]"
-              onClick={() => onGenerateOS(occurrence.id)}
-            >
-              Gerar O.S.
-              <ThumbsUp className="w-5 h-5" />
-            </Button>
-          )}
+        {canGenerate && (
+          <Button
+            style={{
+              height: 64,
+              minHeight: 64,
+              maxHeight: 64,
+              lineHeight: "64px",
+            }}
+            className="w-full !py-0 flex items-center justify-center gap-2 bg-[#C9F2E9] hover:bg-green-200 text-[#1C7551]"
+            onClick={() => {
+              const start = values.scheduledWindow?.start;
+              const end = values.scheduledWindow?.end;
+
+              if (!start || !end) {
+                toast({
+                  title: "Período incompleto",
+                  description: "Selecione o início e o fim do período.",
+                  variant: "destructive",
+                });
+                return;
+              }
+
+              // Mantive a assinatura original:
+              onGenerateOS(occurrence.id);
+            }}
+          >
+            Gerar O.S.
+            <ThumbsUp className="w-5 h-5" />
+          </Button>
+        )}
       </div>
 
       {/* Coluna 3 - Imagem e Mapa */}
