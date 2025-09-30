@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { SelectField } from "../../components/selectField";
 import { DatePicker } from "./datePicker";
-import { DateRangePicker } from "./dateRangePicker";
+import { DateRangePicker } from "./DateRangePicker";
 import { MediaMapSection } from "@/components/MediaMapSection";
 
 import ThumbsUp from "@/assets/icons/thumbs-up.svg?react";
