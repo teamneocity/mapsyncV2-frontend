@@ -121,10 +121,10 @@ export function AppRoutes() {
         element={canSeeAll || isChief ? <PilotMap /> : <Navigate to="/" />}
       /> */}
       {/* Rota: /reports */}
-      <Route
+      {/* <Route
         path="/reports"
         element={canSeeAll || isChief ? <Reports /> : <Navigate to="/" />}
-      />
+      /> */}
       {/* Rota: /userManagement */}
       <Route
         path="/userManagement"
