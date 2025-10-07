@@ -135,10 +135,10 @@ export function Filters({
         {/* Título */}
         <div className="flex flex-col mr-2 min-w-[160px]">
           <span className="text-[18px] text-gray-700 leading-tight">
-            {title}
-          </span>
-          <span className="text-[18px] font-semibold text-gray-900 leading-tight">
-            {subtitle}
+            {title}{" "}
+            <span className="text-[18px] font-semibold text-gray-900 leading-tight">
+              {subtitle}
+            </span>
           </span>
         </div>
 
@@ -165,10 +165,7 @@ export function Filters({
                 </Button>
               </PopoverTrigger>
 
-              <PopoverContent
-                align="start"
-                className="w-[200px] p-0"
-              >
+              <PopoverContent align="start" className="w-[200px] p-0">
                 {/* Campo de busca */}
                 <div className="sticky top-0 bg-white p-2 border-b">
                   <Input

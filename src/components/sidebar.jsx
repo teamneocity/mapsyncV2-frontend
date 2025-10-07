@@ -33,18 +33,17 @@ import { useState, useEffect } from "react";
 import { getInicials } from "@/lib/utils";
 import { api } from "@/services/api";
 import { usePermissions } from "@/hooks/usePermissions";
-import logoAju1 from "../assets/logoAju1.png";
+import NewAju from "../assets/NewAju.svg?react";
 
 export function Sidebar() {
   const { user } = useAuth();
   const { pathname } = useLocation();
 
-  // detecta se está na rota de análise para pausar o polling
   const isOnAnalysis = pathname.startsWith("/analysis");
 
   const { hasNew } = useAnalysisNotification({
-    userId: user?.id, // id do usuário logado
-    paused: isOnAnalysis, // pausa polling enquanto está na tela de análise
+    userId: user?.id,
+    paused: isOnAnalysis,
   });
 
   const [email] = useState(user.email);
@@ -87,21 +86,18 @@ export function Sidebar() {
       FIELD_AGENT: "Agente de Campo",
     }[user?.role] || "Cargo desconhecido";
 
-  // classes desktop
   const baseItem =
-    "flex gap-2 items-center py-1.5 px-2 rounded-lg text-md transition-colors";
-  const activeItem = "bg-[#D1D5DB] text-gray-900";
+    "flex gap-2 items-center py-2 px-2 rounded-[6px] text-md transition-colors";
+  const activeItem = "bg-[#D9DCE2] text-gray-900";
   const hoverItem = "hover:bg-[#EDEDEE] hover:text-gray-900";
   const linkClass = ({ isActive }) =>
     `${baseItem} ${isActive ? activeItem : hoverItem}`;
 
-  // classes mobile
   const baseItemMobile =
     "flex gap-2 items-center py-2 px-3 rounded-lg transition-colors";
   const linkClassMobile = ({ isActive }) =>
     `${baseItemMobile} ${isActive ? activeItem : hoverItem}`;
 
-  // helper pra saber se dashboard está ativo
   const isDashboardActive = (p) =>
     p === "/" || p === "/dashboard" || p.startsWith("/dashboard/");
 
@@ -111,11 +107,7 @@ export function Sidebar() {
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-[250px] sm:flex bg-[#EBEBEB] text-[#787891] flex-col font-inter max-h-screen overflow-y-auto">
         <div className="px-4 py-5">
           <NavLink to="/" end>
-            <img
-              src={logoAju1 || "/placeholder.svg"}
-              alt="Logo"
-              width={"159px"}
-            />
+            <NewAju className="w-[192px] h-auto" />
           </NavLink>
         </div>
 
@@ -146,18 +138,29 @@ export function Sidebar() {
               */}
 
               {(isAdmin || isAnalyst) && (
-                <NavLink to="/analysis" className={linkClass}>
-                  {/* wrapper força cor vermelha em tudo quando hasNew */}
+                <NavLink
+                  to="/analysis"
+                  className={({ isActive }) =>
+                    hasNew
+                      ? `${baseItem} ${
+                          isActive
+                            ? "bg-[#FFC3C3]"
+                            : "bg-[#FFC3C3] hover:bg-[#ffb3b3]"
+                        }`
+                      : linkClass({ isActive })
+                  }
+                >
                   <span
                     className={`flex items-center gap-2 ${
-                      hasNew ? "!text-red-600" : ""
+                      hasNew ? "text-[#CC1C35]" : ""
                     }`}
                   >
-                    <AlertIcon className="w-5 h-5 shrink-0" />
-                    {/* pinta o texto explicitamente também */}
-                    <span
-                      className={hasNew ? "!text-red-600 font-semibold" : ""}
-                    >
+                    <AlertIcon
+                      className={`w-5 h-5 shrink-0 ${
+                        hasNew ? "text-[#CC1C35]" : ""
+                      }`}
+                    />
+                    <span className={hasNew ? "font-semibold" : ""}>
                       Análises
                     </span>
                   </span>
@@ -183,6 +186,7 @@ export function Sidebar() {
                   </NavLink>
                   <NavLink to="/servicePlanning" className={linkClass}>
                     <CalendarIcon className="w-5 h-5 shrink-0" /> Planejamento
+                    diário
                   </NavLink>
                   <NavLink to="/inspection" className={linkClass}>
                     <AssessmentIcon className="w-5 h-5 shrink-0" /> Fiscalização
@@ -402,7 +406,7 @@ export function Sidebar() {
                         className={linkClassMobile}
                       >
                         <CalendarIcon className="w-5 h-5 shrink-0" />{" "}
-                        Planejamento
+                        Planejamento diário
                       </NavLink>
 
                       <NavLink to="/inspection" className={linkClassMobile}>

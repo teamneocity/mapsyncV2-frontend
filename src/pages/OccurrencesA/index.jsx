@@ -78,8 +78,8 @@ export function OccurrencesA() {
         </h1>
 
         <Filters
-          title="Ocorrências"
-          subtitle="Aéreas"
+          title="Mapeamento"
+          subtitle="Aéreo"
           contextType="aerea"
           onSearch={(value) => setStreet(value)}
           onFilterType={(value) => setType(value)}

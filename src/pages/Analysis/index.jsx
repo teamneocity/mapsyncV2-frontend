@@ -219,7 +219,7 @@ export function Analysis() {
         </h1>
         <Filters
           title="Análise"
-          subtitle="das ocorrências"
+          subtitle="de ocorrências"
           onSearch={(input) => {
             setSearchTerm(input);
             setCurrentPage(1);

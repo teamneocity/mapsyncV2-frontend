@@ -11,12 +11,12 @@ import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
 
 // Componentes locais
-import MapaDeCalor from "./MapaDeCalor";
-import GraficoDeOcorrencias from "./GraficoDeOcorrencias";
+import HeatMap from "./HeatMap";
+import OccurrenceChart from "./OccurrenceChart";
 //Gráficos novos
 import PieChartOcorrencias from "./PieChartOcorrencias";
-import GraficoDeBairros from "./GraficoDeBairros";
-import PdfResultado from "./PdfResultado";
+import NeighborhoodChart from "./NeighborhoodChart";
+import PdfResult from "./PdfResult";
 
 // Assets
 import ImgUsers from "@/assets/icons/imgUsers.svg";
@@ -269,7 +269,7 @@ export function Reports() {
                     <p className="text-sm text-gray-500 mb-2">
                       {response.text}
                     </p>
-                    <MapaDeCalor dados={response.dados} />
+                    <HeatMap dados={response.dados} />
                   </div>
                 ) : response?.type === "grafico" ? (
                   <div className="w-full mt-4 rounded-xl overflow-hidden">
@@ -280,13 +280,13 @@ export function Reports() {
                     {/* Checa os campos dos dados para decidir o gráfico */}
                     {response?.dados?.[0]?.bairro !== undefined ? (
                       // gráfico de barras para bairros
-                      <GraficoDeBairros dados={response.dados} />
+                      <NeighborhoodChart dados={response.dados} />
                     ) : response?.dados?.[0]?.total !== undefined ? (
                       // gráfico de pizza para status + total
                       <PieChartOcorrencias dados={response.dados} />
                     ) : (
                       // gráfico antigo
-                      <GraficoDeOcorrencias dados={response.dados} />
+                      <OccurrenceChart dados={response.dados} />
                     )}
                   </div>
                 ) : response?.type === "pdf" ? (
@@ -294,7 +294,7 @@ export function Reports() {
                     <p className="text-sm text-gray-500 mb-3 whitespace-pre-line">
                       {response.text}
                     </p>
-                    <PdfResultado
+                    <PdfResult
                       base64={response?.dados?.pdf_base64 || ""}
                       filename={response?.dados?.filename || "relatorio.pdf"}
                     />

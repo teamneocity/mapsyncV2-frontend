@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { Clock } from "lucide-react";
+import { Clock, Copy } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 // Importando os ícones do Figma
 import Start from "@/assets/timeline/Start.svg?react";
@@ -10,6 +11,7 @@ import End from "@/assets/timeline/End.svg?react";
 
 export function InspectionCard({ serviceorder }) {
   const occurrence = serviceorder.occurrence;
+  const { toast } = useToast();
 
   const baseURL = "https://mapsync-media.s3.sa-east-1.amazonaws.com/";
 
@@ -72,6 +74,23 @@ export function InspectionCard({ serviceorder }) {
     LIMPA_FOSSA: "Limpa fossa",
   };
 
+  function handleCopyProtocol() {
+    const value = serviceorder.protocolNumber;
+    if (!value) {
+      toast({
+        title: "Nada para copiar",
+        description: "Esta ocorrência não possui protocolo.",
+        variant: "destructive",
+      });
+      return;
+    }
+    navigator.clipboard.writeText(value).then(() => {
+      toast({
+        title: "Copiado!",
+        description: "Protocolo copiado para a área de transferência.",
+      });
+    });
+  }
   return (
     <div className="bg-[#F7F7F7] rounded-[12px] shadow-sm overflow-hidden flex-shrink-0 w-full max-w-[525px] border border-gray-200 min-h-[650px] sm:min-h-[auto]">
       {/* Imagem principal */}
@@ -152,44 +171,47 @@ export function InspectionCard({ serviceorder }) {
       {/* Conteúdo */}
       <div className="px-4 pb-4 text-sm text-[#787891] grid grid-cols-12 gap-2 min-h-[400px] sm:min-h-[auto]">
         {/* Coluna 1 */}
+        {/* Coluna 1 */}
         <div className="col-span-6 space-y-1">
+          <button
+            type="button"
+            onClick={handleCopyProtocol}
+            disabled={!serviceorder.protocolNumber}
+            className="w-full h-[58px] text-left flex items-center justify-between gap-3 rounded-lg border px-3 py-2 bg-[#D9DCE2] hover:bg-gray-300 disabled:opacity-60 disabled:cursor-not-allowed"
+            aria-label="Copiar protocolo"
+          >
+            <span className="truncate">
+              Protocolo : {serviceorder.protocolNumber}
+            </span>
+            <Copy className="w-4 h-4 shrink-0 opacity-70" />
+          </button>
+
           <p>
-            <strong>O.S.:</strong> {serviceorder.protocolNumber}
+            <strong>Solicitado por:</strong> {occurrence.author?.name || "—"}
           </p>
           <p>
-            <strong>Zona:</strong> {occurrence.address?.zone || "—"}
-          </p>
-          <p>
-            <strong>Setor:</strong> {occurrence.sector?.name || "—"}
-          </p>
-          <p>
-            <strong>Enviado por:</strong> {occurrence.author?.name || "—"}
-          </p>
-          <p>
-            <strong>Revisado por:</strong> {occurrence.approvedBy?.name || "—"}
-          </p>
-          <p>
-            <strong>Bairro:</strong>{" "}
-            {occurrence.address?.neighborhoodName || "—"}
+            <strong>Tipo:</strong>{" "}
+            {typeLabels[occurrence?.type] || occurrence?.type || "—"}
           </p>
           <p>
             <strong>Endereço:</strong> {occurrence.address?.street},{" "}
             {occurrence.address?.number}
           </p>
           <p>
-            <strong>CEP:</strong> {occurrence.address?.zipCode}
+            <strong>Bairro:</strong>{" "}
+            {occurrence.address?.neighborhoodName || "—"}
           </p>
           <p>
-            <strong>Longitude:</strong> {occurrence.address?.longitude}
+            <strong>Zona:</strong> {occurrence.address?.zone || "—"}
           </p>
           <p>
-            <strong>Latitude:</strong> {occurrence.address?.latitude}
+            <strong>CEP:</strong> {occurrence.address?.zipCode || "—"}
           </p>
           <p>
-            <strong>Ocorrência:</strong>{" "}
-            {typeLabels[occurrence?.type] ||
-              occurrence?.type ||
-              "—"}
+            <strong>Longitude:</strong> {occurrence.address?.longitude || "—"}
+          </p>
+          <p>
+            <strong>Latitude:</strong> {occurrence.address?.latitude || "—"}
           </p>
         </div>
 

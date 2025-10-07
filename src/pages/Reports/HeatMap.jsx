@@ -5,7 +5,7 @@ import L from "leaflet";
 import "leaflet.heat";
 import { Maximize2, X } from "lucide-react";
 
-function HeatLayer({ points = [], options = {} }) {
+function heatMap({ points = [], options = {} }) {
   const map = useMap();
 
   useEffect(() => {

@@ -118,8 +118,8 @@ export function ServicePlanning() {
 
       <div className="px-6 py-4 sm:py-6">
         <Filters
-          title="Planejamento & execução "
-          subtitle="de ordem de serviço"
+          title="Planejamento"
+          subtitle="diário"
           onSearch={(value) => setStreet(value)}
           onFilterType={(value) => setOccurrenceType(value)}
           onFilterRecent={(value) => setStatus(value)}

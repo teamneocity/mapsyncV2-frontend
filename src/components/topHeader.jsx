@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"; // ⬅️ precisa do useEffect
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/auth";
-import emurb from "@/assets/emurb.svg";
+import NewEmurb from "@/assets/NewEmurb.svg";
 import Leave from "@/assets/icons/leave.svg?react";
 import Bell from "@/assets/icons/bell.svg?react";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
@@ -34,12 +34,12 @@ export function TopHeader() {
   return (
     <header className="flex justify-between items-center py-3 px-4 sm:px-8 bg-[#EBEBEB] sticky top-0 z-10">
       {/* Logo */}
-      <div className="px-2 py-2">
+      <div className="px-2 py-4">
         <Link to="/">
           <img
-            src={emurb}
+            src={NewEmurb}
             alt="Logo EMURB"
-            className="h-[55px] w-auto rounded-md"
+            className="h-[45px] w-auto rounded-md"
           />
         </Link>
       </div>

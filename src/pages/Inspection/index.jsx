@@ -100,6 +100,8 @@ export function Inspection() {
     setCurrentPage(1);
   };
 
+  
+
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
@@ -114,7 +116,7 @@ export function Inspection() {
           </h1>
           <Filters
             title="Fiscalização de"
-            subtitle="Ordens de serviço"
+            subtitle="O.S."
             onSearch={(input) => {
               setSearchTerm(input);
               setCurrentPage(1);

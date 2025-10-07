@@ -278,8 +278,8 @@ export function OccurrencesT() {
           Ocorrências Terrestres
         </h1>
         <Filters
-          title="Ocorrências"
-          subtitle="Terrestres"
+          title="Aceitar e"
+          subtitle="gerar O.S."
           contextType="mapeamento"
           onSearch={(input) => {
             setSearchTerm(input);
