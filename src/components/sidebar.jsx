@@ -207,7 +207,7 @@ export function Sidebar() {
             </div>
           </div>
 
-          {isAdmin && (
+          {/* {isAdmin && (
             <div className="w-full border-b pb-3 mt-3">
               <p className="text-base font-normal mb-2 text-[#4B4B62]">Admin</p>
               <div className="flex flex-col gap-1 text-[#787891]">
@@ -216,10 +216,10 @@ export function Sidebar() {
                 </NavLink>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Ajustes */}
-          {/*
+          
           <div className="w-full border-b pb-3">
             <p className="text-base font-normal mb-2 text-[#4B4B62]">Ajustes</p>
             <div className="flex flex-col gap-1 text-[#787891]">
@@ -227,14 +227,14 @@ export function Sidebar() {
                 <SettingsWindow className="w-5 h-5 shrink-0" /> Configurações
               </NavLink>
 
-              {(isAdmin || isChief) && (
+              {/* {(isAdmin || isChief) && (
                 <NavLink to="/userManagement" className={linkClass}>
                   <IconUsers className="w-5 h-5 shrink-0" /> Usuários
                 </NavLink>
-              )}
+              )} */}
             </div>
           </div>
-          */}
+         
 
           {/* Feedback */}
           {/*
@@ -428,7 +428,7 @@ export function Sidebar() {
                   )}
                 </div>
 
-                {isAdmin && (
+                {/* {isAdmin && (
                   <div className="mt-3 pt-3 ">
                     <p className="text-base font-normal mb-2 text-[#4B4B62]">
                       Admin
@@ -437,7 +437,7 @@ export function Sidebar() {
                       <DesktopIcon className="w-5 h-5 shrink-0" /> Administrador
                     </NavLink>
                   </div>
-                )}
+                )} */}
               </nav>
 
               <div className="mt-auto w-full">

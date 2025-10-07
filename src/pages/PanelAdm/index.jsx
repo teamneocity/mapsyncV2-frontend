@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
@@ -19,6 +20,7 @@ import { api } from "@/services/api";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import { ArrowLeft } from "lucide-react";
 
 const ROLE_LABEL = {
   ADMIN: "Admin",
@@ -74,7 +76,7 @@ function buildPageList(totalPages, current) {
 
 export function PanelAdm() {
   const { toast } = useToast();
-
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
 
   const [perPage] = useState(10);
@@ -161,6 +163,21 @@ export function PanelAdm() {
 
       <main className="w-full px-6 sm:pl-[250px] max-w-full space-y-4 pt-6 pb-10">
         <TopHeader />
+        {/* Voltar para Configurações */}
+        <div className="max-w-[1500px] w-full mx-auto">
+          <button
+            onClick={() => navigate("/settings")}
+            className="group mb-2 inline-flex items-center gap-2 text-[#00679D] hover:text-[#004a70]"
+            aria-label="Voltar para Configurações"
+          >
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white shadow-sm border border-zinc-200 group-hover:bg-zinc-50">
+              <ArrowLeft className="w-4 h-4" />
+            </span>
+            <span className="text-sm font-medium">
+              Voltar para Configurações
+            </span>
+          </button>
+        </div>
 
         {/* Introdução */}
         <section className="max-w-[1500px] w-full mx-auto bg-white rounded-xl p-2 flex flex-col xl:flex-row justify-between items-center gap-6">

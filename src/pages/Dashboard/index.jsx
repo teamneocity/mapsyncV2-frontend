@@ -3,7 +3,6 @@
 // React e bibliotecas externas
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookText } from "lucide-react";
 import { ArrowUp, ArrowDown } from "lucide-react";
 
 // Componentes globais
@@ -16,14 +15,11 @@ import { NeighborhoodNightingale } from "@/pages/Dashboard/NeighborhoodNightinga
 
 // Serviços e utilitários
 import { api } from "@/services/api";
-import { getInicials } from "@/lib/utils";
 import { useAuth } from "@/hooks/auth";
 
 // Assets
-import Bars from "@/assets/icons/Bars.svg?react";
+
 import Airplane from "@/assets/icons/Airplane.svg?react";
-import Dash from "@/assets/icons/Dash.svg?react";
-import Dashg from "@/assets/icons/Dashg.svg?react";
 
 export function Dashboard() {
   const [users, setUsers] = useState([]);
@@ -82,77 +78,6 @@ export function Dashboard() {
     fetchChiefs();
   }, []);
 
-  const BlogBox = () => (
-    <div className="flex flex-col justify-between gap-4 rounded-xl px-10 py-10 w-full h-full bg-white overflow-visible">
-      <div className="flex items-center w-full gap-2">
-        <div className="flex -space-x-3 flex-1 min-w-0">
-          {users.slice(0, 3).map((user, index) => (
-            <div
-              key={user.id}
-              className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm"
-              style={{
-                zIndex: 4 - index,
-                backgroundColor: [
-                  "#B5E0A2",
-                  "#D1C4E9",
-                  "#F8BBD0",
-                  "#A5D6A7",
-                  "#CE93D8",
-                ][index % 5],
-              }}
-            >
-              {getInicials(user.name)}
-            </div>
-          ))}
-        </div>
-
-        <button
-          onClick={() => navigate("/userManagement")}
-          className="ml-auto flex items-center justify-center w-[212px] h-16 shrink-0 box-border border bg-black text-white rounded-xl hover:bg-[#545454] transition"
-        >
-          <div className="flex items-center gap-1.5 scale-90">
-            <Dash className="w-5 h-5" />
-            <span className="text-[13px] leading-none">Criar usuário</span>
-          </div>
-        </button>
-      </div>
-    </div>
-  );
-
-  const SectorBox = () => (
-    <div className="flex items-start gap-4 rounded-xl px-4 sm:px-10 py-10 w-full h-full bg-white overflow-visible">
-      <div className="w-full ">
-        <div className="flex flex-wrap items-center w-full gap-2">
-          {/* avatares: mesma regra */}
-          <div className="flex -space-x-3 flex-1 min-w-0">
-            {chiefs.slice(0, 3).map((chief, index) => (
-              <div
-                key={chief.id}
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold"
-                style={{
-                  zIndex: 4 - index,
-                  backgroundColor: ["#E1E371", "#E37171", "#71E388"][index % 5],
-                }}
-              />
-            ))}
-          </div>
-
-          {/* botão: fixo e com ml-auto; em telas muito estreitas, pode ocupar 100% */}
-          <button
-            onClick={() => navigate("/sectorAdmin")}
-            className="ml-auto flex items-center justify-center w-[212px] h-16 shrink-0 box-border border border-[#787891] rounded-xl hover:bg-zinc-100 transition
-               max-[360px]:w-full"
-          >
-            <div className="flex items-center gap-1.5 scale-90">
-              <Dashg className="w-5 h-5" />
-              <span className="text-[13px] leading-none">Criar Setores</span>
-            </div>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
@@ -177,14 +102,6 @@ export function Dashboard() {
           </div>
 
           {/* Coluna direita - Blog + Setores */}
-          <div className="flex-[1] flex flex-col gap-4">
-            <div className="flex-1">
-              <BlogBox />
-            </div>
-            <div className="flex-1">
-              <SectorBox />
-            </div>
-          </div>
         </div>
 
         {/* Gráficos */}

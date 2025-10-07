@@ -155,7 +155,7 @@ export function AppRoutes() {
       />
 
       {/* Rota: /settings (somente admin, gestor e chefe de setor) */}
-      {/* <Route
+      <Route
         path="/settings"
         element={
           isAdmin || isChief || user.role === "gestor" ? (
@@ -164,7 +164,7 @@ export function AppRoutes() {
             <Navigate to="/" />
           )
         }
-      /> */}
+      />
 
       {/* Admin/Gestor apenas */}
       {["admin", "gestor"].includes(user.role) ? (

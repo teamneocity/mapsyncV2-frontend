@@ -1,54 +1,65 @@
 "use client";
 
-// React e bibliotecas externas
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
-// Componentes globais
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
 
-// Assets
 import Mapa from "@/assets/Mapa.svg";
 import SystemMode from "@/assets/Mode/SystemMode.svg?react";
 import LightMode from "@/assets/Mode/LightMode.svg?react";
 import DarkMode from "@/assets/Mode/DarkMode.svg?react";
 
-
 export function Settings() {
-  const [activeTab, setActiveTab] = useState("Dashboards");
+  const [activeTab, setActiveTab] = useState("Painéis de B.I.");
   const [selectedTheme, setSelectedTheme] = useState(null);
+  const navigate = useNavigate();
 
-  const tabs = [
-    "Dashboards",
-    "Notificações",
-    "Termos de uso",
-    "Privacidade",
-    "Segurança",
-    "LGPD",
-  ];
+  const tabs = useMemo(
+    () => [
+      "Painéis de B.I.",
+      "Notificações",
+      "Criar usuários",
+      "Gestão de Usuários",
+      "Criar setores",
+      "LGPD",
+    ],
+    []
+  );
 
-  const themes = [
-    {
-      label: "System (Default)",
-      icon: SystemMode,
-      desc: "Opte pelo tema do sistema padrão para um ambiente limpo",
-    },
-    {
-      label: "Light Mode",
-      icon: LightMode,
-      desc: "Ideal para ambientes bem iluminados e trabalho diurno",
-    },
-    {
-      label: "Dark Mode",
-      icon: DarkMode,
-      desc: "Opte pelo tema do sistema escuro para melhor desempenho noturno",
-    },
-  ];
+  // mapeamento de abas que devem navegar direto
+  const directRoutes = {
+    "Criar usuários": "/userManagement",
+    "Gestão de Usuários": "/panelAdm",
+    "Criar setores": "/sectorAdmin",
+  };
+
+  const themes = useMemo(
+    () => [
+      {
+        label: "System (Default)",
+        icon: SystemMode,
+        desc: "Opte pelo tema do sistema padrão para um ambiente limpo",
+      },
+      {
+        label: "Light Mode",
+        icon: LightMode,
+        desc: "Ideal para ambientes bem iluminados e trabalho diurno",
+      },
+      {
+        label: "Dark Mode",
+        icon: DarkMode,
+        desc: "Opte pelo tema do sistema escuro para melhor desempenho noturno",
+      },
+    ],
+    []
+  );
 
   return (
     <div className="bg-[#EBEBEB] min-h-screen font-inter">
       <Sidebar />
-      <main className="w-full px-6 sm:pl-[250px] max-w-full space-y-4 pt-6">
+      <main className="w-full px-6 sm:pl-[250px] max-w-full space-y-2 pt-2">
         <TopHeader />
 
         {/* Introdução */}
@@ -56,10 +67,10 @@ export function Settings() {
           <div className="flex-1">
             <p className="text-sm text-zinc-800">
               <span className="font-semibold">Configurações gerais.</span> Aqui
-              nessa sessão você pode configurar seu perfil de visualização da
-              dashboard, adaptar suas visualizações combinadas com suas rotinas,
-              definir as notificações. Também conhecer nossos termos e os nível
-              de segurança aliadas as nossas regras do LGDP
+              você configura seu perfil de visualização da dashboard, define
+              notificações e acessa páginas administrativas. Também pode
+              conhecer nossos termos e níveis de segurança alinhados à{" "}
+              <span className="font-semibold">LGPD</span>.
             </p>
           </div>
           <div className="flex-1 max-w-md w-full">
@@ -71,9 +82,9 @@ export function Settings() {
           </div>
         </section>
 
-        {/* Seletor de temas e abas */}
+        {/* Lateral + Conteúdo */}
         <section className="max-w-[1500px] w-full mx-auto flex flex-col xl:flex-row gap-6">
-          {/* Coluna da seleção lateral */}
+          {/* Coluna lateral */}
           <aside className="w-full xl:w-[250px] bg-white rounded-xl p-2 shadow-sm">
             <ul>
               {tabs.map((tab, index) => (
@@ -84,7 +95,15 @@ export function Settings() {
                   }`}
                 >
                   <button
-                    onClick={() => setActiveTab(tab)}
+                    onClick={() => {
+                      // se a aba tem rota direta, navega e não troca activeTab
+                      if (directRoutes[tab]) {
+                        navigate(directRoutes[tab]);
+                        return;
+                      }
+                      // caso contrário, trata como aba normal
+                      setActiveTab(tab);
+                    }}
                     className={`w-full h-[55px] flex items-center justify-center text-sm font-medium transition rounded-md ${
                       activeTab === tab
                         ? "bg-[#F5F5F5] text-zinc-800"
@@ -98,9 +117,9 @@ export function Settings() {
             </ul>
           </aside>
 
-          {/* Coluna do conteúdo ativo */}
+          {/* Conteúdo da aba (só para as que ficam aqui) */}
           <div className="flex-1 bg-white rounded-xl p-4 shadow-sm">
-            {activeTab === "Dashboards" ? (
+            {activeTab === "Painéis de B.I." && (
               <>
                 <h2 className="text-lg font-semibold text-[#787891]">
                   Selecione o tema e o modelo do seu B.I.
@@ -113,7 +132,6 @@ export function Settings() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                   {themes.map(({ label, icon: Icon, desc }, index) => {
                     const isSelected = selectedTheme === index;
-
                     return (
                       <div
                         key={index}
@@ -136,15 +154,28 @@ export function Settings() {
                   })}
                 </div>
               </>
-            ) : (
+            )}
+
+            {activeTab === "Notificações" && (
               <>
-                <h2 className="text-lg font-semibold text-[#787891] mb-4">
-                  {activeTab}
+                <h2 className="text-lg font-semibold text-[#787891] mb-2">
+                  Notificações
                 </h2>
-                <div className="text-zinc-500 text-sm">
-                  Conteúdo da aba <strong>{activeTab}</strong> virá aqui em
-                  breve.
-                </div>
+                <p className="text-sm text-zinc-500">
+                  Em breve você poderá configurar preferências de alerta por
+                  e-mail / in-app aqui.
+                </p>
+              </>
+            )}
+
+            {activeTab === "LGPD" && (
+              <>
+                <h2 className="text-lg font-semibold text-[#787891] mb-2">
+                  LGPD
+                </h2>
+                <p className="text-sm text-zinc-500">
+                  Políticas e termos de privacidade. (Conteúdo em preparação.)
+                </p>
               </>
             )}
           </div>

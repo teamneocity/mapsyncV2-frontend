@@ -21,6 +21,7 @@ import { getInicials } from "@/lib/utils";
 import ImgUsers from "@/assets/icons/imgUsers.svg";
 import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
 import Trash from "@/assets/icons/trash.svg?react";
+import { ArrowLeft } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
 
@@ -268,6 +269,21 @@ export function UserManagement() {
 
       <main className="w-full px-6 sm:pl-[250px] max-w-full space-y-4 pt-6">
         <TopHeader />
+        {/* Voltar para Configurações */}
+        <div className="max-w-[1500px] w-full mx-auto">
+          <button
+            onClick={() => navigate("/settings")}
+            className="group mb-2 inline-flex items-center gap-2 text-[#00679D] hover:text-[#004a70]"
+            aria-label="Voltar para Configurações"
+          >
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white shadow-sm border border-zinc-200 group-hover:bg-zinc-50">
+              <ArrowLeft className="w-4 h-4" />
+            </span>
+            <span className="text-sm font-medium">
+              Voltar para Configurações
+            </span>
+          </button>
+        </div>
 
         {/* SEÇÃO 1 - Apresentação */}
         <section className="max-w-[1500px] w-full mx-auto bg-white rounded-xl p-2 flex flex-col xl:flex-row justify-between items-center gap-6">
