@@ -62,10 +62,10 @@ export function AppRoutes() {
         }
       />
       {/* Rota: /sectorAdmin */}
-      <Route
+      {/* <Route
         path="/sectorAdmin"
         element={canSeeAll || isChief ? <SectorAdmin /> : <Navigate to="/" />}
-      />
+      /> */}
       {/* Rota: /analysis */}
       <Route
         path="/analysis"
@@ -126,14 +126,14 @@ export function AppRoutes() {
         element={canSeeAll || isChief ? <Reports /> : <Navigate to="/" />}
       /> */}
       {/* Rota: /userManagement */}
-      <Route
+      {/* <Route
         path="/userManagement"
         element={isAdmin || isChief ? <UserManagement /> : <Navigate to="/" />}
-      />
-      <Route
+      /> */}
+      {/* <Route
         path="/panelAdm"
         element={isAdmin ? <PanelAdm /> : <Navigate to="/" />}
-      />
+      /> */}
       <Route path="/pilots/dashboard" element={<PilotsDashboard />} />
       {/* Rota: /feedback */}
       {/* <Route
@@ -158,7 +158,7 @@ export function AppRoutes() {
       <Route
         path="/settings"
         element={
-          isAdmin || isChief || user.role === "gestor" ? (
+          canSeeAll || user.role === "gestor" ? (
             <Settings />
           ) : (
             <Navigate to="/" />
