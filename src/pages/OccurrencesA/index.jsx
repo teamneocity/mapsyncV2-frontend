@@ -1,20 +1,13 @@
 "use client";
 
-// React e bibliotecas externas
 import { useEffect, useState } from "react";
-
-// Componentes globais
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
 import { Filters } from "@/components/filters";
-import { OccurrenceList } from "@/components/OccurrenceList";
 import { Pagination } from "@/components/pagination";
-
-// Componentes locais
-import { ExpandedRowA } from "./ExpandedRowA";
-
-// Serviços e utilitários
+import { AerialOccurrenceCard } from "./AerialOccurrenceCard";
 import { api } from "@/services/api";
+import { useToast } from "@/hooks/use-toast";
 
 export function OccurrencesA() {
   const [occurrences, setOccurrences] = useState([]);
@@ -29,12 +22,22 @@ export function OccurrencesA() {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
+  const [expandedId, setExpandedId] = useState(null);
 
-  const handleToggleDateOrder = (orderValue) => {
-    setOrder(orderValue);
-    setCurrentPage(1);
-    fetchInspections(); 
-  };
+  const [modalOpen, setModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [neighborhoods, setNeighborhoods] = useState([]);
+  const [formData, setFormData] = useState({
+    type: "mapeamento_metragem",
+    street: "",
+    zipCode: "",
+    latitude: "",
+    longitude: "",
+    neighborhoodId: "",
+    observation: "",
+  });
+
+  const { toast } = useToast();
 
   const fetchInspections = async () => {
     try {
@@ -45,16 +48,13 @@ export function OccurrencesA() {
         ...(order && { order }),
         ...(type && { type }),
         ...(status && { status }),
-        ...(startDate && {
-          startDate: startDate.toISOString().split("T")[0],
-        }),
+        ...(startDate && { startDate: startDate.toISOString().split("T")[0] }),
         ...(endDate && { endDate: endDate.toISOString().split("T")[0] }),
       });
 
       const response = await api.get(
         `/aerial-inspections?${queryParams.toString()}`
       );
-
       const { inspections, totalCount } = response.data;
       setOccurrences(inspections);
       setTotalPages(Math.ceil(totalCount / 10));
@@ -63,9 +63,57 @@ export function OccurrencesA() {
     }
   };
 
+  const fetchNeighborhoods = async () => {
+    try {
+      const res = await api.get("/neighborhoods");
+      const list = Array.isArray(res.data)
+        ? res.data
+        : res.data?.neighborhoods || res.data?.data || [];
+      setNeighborhoods(list);
+    } catch (error) {
+      console.error("Erro ao buscar bairros:", error);
+    }
+  };
+
   useEffect(() => {
-    fetchInspections(currentPage);
+    fetchInspections();
   }, [currentPage]);
+
+  useEffect(() => {
+    if (modalOpen) fetchNeighborhoods();
+  }, [modalOpen]);
+
+  const handleCreateInspection = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await api.post("/aerial-inspections", formData);
+      toast({
+        title: "Inspeção criada com sucesso!",
+        description: "Sua solicitação foi enviada.",
+      });
+      setModalOpen(false);
+      setFormData({
+        type: "mapeamento_metragem",
+        street: "",
+        zipCode: "",
+        latitude: "",
+        longitude: "",
+        neighborhoodId: "",
+        observation: "",
+      });
+      fetchInspections();
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Erro ao criar inspeção",
+        description: "Verifique os dados e tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
@@ -89,21 +137,49 @@ export function OccurrencesA() {
             setStartDate(range?.startDate || null);
             setEndDate(range?.endDate || null);
           }}
-          onFilterStatus={(value) => setStatus(value)} 
+          onFilterStatus={(value) => setStatus(value)}
           handleApplyFilters={() => {
             setCurrentPage(1);
             fetchInspections();
           }}
         />
+
+        {/* BOTÃO SOLICITAR INSPEÇÃO */}
+        <div className="flex justify-start mt-2 mb-1">
+          <button
+            onClick={() => setModalOpen(true)}
+            className="bg-black hover:bg-gray-600 text-white font-medium px-6 py-3 rounded-xl transition"
+          >
+            Solicitar uma inspeção aérea
+          </button>
+        </div>
       </div>
 
-      <OccurrenceList
-        occurrences={occurrences}
-        dateOrder={order || "recent"}
-        onToggleDateOrder={handleToggleDateOrder} 
-        renderExpandedRow={(occ) => <ExpandedRowA occurrence={occ} />}
-      />
+      {/* LISTA DE CARDS */}
+      <div className="px-6 pb-4 sm:pb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+          {occurrences?.length === 0 && (
+            <div className="col-span-full">
+              <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-8 text-center text-zinc-500">
+                Nenhuma ocorrência encontrada.
+              </div>
+            </div>
+          )}
 
+          {occurrences?.map((occ) => (
+            <AerialOccurrenceCard
+              key={occ.id}
+              occurrence={occ}
+              expanded={expandedId === occ.id}
+              onToggle={() =>
+                setExpandedId((prev) => (prev === occ.id ? null : occ.id))
+              }
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* PAGINAÇÃO */}
       <footer className="bg-[#EBEBEB] p-4 mt-auto">
         <div className="max-w-full mx-auto">
           <Pagination
@@ -113,6 +189,167 @@ export function OccurrencesA() {
           />
         </div>
       </footer>
+
+      {/* MODAL DE CRIAÇÃO */}
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-lg w-full max-w-lg p-6 relative">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Solicitar Inspeção Aérea
+            </h2>
+
+            <form onSubmit={handleCreateInspection} className="space-y-3">
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Tipo de inspeção
+                </label>
+                <select
+                  value={formData.type}
+                  onChange={(e) =>
+                    setFormData({ ...formData, type: e.target.value })
+                  }
+                  className="w-full mt-1 border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#1C7551]"
+                >
+                  <option value="mapeamento_metragem">
+                    Mapeamento / Metragem
+                  </option>
+                  <option value="outro_tipo">Outro tipo</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Rua / Avenida
+                </label>
+                <input
+                  type="text"
+                  value={formData.street}
+                  onChange={(e) =>
+                    setFormData({ ...formData, street: e.target.value })
+                  }
+                  className="w-full mt-1 border rounded-lg px-3 py-2 text-sm"
+                  placeholder="Ex: Avenida Ministro Geraldo Barreto Sobral"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    CEP
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.zipCode}
+                    onChange={(e) =>
+                      setFormData({ ...formData, zipCode: e.target.value })
+                    }
+                    className="w-full mt-1 border rounded-lg px-3 py-2 text-sm"
+                    placeholder="49026-010"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Bairro
+                  </label>
+                  <select
+                    value={formData.neighborhoodId}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        neighborhoodId: e.target.value,
+                      })
+                    }
+                    className="w-full mt-1 border rounded-lg px-3 py-2 text-sm"
+                    required
+                  >
+                    <option value="">Selecione</option>
+                    {neighborhoods.map((n) => (
+                      <option key={n.id} value={n.id}>
+                        {n.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Latitude
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={formData.latitude}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        latitude: parseFloat(e.target.value),
+                      })
+                    }
+                    className="w-full mt-1 border rounded-lg px-3 py-2 text-sm"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Longitude
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={formData.longitude}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        longitude: parseFloat(e.target.value),
+                      })
+                    }
+                    className="w-full mt-1 border rounded-lg px-3 py-2 text-sm"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Observação
+                </label>
+                <textarea
+                  rows="3"
+                  value={formData.observation}
+                  onChange={(e) =>
+                    setFormData({ ...formData, observation: e.target.value })
+                  }
+                  className="w-full mt-1 border rounded-lg px-3 py-2 text-sm"
+                  placeholder="Descreva brevemente a necessidade..."
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 bg-gray-200 hover:bg-gray-300"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-5 py-2 rounded-lg text-sm font-medium text-white bg-[#1C7551] hover:bg-[#176043] disabled:opacity-50"
+                >
+                  {loading ? "Enviando..." : "Solicitar"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
