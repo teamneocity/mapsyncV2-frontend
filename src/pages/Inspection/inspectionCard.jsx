@@ -185,7 +185,10 @@ export function InspectionCard({ serviceorder }) {
             </span>
             <Copy className="w-4 h-4 shrink-0 opacity-70" />
           </button>
-
+          <p>
+            <strong>Companhia:</strong> {occurrence.externalCompany || "EMURB"}
+          </p>
+          <p></p>
           <p>
             <strong>Solicitado por:</strong> {occurrence.author?.name || "—"}
           </p>

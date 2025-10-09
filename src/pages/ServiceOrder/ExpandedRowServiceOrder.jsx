@@ -35,11 +35,10 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     { label: "Finalizado", date: occurrence.finishedAt },
   ];
 
-    const scheduledStart =
+  const scheduledStart =
     occurrence?.scheduledStart || occurrence?.scheduledDate || null;
 
   const scheduledEnd = occurrence?.scheduledEnd || null;
-
 
   const [photoOpen, setPhotoOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
@@ -261,7 +260,10 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                   <Copy className="w-4 h-4 shrink-0 opacity-70" />
                 </button>
               </div>
-
+              <p>
+                <strong>Companhia:</strong>{" "}
+                {occurrence.occurrence?.externalCompany || "EMURB"}
+              </p>
               {/* Data e Ocorrência lado a lado */}
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <p>

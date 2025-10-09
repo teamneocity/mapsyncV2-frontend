@@ -54,16 +54,10 @@ export function Analysis() {
     useState(null);
   const [allSectors, setAllSectors] = useState([]);
 
-  // 🔔 Notificação de "novas análises"
-  // Aqui eu NÃO pauso o hook, porque o Sidebar já pausa quando está em /analysis.
-  // Assim, esta página pega o totalCount atual e já marca como visto.
   const { currentCount, lastSeenCount, markAsSeen } = useAnalysisNotification({
     userId: user?.id,
   });
 
-  // Assim que o hook obtiver o totalCount (currentCount),
-  // se for diferente do "visto" anterior, a gente sincroniza.
-  // Isso apaga o "vermelho" do ícone no Sidebar.
   useEffect(() => {
     if (typeof currentCount === "number" && currentCount >= 0) {
       if (lastSeenCount !== currentCount) {
@@ -144,7 +138,11 @@ export function Analysis() {
     }
   };
 
-  const handleForwardOccurrence = async (occurrenceId, isEmergencial) => {
+  const handleForwardOccurrence = async (
+    occurrenceId,
+    isEmergencial,
+    extras = {}
+  ) => {
     try {
       if (!editableSectorId) {
         toast({
@@ -155,11 +153,22 @@ export function Analysis() {
         return;
       }
 
-      await api.post("/occurrences/approve", {
+      
+      const body = {
         occurrenceId,
         sectorId: editableSectorId,
         isEmergencial,
-      });
+      };
+
+     
+      if (extras.externalCompany) {
+        body.externalCompany = extras.externalCompany;
+        if (extras.externalCompanyNote) {
+          body.externalCompanyNote = extras.externalCompanyNote;
+        }
+      }
+
+      await api.post("/occurrences/approve", body);
 
       toast({ title: "Ocorrência encaminhada com sucesso!" });
       fetchOccurrences(currentPage);
@@ -167,7 +176,7 @@ export function Analysis() {
       toast({
         variant: "destructive",
         title: "Erro ao encaminhar ocorrência",
-        description: error.message,
+        description: error?.response?.data?.message || error.message,
       });
     }
   };

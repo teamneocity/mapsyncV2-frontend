@@ -102,6 +102,10 @@ export function ExpandedRowT({
                 Informações sobre a ocorrência
               </h3>
               <p>
+                <span className="font-bold">Companhia</span>{" "}
+                {occurrence.externalCompany || "EMURB"}
+              </p>
+              <p>
                 <span className="font-bold">Data:</span>{" "}
                 {format(new Date(occurrence.createdAt), "dd/MM/yyyy HH:mm")}
               </p>
@@ -137,6 +141,7 @@ export function ExpandedRowT({
                 <span className="font-bold">Região:</span>{" "}
                 {occurrence.address?.state || "—"}
               </p>
+             
             </div>
           </div>
 

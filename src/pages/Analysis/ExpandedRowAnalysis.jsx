@@ -97,7 +97,6 @@ export function ExpandedRowAnalysis({
 
       setConfirmExternalOpen(false);
 
-      // 🔄 recarrega a página depois de 500ms (pra dar tempo de mostrar o toast)
       setTimeout(() => window.location.reload(), 500);
     } catch (error) {
       console.error(error);
@@ -525,7 +524,12 @@ export function ExpandedRowAnalysis({
         <Button
           className="w-full bg-[#FFF0E6] h-[64px] hover:bg-orange-200 text-[#FF7A21] flex items-center justify-center gap-2"
           onClick={() =>
-            handleForwardOccurrence(occurrence.id, isEmergencialSelection)
+            handleForwardOccurrence(occurrence.id, isEmergencialSelection, {
+              externalCompany: externalCompany || null,
+              externalCompanyNote: externalCompany
+                ? "Encaminhado via análise"
+                : null,
+            })
           }
         >
           Encaminhar
