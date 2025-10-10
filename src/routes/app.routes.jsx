@@ -20,6 +20,7 @@ import { Settings } from "@/pages/Settings"; // configurações
 import NeighborhoodOccurrences from "@/pages/LiveAction"; // LiveAction
 import { ServiceOrderPrint } from "@/pages/ServiceOrder/ServiceOrderPrint";
 import PilotsDashboard from "@/pages/Dashboard/PilotsDashboard";
+import { Warranty } from "@/pages/Warranty";
 
 import { useAuth } from "@/hooks/auth";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -135,6 +136,7 @@ export function AppRoutes() {
         element={isAdmin ? <PanelAdm /> : <Navigate to="/" />}
       /> */}
       <Route path="/pilots/dashboard" element={<PilotsDashboard />} />
+      
       {/* Rota: /feedback */}
       {/* <Route
         path="/feedback"
@@ -143,6 +145,8 @@ export function AppRoutes() {
       {/* Rotas livres (não aparecem na Sidebar) */}
 
       <Route path="/userprofile" element={<UserProfile />} />
+      <Route path="/warranty" element={<Warranty />} />
+
       <Route
         path="/dashboard"
         element={

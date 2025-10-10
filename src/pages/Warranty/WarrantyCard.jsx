@@ -1,10 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
-import { ExpandedRowA } from "./ExpandedRowA";
-import { Timeline } from "./Timeline";
+import { useMemo, useState, useEffect } from "react";
 import { Copy } from "lucide-react";
-import Video from "@/assets/icons/Video.svg?react";
-import Image from "@/assets/icons/Image.svg?react";
 import { useToast } from "@/hooks/use-toast";
+import { Timeline } from "./Timeline";
 
 const BASE_MEDIA_URL = (
   import.meta.env.VITE_MEDIA_CDN ||
@@ -25,7 +22,7 @@ const resolveMediaUrl = (u) => {
   return `${BASE_MEDIA_URL}/${sanitizeKey(u)}`;
 };
 
-// Badge simples para status
+// Badge simples para status (idêntico ao exemplo)
 function StatusBadge({
   status,
   isEmergencial,
@@ -75,72 +72,70 @@ function StatusBadge({
   );
 }
 
-export function AerialOccurrenceCard({ occurrence, expanded, onToggle }) {
+export function WarrantyCard({ occurrence, expanded, onToggle }) {
   const { toast } = useToast();
 
   const photos = useMemo(() => {
-    const source =
-      (Array.isArray(occurrence?.result?.photos) && occurrence.result.photos) ||
-      (Array.isArray(occurrence?.photos) && occurrence.photos) ||
-      [];
-    const urls = source
-      .map((p) => (typeof p === "string" ? p : p?.url))
+    const p = occurrence?.photos || {};
+    const stageOrder = ["ninetyDaysWarranty", "final", "progress", "initial"];
+
+    const rawList = stageOrder.flatMap((stage) =>
+      Array.isArray(p[stage]) ? p[stage] : []
+    );
+
+    const urls = rawList
+      .map((x) => (typeof x === "string" ? x : x?.url))
       .filter(Boolean)
       .map((u) => resolveMediaUrl(u));
 
-    return urls.length ? urls : ["https://placehold.co/1024x576?text=Sem+Foto"];
-  }, [occurrence?.result?.photos, occurrence?.photos]);
+    const unique = Array.from(new Set(urls));
+
+    return unique.length
+      ? unique
+      : ["https://placehold.co/1024x576?text=Sem+Foto"];
+  }, [occurrence?.photos]);
 
   const photosCount = photos.length;
   const [activeIdx, setActiveIdx] = useState(0);
-
   useEffect(() => {
     setActiveIdx((i) => (photosCount ? Math.min(i, photosCount - 1) : 0));
   }, [photosCount]);
 
   const street = occurrence?.address?.street ?? "—";
   const number = occurrence?.address?.number ?? "—";
-  const neighborhood = occurrence?.address?.neighborhood ?? "—";
-  const zone =
-    occurrence?.address?.zone ?? occurrence?.address?.zoneName ?? "—";
+  const neighborhood =
+    occurrence?.address?.neighborhoodName ??
+    occurrence?.address?.neighborhood ??
+    "—";
+  const zone = occurrence?.address?.region ?? "—";
   const zip = occurrence?.address?.zipCode ?? "—";
-  const lon = occurrence?.address?.longitude ?? "—";
-  const lat = occurrence?.address?.latitude ?? "—";
+  const lon =
+    typeof occurrence?.address?.longitude === "number"
+      ? occurrence.address.longitude
+      : "—";
+  const lat =
+    typeof occurrence?.address?.latitude === "number"
+      ? occurrence.address.latitude
+      : "—";
 
   const status = occurrence?.status ?? "—";
   const tipoOcorrencia = occurrence?.type ?? "—";
-  const solicitadoPor = occurrence?.requester?.name ?? "—";
-  const osCode = occurrence?.id || "—";
+  const solicitadoPor = occurrence?.author?.name ?? "—";
 
-  const imageUrls = photos;
+  const osCode = occurrence?.protocolNumber || occurrence?.id || "—";
 
-  const videoUrls = useMemo(() => {
-    const source =
-      (Array.isArray(occurrence?.result?.videos) && occurrence.result.videos) ||
-      (Array.isArray(occurrence?.videos) && occurrence.videos) ||
-      [];
-    return source
-      .map((v) => (typeof v === "string" ? v : v?.url))
-      .filter(Boolean)
-      .map((u) => resolveMediaUrl(u));
-  }, [occurrence?.result?.videos, occurrence?.videos]);
-
-  const handleDownloadImages = () =>
-    imageUrls.forEach((u) => window.open(u, "_blank", "noopener"));
-
-  const handleDownloadVideos = () =>
-    videoUrls.forEach((u) => window.open(u, "_blank", "noopener"));
-
-  const t = occurrence?.timeline || {};
   const timelineSteps = [
-    { label: "Solicitação", date: t?.requestedAt || occurrence?.requestedAt },
-    { label: "Aceito", date: t?.acceptedAt || occurrence?.acceptedAt },
-    { label: "Verificado", date: t?.verifiedAt || occurrence?.verifiedAt },
+    { label: "Solicitação", date: occurrence?.createdAt },
+    { label: "Aceito", date: occurrence?.acceptedAt },
+    { label: "Verificado", date: occurrence?.updatedAt },
+    { label: "Iniciada", date: occurrence?.startedAt },
+    { label: "Finalizada", date: occurrence?.finishedAt },
+    
   ];
 
   function handleCopyProtocol() {
-    const value = occurrence?.id;
-    if (!value) {
+    const value = osCode && String(osCode).trim();
+    if (!value || value === "—") {
       toast({
         title: "Nada para copiar",
         description: "Esta ocorrência não possui protocolo.",
@@ -167,81 +162,62 @@ export function AerialOccurrenceCard({ occurrence, expanded, onToggle }) {
           loading="lazy"
         />
 
+        {/* legenda/contador */}
         <div className="absolute left-3 bottom-3 rounded-full bg-black/60 text-white text-xs px-2 py-1">
           Imagem {activeIdx + 1}/{photos.length}
         </div>
 
+        {/* === NAV BOTTOM IGUAL AO InspectionCard === */}
         {photos.length > 1 && (
-          <>
+          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-4">
             <button
-              onClick={() =>
-                setActiveIdx((i) => (i - 1 + photos.length) % photos.length)
-              }
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black/60"
-              aria-label="Anterior"
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveIdx((prev) =>
+                  prev === 0 ? photos.length - 1 : prev - 1
+                );
+              }}
+              className="bg-black/50 text-white rounded-full px-3 py-1 text-xs"
             >
-              ‹
+              ◀ Anterior
             </button>
             <button
-              onClick={() => setActiveIdx((i) => (i + 1) % photos.length)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black/60"
-              aria-label="Próxima"
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveIdx((prev) =>
+                  prev === photos.length - 1 ? 0 : prev + 1
+                );
+              }}
+              className="bg-black/50 text-white rounded-full px-3 py-1 text-xs"
             >
-              ›
+              Próxima ▶
             </button>
-
-            <div className="absolute right-3 bottom-3 flex gap-1.5">
-              {photos.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveIdx(i)}
-                  className={`w-2.5 h-2.5 rounded-full ${
-                    i === activeIdx ? "bg-white" : "bg-white/60"
-                  }`}
-                  aria-label={`Ir para imagem ${i + 1}`}
-                />
-              ))}
-            </div>
-          </>
+          </div>
         )}
       </div>
 
-      {/*  ações + status */}
-      <div className="flex items-center px-1 sm:px-2 py-3 border-b border-zinc-200">
-        <button
-          onClick={handleDownloadVideos}
-          disabled={videoUrls.length === 0}
-          className={`inline-flex items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-50 ${
-            videoUrls.length === 0 ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-        >
-          <Video />
-          Downloads Vídeos {videoUrls.length ? `(${videoUrls.length})` : ""}
-        </button>
-
-        <button
-          onClick={handleDownloadImages}
-          disabled={photosCount === 0}
-          className={`inline-flex items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-50 ${
-            photosCount === 0 ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-        >
-          <Image />
-          Download imagens ({photosCount})
-        </button>
-
+      {/* status */}
+      <div className="flex items-center gap-3 px-4 py-3 border-t border-zinc-200">
         <div className="ml-auto">
           <StatusBadge status={status} />
         </div>
       </div>
 
-      {/* info  + timeline  */}
-      <div className="p-4 sm:p-5">
+      {/* info + timeline */}
+      <div className="p-4 sm:p-5 border-t border-zinc-200">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Informações  */}
+          {/* Informações */}
           <div>
             <ul className="space-y-1.5 text-sm">
-              
+              <button
+                type="button"
+                onClick={handleCopyProtocol}
+                className="w-full h-[58px] text-left text-black flex items-center justify-between gap-1 rounded-lg border px-3 py-2 bg-[#D9DCE2] hover:bg-gray-300 "
+                aria-label="Copiar protocolo"
+              >
+                <span className="truncate ">O.S.: {osCode}</span>
+                <Copy className="w-4 h-4 shrink-0 opacity-70" />
+              </button>
 
               <li className="text-zinc-500">
                 <span className="font-semibold text-zinc-700">
@@ -285,7 +261,7 @@ export function AerialOccurrenceCard({ occurrence, expanded, onToggle }) {
           </div>
 
           {/* Timeline */}
-          <div>
+          <div className="relative z-0">
             <Timeline timeline={timelineSteps} />
           </div>
         </div>

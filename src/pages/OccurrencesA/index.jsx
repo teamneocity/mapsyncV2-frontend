@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { format } from "date-fns";
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
 import { Filters } from "@/components/filters";
@@ -10,23 +11,26 @@ import { api } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 
 export function OccurrencesA() {
+  const { toast } = useToast();
+
   const [occurrences, setOccurrences] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  // Filtros
   const [street, setStreet] = useState("");
-  const [neighborhoodId, setNeighborhoodId] = useState("");
-  const [order, setOrder] = useState("");
-  const [type, setType] = useState("");
-  const [status, setStatus] = useState("");
+  const [neighborhoodId, setNeighborhoodId] = useState(null);
+  const [order, setOrder] = useState("recent");
+  const [type, setType] = useState(null);
+  const [status, setStatus] = useState(null);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
   const [expandedId, setExpandedId] = useState(null);
-
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [neighborhoods, setNeighborhoods] = useState([]);
+
   const [formData, setFormData] = useState({
     type: "mapeamento_metragem",
     street: "",
@@ -37,31 +41,68 @@ export function OccurrencesA() {
     observation: "",
   });
 
-  const { toast } = useToast();
+  const toYMD = (d) =>
+    d instanceof Date && !isNaN(d) ? format(d, "yyyy-MM-dd") : undefined;
 
-  const fetchInspections = async () => {
+  const fetchInspections = async (page = 1) => {
     try {
-      const queryParams = new URLSearchParams({
-        page: currentPage.toString(),
-        ...(street && { street }),
-        ...(neighborhoodId && { neighborhoodId }),
-        ...(order && { order }),
-        ...(type && { type }),
-        ...(status && { status }),
-        ...(startDate && { startDate: startDate.toISOString().split("T")[0] }),
-        ...(endDate && { endDate: endDate.toISOString().split("T")[0] }),
-      });
+      const params = {
+        page,
+        street: street || undefined,
+        neighborhoodId: neighborhoodId || undefined,
+        order: order || undefined, // 'recent' | 'oldest'
+        type:
+          type === "mapeamento_metragem" || type === "analise_pavimentacao"
+            ? type
+            : undefined,
+        status: ["pendente", "aceita", "rejeitada", "verificada"].includes(
+          status
+        )
+          ? status
+          : undefined,
 
-      const response = await api.get(
-        `/aerial-inspections?${queryParams.toString()}`
-      );
-      const { inspections, totalCount } = response.data;
-      setOccurrences(inspections);
-      setTotalPages(Math.ceil(totalCount / 10));
+        startDate: toYMD(startDate),
+        endDate: toYMD(endDate),
+      };
+
+      const { data } = await api.get("/aerial-inspections", { params });
+
+      const list = data?.inspections ?? data?.data ?? [];
+      const serverPage = data?.meta?.page ?? data?.page ?? page;
+      const perPage = data?.meta?.perPage ?? data?.perPage ?? 10;
+      const serverTotalPages =
+        data?.meta?.totalPages ??
+        data?.totalPages ??
+        Math.max(1, Math.ceil((data?.totalCount ?? 0) / perPage));
+
+      setOccurrences(Array.isArray(list) ? list : []);
+      setCurrentPage(serverPage);
+      setTotalPages(serverTotalPages);
     } catch (error) {
       console.error("Erro ao buscar inspeções:", error);
+      toast({
+        title: "Não foi possível carregar as inspeções",
+        description: error?.response?.data?.message || error.message,
+        variant: "destructive",
+      });
+      setOccurrences([]);
+      setCurrentPage(1);
+      setTotalPages(1);
     }
   };
+
+  useEffect(() => {
+    fetchInspections(currentPage);
+  }, [
+    currentPage,
+    street,
+    neighborhoodId,
+    order,
+    type,
+    status,
+    startDate,
+    endDate,
+  ]);
 
   const fetchNeighborhoods = async () => {
     try {
@@ -76,12 +117,12 @@ export function OccurrencesA() {
   };
 
   useEffect(() => {
-    fetchInspections();
-  }, [currentPage]);
-
-  useEffect(() => {
     if (modalOpen) fetchNeighborhoods();
   }, [modalOpen]);
+
+  const handleApplyFilters = () => {
+    setCurrentPage(1);
+  };
 
   const handleCreateInspection = async (e) => {
     e.preventDefault();
@@ -102,7 +143,8 @@ export function OccurrencesA() {
         neighborhoodId: "",
         observation: "",
       });
-      fetchInspections();
+
+      setCurrentPage(1);
     } catch (error) {
       console.error(error);
       toast({
@@ -129,22 +171,44 @@ export function OccurrencesA() {
           title="Mapeamento"
           subtitle="Aéreo"
           contextType="aerea"
-          onSearch={(value) => setStreet(value)}
-          onFilterType={(value) => setType(value)}
-          onFilterRecent={(value) => setOrder(value)}
-          onFilterNeighborhood={(value) => setNeighborhoodId(value)}
+          onSearch={(value) => {
+            setStreet(value);
+            setCurrentPage(1);
+          }}
+          onFilterType={(value) => {
+            setType(
+              value === "mapeamento_metragem" ||
+                value === "analise_pavimentacao"
+                ? value
+                : null
+            );
+            setCurrentPage(1);
+          }}
+          onFilterRecent={(value) => {
+            setOrder(value === "oldest" ? "oldest" : "recent");
+            setCurrentPage(1);
+          }}
+          onFilterNeighborhood={(value) => {
+            setNeighborhoodId(value || null);
+            setCurrentPage(1);
+          }}
           onFilterDateRange={(range) => {
             setStartDate(range?.startDate || null);
             setEndDate(range?.endDate || null);
-          }}
-          onFilterStatus={(value) => setStatus(value)}
-          handleApplyFilters={() => {
             setCurrentPage(1);
-            fetchInspections();
           }}
+          onFilterStatus={(value) => {
+            setStatus(
+              ["pendente", "aceita", "rejeitada", "verificada"].includes(value)
+                ? value
+                : null
+            );
+            setCurrentPage(1);
+          }}
+          handleApplyFilters={handleApplyFilters}
         />
 
-        {/* BOTÃO SOLICITAR INSPEÇÃO */}
+        {/* Solicitar inspeção */}
         <div className="flex justify-start mt-2 mb-1">
           <button
             onClick={() => setModalOpen(true)}
@@ -155,7 +219,7 @@ export function OccurrencesA() {
         </div>
       </div>
 
-      {/* LISTA DE CARDS */}
+      {/* Cards */}
       <div className="px-6 pb-4 sm:pb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           {occurrences?.length === 0 && (
@@ -179,18 +243,18 @@ export function OccurrencesA() {
         </div>
       </div>
 
-      {/* PAGINAÇÃO */}
+      {/* Paginação */}
       <footer className="bg-[#EBEBEB] p-4 mt-auto">
         <div className="max-w-full mx-auto">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={setCurrentPage}
+            onPageChange={fetchInspections}
           />
         </div>
       </footer>
 
-      {/* MODAL DE CRIAÇÃO */}
+      {/* Modal de criação */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-lg w-full max-w-lg p-6 relative">

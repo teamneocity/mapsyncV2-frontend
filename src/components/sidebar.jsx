@@ -17,6 +17,7 @@ import IconFeedback from "@/assets/icons/IconFeedback.svg?react";
 import { PanelLeftClose } from "lucide-react";
 import PurpleCheck from "@/assets/icons/PurpleCheck.svg?react";
 import DesktopIcon from "@/assets/icons/desktop.svg?react";
+import Ninety from "@/assets/icons/Ninety.svg?react";
 import { useAnalysisNotification } from "@/hooks/useAnalysisNotification";
 
 import {
@@ -187,6 +188,9 @@ export function Sidebar() {
                   <NavLink to="/servicePlanning" className={linkClass}>
                     <CalendarIcon className="w-5 h-5 shrink-0" /> Planejamento
                     diário
+                  </NavLink>
+                  <NavLink to="/Warranty" className={linkClass}>
+                    <Ninety className="w-5 h-5 shrink-0" /> Garantia 90 dias
                   </NavLink>
                   <NavLink to="/inspection" className={linkClass}>
                     <AssessmentIcon className="w-5 h-5 shrink-0" /> Fiscalização
@@ -401,6 +405,13 @@ export function Sidebar() {
                         <TaskChecklist className="w-5 h-5 shrink-0" /> O.S.
                       </NavLink>
 
+                      <NavLink
+                        to="/servicePlanning"
+                        className={linkClassMobile}
+                      >
+                        <CalendarIcon className="w-5 h-5 shrink-0" />{" "}
+                        Planejamento diário
+                      </NavLink>
                       <NavLink
                         to="/servicePlanning"
                         className={linkClassMobile}

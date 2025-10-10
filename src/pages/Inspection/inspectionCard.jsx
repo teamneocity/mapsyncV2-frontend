@@ -4,7 +4,6 @@ import { Clock, Copy } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
-// Importando os ícones do Figma
 import Start from "@/assets/timeline/Start.svg?react";
 import During from "@/assets/timeline/During.svg?react";
 import End from "@/assets/timeline/End.svg?react";
