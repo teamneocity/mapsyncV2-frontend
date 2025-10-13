@@ -19,7 +19,6 @@ function nameToInitials(full = "") {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-// alguns dados mockados de bairros por piloto
 const MOCK_NEIGHBORHOODS = {
   default: [
     { name: "Atalaia", value: 9 },
@@ -30,6 +29,55 @@ const MOCK_NEIGHBORHOODS = {
   ],
   byPilot: {},
 };
+
+const DECALS = [
+  {
+    symbol: "rect",
+    dashArrayX: [4, 2],
+    dashArrayY: [2, 2],
+    symbolSize: 1,
+    rotation: 0,
+    color: "rgba(0,0,0,0.12)",
+  },
+  {
+    symbol: "circle",
+    dashArrayX: [1, 0],
+    dashArrayY: [2, 2],
+    symbolSize: 0.9,
+    color: "rgba(0,0,0,0.14)",
+  },
+  {
+    symbol: "triangle",
+    dashArrayX: [1, 0],
+    dashArrayY: [2, 4],
+    symbolSize: 1,
+    rotation: Math.PI / 4,
+    color: "rgba(0,0,0,0.12)",
+  },
+  {
+    symbol: "diamond",
+    dashArrayX: [1, 0],
+    dashArrayY: [2, 3],
+    symbolSize: 1,
+    rotation: Math.PI / 6,
+    color: "rgba(0,0,0,0.12)",
+  },
+  {
+    symbol: "rect",
+    dashArrayX: [8, 4],
+    dashArrayY: [6, 0],
+    symbolSize: 1,
+    rotation: Math.PI / 3,
+    color: "rgba(0,0,0,0.10)",
+  },
+  {
+    symbol: "circle",
+    dashArrayX: [2, 2],
+    dashArrayY: [2, 2],
+    symbolSize: 0.8,
+    color: "rgba(0,0,0,0.12)",
+  },
+];
 
 function adaptPilotTotals(raw) {
   const arr = Array.isArray(raw?.metrics)
@@ -129,7 +177,7 @@ export default function PilotsDashboard() {
     setSelectedPilotTotal(p?.count ?? 0);
   }, [selectedPilotId, pilotTotals]);
 
-  // Bar
+  // Bar pilotos
   const barOptions = useMemo(() => {
     const sorted = [...pilotTotals].sort((a, b) => b.count - a.count);
     const yData = sorted.map((p) => nameToInitials(p.name));
@@ -181,26 +229,41 @@ export default function PilotsDashboard() {
     };
   }, [pilotTotals, selectedPilotId]);
 
-  // Nightingale
-  const nightingaleOptions = useMemo(() => {
+  // Pie pilotos
+  const pieOptions = useMemo(() => {
+    const seriesData = pilotTotals.map((p, idx) => ({
+      name: p.name,
+      value: p.count,
+      itemStyle: { decal: DECALS[idx % DECALS.length] },
+    }));
+
     return {
-      tooltip: { trigger: "item" },
-      legend: { show: false },
+      tooltip: {
+        trigger: "item",
+        formatter: (p) => {
+          const { name, value } = p;
+          return `
+            <div style="min-width:140px">
+              <div><strong>${name}</strong></div>
+              <div>Total: <strong>${value}</strong></div>
+            </div>
+          `;
+        },
+      },
       series: [
         {
-          name: "Ocorrências por bairro",
           type: "pie",
-          radius: ["20%", "70%"],
+          radius: ["20%", "90%"],
+          center: ["50%", "52%"],
           roseType: "radius",
-          data: neighborhoodDist.map((n) => ({ name: n.name, value: n.value })),
-
-          label: { show: true, formatter: "{b}: {c}" },
+          itemStyle: { borderRadius: 8 },
+          label: { show: false },
           labelLine: { show: false },
-          itemStyle: { borderWidth: 0 },
+          data: seriesData,
         },
       ],
     };
-  }, [neighborhoodDist]);
+  }, [pilotTotals]);
 
   const handleSelectPilot = (p) => {
     setSelectedPilotId(p.id);
@@ -234,7 +297,6 @@ export default function PilotsDashboard() {
 
         <div className="grid grid-cols-12 gap-4">
           {/* Coluna 1 */}
-
           <div className="col-span-12 xl:col-span-3">
             <div className="p-3 flex flex-col items-center justify-center h-auto xl:h-[calc(100vh-200px)]">
               <div className="flex-1 min-h-0 w-full flex flex-col items-center justify-center pr-1 overflow-visible xl:overflow-y-auto">
@@ -335,31 +397,37 @@ export default function PilotsDashboard() {
           </div>
 
           {/* Coluna 3 */}
-
           <div className="col-span-12 md:col-span-6 xl:col-span-4">
             <div
               className="rounded-2xl bg-white shadow p-3 flex flex-col"
               style={{ height: COL_H }}
             >
-              {/* Metade de cima: título + pizza */}
+              {/* título + pizza */}
               <div className="flex-1 min-h-0 flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
                   <Airplane className="w-5 h-5 text-gray-700" />
                   <h3 className="text-base font-semibold">
-                    Ocorrências dinâmica por Status
+                    Ocorrências por piloto
                   </h3>
                 </div>
 
-                <div className="flex-1 min-h-0 flex items-center justify-center">
-                  <p className="text-sm text-gray-500">
-                    Ainda não há dados de status disponíveis.
-                  </p>
+                <div className="flex-1 min-h-0">
+                  {!pilotTotals.length ? (
+                    <div className="w-full h-full flex items-center justify-center text-gray-500">
+                      Sem dados
+                    </div>
+                  ) : (
+                    <ReactECharts
+                      option={pieOptions}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  )}
                 </div>
               </div>
 
               <div className="my-3 " />
 
-              {/* Metade de baixo: título + total */}
+              {/* título + total */}
               <div className="flex-1 min-h-0 flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
                   <Airplane className="w-5 h-5 text-gray-700" />

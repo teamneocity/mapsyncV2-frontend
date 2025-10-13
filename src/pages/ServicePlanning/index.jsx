@@ -14,8 +14,7 @@ import { OccurrenceList } from "@/components/OccurrenceList";
 
 // Componentes locais
 import { DailyPlanningPDF } from "./DailyPlanningPDF";
-import { ExpandedRowPlanning } from "./ExpandedRowPlanning"; // export nomeado
-
+import { ExpandedRowPlanning } from "./ExpandedRowPlanning"; 
 // Serviços e utilitários
 import { api } from "@/services/api";
 

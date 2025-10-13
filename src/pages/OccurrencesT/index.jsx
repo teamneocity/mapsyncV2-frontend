@@ -44,6 +44,7 @@ export function OccurrencesT() {
     endDate: null,
   });
   const [filterStatus, setFilterStatus] = useState(null);
+  const [filterCompany, setFilterCompany] = useState(null);
 
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
   const [returnReason, setReturnReason] = useState("");
@@ -62,6 +63,7 @@ export function OccurrencesT() {
     filterDateRange.startDate,
     filterDateRange.endDate,
     filterStatus,
+    filterCompany,
   ]);
 
   const handleApplyFilters = () => {
@@ -82,6 +84,7 @@ export function OccurrencesT() {
           street: searchTerm, // rua
           type: filterType,
           orderBy: filterRecent,
+          externalCompanyName: filterCompany || undefined,
           startDate: filterDateRange.startDate
             ? new Date(
                 new Date(filterDateRange.startDate).setHours(0, 0, 0, 0)
@@ -281,6 +284,10 @@ export function OccurrencesT() {
           title="Aceitar e"
           subtitle="gerar O.S."
           contextType="mapeamento"
+          onFilterCompany={(company) => {
+            setFilterCompany(company);
+            setCurrentPage(1);
+          }}
           onSearch={(input) => {
             setSearchTerm(input);
             setCurrentPage(1);

@@ -21,10 +21,9 @@ export function OccurrenceList({
     serviceorders?.length > 0
       ? serviceorders.map((s) => ({
           ...s.occurrence,
-
           isEmergencial: s.occurrence?.isEmergencial,
-
           isDelayed: s?.isDelayed === true,
+          raw: s,
         }))
       : occurrences;
 
@@ -53,7 +52,6 @@ export function OccurrenceList({
       verificada: "bg-[#DDF2EE] text-[#40C4AA]",
       rejeitada: "bg-[#FFE8E8] text-[#9D0000]",
     };
-
     return map[status] || "bg-gray-100 text-gray-600";
   };
 
@@ -90,7 +88,6 @@ export function OccurrenceList({
       statusLabels[status] ??
       status;
 
-    // ⏰ Se estiver atrasada, sobrescreve completamente (label e cores)
     if (isDelayed) {
       return (
         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold break-words text-center bg-[#E9E4FC] text-[#4F26F0]">
@@ -99,7 +96,6 @@ export function OccurrenceList({
       );
     }
 
-    // 🔴 se for emergencial, força vermelho fixo
     const baseClass = isEmergencial
       ? "bg-[#FFE8E8] text-[#FF2222]"
       : getStatusClasses(status);
@@ -128,14 +124,13 @@ export function OccurrenceList({
               }
               className="group inline-flex items-center gap-4 select-none"
             >
-               <ChevronDown
+              <ChevronDown
                 className={`h-4 w-4 transition-transform ${
                   dateOrder === "recent" ? "" : "rotate-180"
                 }`}
               />
               Data
-              <DoubleArrow/>
-             
+              <DoubleArrow />
             </button>
           </div>
 
@@ -168,7 +163,6 @@ export function OccurrenceList({
 
       {/* Lista de ocorrências */}
       <div className="space-y-1">
-        {/* ⬅️ estado vazio */}
         {!dataToRender || dataToRender.length === 0 ? (
           <div className="w-full">
             <div className="border border-dashed border-gray-300 rounded-xl bg-white">
@@ -183,189 +177,222 @@ export function OccurrenceList({
             </div>
           </div>
         ) : (
-          dataToRender.map((occ) => (
-            <div
-              key={occ.id}
-              className={`${
-                expandedRow === occ.id ? "bg-[#F7F7F7]" : "bg-white"
-              } border border-gray-200 rounded-xl overflow-hidden`}
-            >
-              {/* Linha principal */}
-              <div
-                className="hover:bg-gray-50 transition cursor-pointer"
-                onClick={() => toggleRow(occ.id)}
-              >
-                {/* Layout Mobile */}
-                <div className="xl:hidden p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex items-center justify-center mt-1">
-                      {expandedRow === occ.id ? (
-                        <ChevronDown className="h-4 w-4 text-gray-500" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4 text-gray-500" />
-                      )}
-                    </div>
+          dataToRender.map((occ) => {
+            const companyName =
+              (typeof occ?.externalCompany === "string" &&
+                occ.externalCompany.trim()) ||
+              (typeof occ?.occurrence?.externalCompany === "string" &&
+                occ.occurrence.externalCompany.trim()) ||
+              (typeof occ?.raw?.occurrence?.externalCompany === "string" &&
+                occ.raw.occurrence.externalCompany.trim()) ||
+              occ?.externalCompany ||
+              occ?.occurrence?.externalCompany ||
+              occ?.raw?.occurrence?.externalCompany ||
+              "EMURB";
 
-                    <div className="flex-1 space-y-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {occ.protocol || occ.protocolNumber || "—"}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {occ.createdAt
-                              ? format(new Date(occ.createdAt), "dd/MM/yy")
-                              : "—"}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <StatusBadge
-                            status={occ.status}
-                            isEmergencial={occ.isEmergencial}
-                            isDelayed={occ.isDelayed}
-                            labelOverrides={statusLabelOverrides}
-                          />
-                        </div>
+            return (
+              <div
+                key={occ.id}
+                className={`${
+                  expandedRow === occ.id ? "bg-[#F7F7F7]" : "bg-white"
+                } border border-gray-200 rounded-xl overflow-hidden`}
+              >
+                {/* Linha principal */}
+                <div
+                  className="hover:bg-gray-50 transition cursor-pointer"
+                  onClick={() => toggleRow(occ.id)}
+                >
+                  {/* Layout Mobile */}
+                  <div className="xl:hidden p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center mt-1">
+                        {expandedRow === occ.id ? (
+                          <ChevronDown className="h-4 w-4 text-gray-500" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-gray-500" />
+                        )}
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3 text-sm text-gray-600">
-                        <div>
-                          <span className="text-xs font-medium text-gray-400 block">
-                            Origem
-                          </span>
-                          {occ.origin || "Plataforma"}
+                      <div className="flex-1 space-y-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {occ.protocol || occ.protocolNumber || "—"}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {occ.createdAt
+                                ? format(new Date(occ.createdAt), "dd/MM/yy")
+                                : "—"}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <StatusBadge
+                              status={occ.status}
+                              isEmergencial={occ.isEmergencial}
+                              isDelayed={occ.isDelayed}
+                              labelOverrides={statusLabelOverrides}
+                            />
+                          </div>
                         </div>
+
+                        <div className="grid grid-cols-2 gap-3 text-sm text-gray-600">
+                          <div>
+                            <span className="text-xs font-medium text-gray-400 block">
+                              Origem
+                            </span>
+                            {occ.origin || "Plataforma"}
+                          </div>
+                          <div>
+                            <span className="text-xs font-medium text-gray-400 block">
+                              Tipo
+                            </span>
+                            {typeLabels[occ.type] || occ.type || "—"}
+                          </div>
+                          <div>
+                            <span className="text-xs font-medium text-gray-400 block">
+                              Bairro
+                            </span>
+                            {occ?.address?.neighborhoodName ||
+                              occ?.address?.neighborhood ||
+                              "—"}
+                          </div>
+                          <div>
+                            <span className="text-xs font-medium text-gray-400 block">
+                              Enviado por
+                            </span>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
+                                {getInicials(occ?.pilot?.name || "NA")}
+                              </span>
+                              <span
+                                className="text-xs"
+                                title={occ?.author?.name}
+                              >
+                                {occ?.author?.name ||
+                                  occ?.requester?.name ||
+                                  "—"}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Companhia (MOBILE) */}
+                          <div>
+                            <span className="text-xs font-medium text-gray-400 block">
+                              Companhia
+                            </span>
+                            {companyName}
+                          </div>
+                        </div>
+
                         <div>
                           <span className="text-xs font-medium text-gray-400 block">
-                            Tipo
+                            Endereço
                           </span>
+                          <div className="text-sm text-gray-600">
+                            {`${occ.address?.street || ""}, ${
+                              occ.address?.number || ""
+                            } - ${occ.address?.city || ""}`}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Layout Desktop */}
+                  <div className="hidden xl:block p-4">
+                    <div className="grid grid-cols-12 gap-4 items-center text-[#787891]">
+                      <div className="col-span-1 flex items-center gap-2">
+                        {expandedRow === occ.id ? (
+                          <ChevronDown className="h-4 w-4 text-gray-500" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-gray-500" />
+                        )}
+                        <span className="text-sm">
+                          {occ.createdAt || occ.requestedAt
+                            ? format(
+                                new Date(occ.createdAt || occ.requestedAt),
+                                "dd/MM/yy"
+                              )
+                            : "—"}
+                        </span>
+                      </div>
+
+                      <div className="col-span-1 text-sm">
+                        {occ.origin || "Plataforma"}
+                      </div>
+
+                      <div className="col-span-1 text-sm min-w-0">
+                        <span
+                          className="block truncate"
+                          title={occ.protocol || occ.protocolNumber || "—"}
+                        >
+                          {occ.protocol || occ.protocolNumber || "—"}
+                        </span>
+                      </div>
+
+                      <div className="col-span-1 flex items-center gap-2">
+                        <span className="flex h-7 w-7 px-3 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
+                          {getInicials(
+                            occ?.author?.name || occ?.requester?.name || "NA"
+                          )}
+                        </span>
+                        <span className="text-sm truncate">
+                          {occ?.author?.name || occ?.requester?.name || "—"}
+                        </span>
+                      </div>
+
+                      <div className="col-span-1 flex items-center gap-2">
+                        <span className="flex h-7 w-7 px-3 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
+                          {getInicials(occ?.pilot?.name || "NA")}
+                        </span>
+                        <span className="text-sm truncate">
+                          {occ?.approvedBy?.name || "—"}
+                        </span>
+                      </div>
+
+                      <div className="col-span-1 text-sm">
+                        {occ?.address?.neighborhoodName ||
+                          occ?.address?.neighborhood ||
+                          "—"}
+                      </div>
+
+                      <div className="col-span-3 text-sm truncate">
+                        {`${occ.address?.street || ""}, ${
+                          occ.address?.number || ""
+                        } - ${occ.address?.city || ""}`}
+                      </div>
+
+                      {/* Tipo + Companhia  */}
+                      <div className="col-span-2 text-sm truncate">
+                        <div className="truncate">
                           {typeLabels[occ.type] || occ.type || "—"}
                         </div>
-                        <div>
-                          <span className="text-xs font-medium text-gray-400 block">
-                            Bairro
-                          </span>
-                          {occ?.address?.neighborhoodName ||
-                            occ?.address?.neighborhood ||
-                            "—"}
-                        </div>
-                        <div>
-                          <span className="text-xs font-medium text-gray-400 block">
-                            Enviado por
-                          </span>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
-                              {getInicials(occ?.pilot?.name || "NA")}
-                            </span>
-                            <span className="text-xs" title={occ?.author?.name}>
-                              {occ?.author?.name || occ?.requester?.name || "—"}
-                            </span>
-                          </div>
+                        <div className="text-xs text-gray-500 truncate">
+                          Companhia: {companyName}
                         </div>
                       </div>
 
-                      <div>
-                        <span className="text-xs font-medium text-gray-400 block">
-                          Endereço
-                        </span>
-                        <div className="text-sm text-gray-600">
-                          {`${occ.address?.street || ""}, ${
-                            occ.address?.number || ""
-                          } - ${occ.address?.city || ""}`}
-                        </div>
+                      <div className="col-span-1 flex justify-center items-center gap-2">
+                        <StatusBadge
+                          status={occ.status}
+                          isEmergencial={occ.isEmergencial}
+                          isDelayed={occ.isDelayed}
+                          labelOverrides={statusLabelOverrides}
+                        />
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Layout Desktop */}
-                <div className="hidden xl:block p-4">
-                  <div className="grid grid-cols-12 gap-4 items-center text-[#787891]">
-                    <div className="col-span-1 flex items-center gap-2">
-                      {expandedRow === occ.id ? (
-                        <ChevronDown className="h-4 w-4 text-gray-500" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4 text-gray-500" />
-                      )}
-                      <span className="text-sm">
-                        {occ.createdAt || occ.requestedAt
-                          ? format(
-                              new Date(occ.createdAt || occ.requestedAt),
-                              "dd/MM/yy"
-                            )
-                          : "—"}
-                      </span>
-                    </div>
-
-                    <div className="col-span-1 text-sm">
-                      {occ.origin || "Plataforma"}
-                    </div>
-
-                    <div className="col-span-1 text-sm min-w-0">
-                      <span
-                        className="block truncate"
-                        title={occ.protocol || occ.protocolNumber || "—"}
-                      >
-                        {occ.protocol || occ.protocolNumber || "—"}
-                      </span>
-                    </div>
-
-                    <div className="col-span-1 flex items-center gap-2">
-                      <span className="flex h-7 w-7 px-3 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
-                        {getInicials(
-                          occ?.author?.name || occ?.requester?.name || "NA"
-                        )}
-                      </span>
-                      <span className="text-sm truncate">
-                        {occ?.author?.name || occ?.requester?.name || "—"}
-                      </span>
-                    </div>
-
-                    <div className="col-span-1 flex items-center gap-2">
-                      <span className="flex h-7 w-7 px-3 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
-                        {getInicials(occ?.pilot?.name || "NA")}
-                      </span>
-                      <span className="text-sm truncate">
-                        {occ?.approvedBy?.name || "—"}
-                      </span>
-                    </div>
-
-                    <div className="col-span-1 text-sm">
-                      {occ?.address?.neighborhoodName ||
-                        occ?.address?.neighborhood ||
-                        "—"}
-                    </div>
-
-                    <div className="col-span-3 text-sm truncate">
-                      {`${occ.address?.street || ""}, ${
-                        occ.address?.number || ""
-                      } - ${occ.address?.city || ""}`}
-                    </div>
-
-                    <div className="col-span-2 text-sm truncate">
-                      {typeLabels[occ.type] || occ.type || "—"}
-                    </div>
-
-                    <div className="col-span-1 flex justify-center items-center gap-2">
-                      <StatusBadge
-                        status={occ.status}
-                        isEmergencial={occ.isEmergencial}
-                        isDelayed={occ.isDelayed}
-                        labelOverrides={statusLabelOverrides}
-                      />
-                    </div>
+                {/* Linha expandida */}
+                {expandedRow === occ.id && (
+                  <div className="px-3 py-3 bg-[#F7F7F7] ">
+                    {renderExpandedRow ? renderExpandedRow(occ) : null}
                   </div>
-                </div>
+                )}
               </div>
-
-              {/* Linha expandida */}
-              {expandedRow === occ.id && (
-                <div className="px-3 py-3 bg-[#F7F7F7] ">
-                  {renderExpandedRow ? renderExpandedRow(occ) : null}
-                </div>
-              )}
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

@@ -28,6 +28,7 @@ export function Filters({
   onFilterDateRange = () => {},
   onFilterNeighborhood = () => {},
   onFilterStatus = () => {},
+  onFilterCompany = () => {}, // <-- NOVO: callback do filtro de companhia
   handleApplyFilters,
   onSearch = () => {},
   title = "Análises de ocorrências",
@@ -39,11 +40,13 @@ export function Filters({
   showDate = true,
   showNeighborhood = true,
   showStatus = true,
+  showCompany = true, // <-- NOVO: controla exibição do filtro de companhia
 }) {
   const [selectedRecent, setSelectedRecent] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [selectedNeighborhood, setSelectedNeighborhood] = useState(null);
+  const [selectedCompany, setSelectedCompany] = useState(null); // <-- NOVO
   const [selectedRange, setSelectedRange] = useState({ from: null, to: null });
   const [neighborhoods, setNeighborhoods] = useState([]);
 
@@ -82,6 +85,12 @@ export function Filters({
   const handleStatusFilter = (status) => {
     setSelectedStatus(status);
     onFilterStatus(status);
+  };
+
+  // NOVO: handler do filtro de companhia (SERGAS, IGUA ou null para remover)
+  const handleCompanyFilter = (company) => {
+    setSelectedCompany(company);
+    onFilterCompany(company); // manda null para "Todas"
   };
 
   const handleDateRangeChange = (range) => {
@@ -280,6 +289,36 @@ export function Filters({
                 onClick={() => handleTypeFilter("AUSENCIA_DE_MEIO_FIO")}
               >
                 Ausência de meio fio
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
+        {/* Companhia (NOVO) */}
+        {showCompany && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm text-[#4B4B62]"
+              >
+                {selectedCompany === "SERGAS"
+                  ? "Companhia: SERGAS"
+                  : selectedCompany === "IGUA"
+                  ? "Companhia: IGUA"
+                  : "Companhia"}
+                <ChevronDown className="ml-1 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleCompanyFilter(null)}>
+                Todas
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleCompanyFilter("SERGAS")}>
+                SERGAS
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleCompanyFilter("IGUA")}>
+                IGUA
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

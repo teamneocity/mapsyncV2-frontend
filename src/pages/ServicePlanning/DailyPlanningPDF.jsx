@@ -106,6 +106,28 @@ const getStatusStyle = (status) => {
   return map[status] || { backgroundColor: "#f0f0f0", color: "#666" };
 };
 
+// 🟢 NOVO — Máscaras legíveis para exibição de status
+const statusLabels = {
+  em_analise: "Em análise",
+  emergencial: "Emergencial",
+  aprovada: "Aprovada",
+  os_gerada: "O.S. gerada",
+  aguardando_execucao: "Agendada",
+  em_execucao: "Andamento",
+  finalizada: "Finalizada",
+  pendente: "Pendente",
+  aceita: "Aceita",
+  verificada: "Verificada",
+  rejeitada: "Rejeitada",
+};
+
+// helper pequeno pra fallback (caso algum status não exista no mapa)
+const toTitle = (s) =>
+  s
+    .split(" ")
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(" ");
+
 // Componente principal
 export function DailyPlanningPDF({ data, formattedDate }) {
   const today = new Date(formattedDate + "T00:00:00");
@@ -180,6 +202,11 @@ export function DailyPlanningPDF({ data, formattedDate }) {
                       : "—";
                     break;
                   case "status":
+                    // 🟢 substituição: usa a máscara do statusLabels se existir
+                    const raw = (item.status || "").toString().trim().toLowerCase();
+                    const masked =
+                      statusLabels[raw] || (raw ? toTitle(raw.replace(/_/g, " ")) : "—");
+
                     return (
                       <View
                         key={i}
@@ -196,11 +223,7 @@ export function DailyPlanningPDF({ data, formattedDate }) {
                           textAlign: "center",
                         }}
                       >
-                        <Text style={{ fontSize: 7 }}>
-                          {(item.status || "—")
-                            .replace("_", " ")
-                            .replace(/^\w/, (c) => c.toUpperCase())}
-                        </Text>
+                        <Text style={{ fontSize: 7 }}>{masked}</Text>
                       </View>
                     );
                   default:

@@ -39,6 +39,7 @@ export function ServiceOrder() {
     startDate: null,
     endDate: null,
   });
+  const [filterCompany, setFilterCompany] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -53,6 +54,7 @@ export function ServiceOrder() {
     filterNeighborhood,
     filterDateRange.startDate,
     filterDateRange.endDate,
+    filterCompany,
   ]);
 
   const handleToggleDateOrder = (order) => {
@@ -70,6 +72,7 @@ export function ServiceOrder() {
           occurrenceType: filterType,
           status: filterStatus,
           orderBy: filterRecent || "recent",
+          externalCompanyName: filterCompany || undefined,
           startDate: filterDateRange.startDate
             ? new Date(
                 new Date(filterDateRange.startDate).setHours(0, 0, 0, 0)
@@ -179,6 +182,10 @@ export function ServiceOrder() {
           title="Ordens de Serviço"
           subtitle="Registradas"
           contextType="padrao"
+          onFilterCompany={(company) => {
+            setFilterCompany(company);
+            setCurrentPage(1);
+          }}
           onSearch={(input) => {
             setSearchTerm(input);
             setCurrentPage(1);
