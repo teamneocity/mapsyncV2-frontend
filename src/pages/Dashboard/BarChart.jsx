@@ -27,6 +27,7 @@ function enforceMinOnePercent(parts, items) {
     }
   }
   if (need === 0) return result;
+
   const pickMaxGtOne = () => {
     let idx = -1;
     let best = -1;
@@ -39,6 +40,7 @@ function enforceMinOnePercent(parts, items) {
     }
     return idx;
   };
+
   while (need > 0) {
     const j = pickMaxGtOne();
     if (j === -1) break;
@@ -140,96 +142,108 @@ export function TutorialCard({ labelColors }) {
     return () => clearTimeout(t);
   }, [w, h]);
 
-  const baseFont = w < 380 ? 25 : w < 520 ? 20 : w < 760 ? 30 : 40;
-  const MIN_FONT = baseFont;
+  const baseFont = w < 380 ? 12 : w < 520 ? 16 : w < 760 ? 24 : 32;
+  const MIN_FONT = 9; // piso para caber mesmo em 1%
+  const FULL_FONT_PCT = 12; // a partir de 12% já usamos fonte cheia
+
   const hasData =
     Array.isArray(statusRows) && statusRows.some((r) => (r.count || 0) > 0);
 
-  const { parts, palette, labelPalette, legendNames, counts } = useMemo(() => {
-    const baseColors = [
-      "#E8F2FF",
-      "#F6FFC6",
-      "#FFE8E8",
-      "#EBD4EA",
-      "#E9E4FC",
-      "#FFF1CB",
-      "#FFE8DC",
-      "#C9F2E9",
-      "#EDEDED",
-    ];
+  const { parts, labels, palette, labelPalette, legendNames, counts } =
+    useMemo(() => {
+      const baseColors = [
+        "#E8F2FF",
+        "#F6FFC6",
+        "#FFE8E8",
+        "#EBD4EA",
+        "#E9E4FC",
+        "#FFF1CB",
+        "#FFE8DC",
+        "#C9F2E9",
+        "#EDEDED",
+      ];
 
-    const baseLabelColorsDefault = [
-      "#4593F5",
-      "#79811C",
-      "#96132C",
-      "#5D2A61",
-      "#4F26F0",
-      "#845B00",
-      "#824F24",
-      "#1C7551",
-      "#5F5F5F",
-    ];
+      const baseLabelColorsDefault = [
+        "#4593F5",
+        "#79811C",
+        "#96132C",
+        "#5D2A61",
+        "#4F26F0",
+        "#845B00",
+        "#824F24",
+        "#1C7551",
+        "#5F5F5F",
+      ];
 
-    if (!Array.isArray(statusRows) || statusRows.length === 0) {
+      if (!Array.isArray(statusRows) || statusRows.length === 0) {
+        return {
+          parts: [],
+          labels: [],
+          palette: [],
+          labelPalette: [],
+          legendNames: [],
+          counts: [],
+        };
+      }
+
+      const ordered = [...statusRows].sort((a, b) => b.count - a.count);
+
+      // 1) inteiros que somam 100
+      const initial = countsToPercentsInt(ordered);
+      // 2) mínimo de 1% para quem tem count>0
+      const percents = enforceMinOnePercent(initial, ordered);
+
+      // rótulos: mostra sempre que parte >= 1%
+      const lbls = percents.map((p) => (p >= 1 ? `${p}%` : ""));
+
+      const pal = ordered.map(
+        (it, i) => STATUS_FILL[it.status] ?? baseColors[i % baseColors.length]
+      );
+
+      const labelBase =
+        Array.isArray(labelColors) && labelColors.length
+          ? labelColors
+          : ordered.map(
+              (it, i) =>
+                STATUS_TEXT[it.status] ??
+                baseLabelColorsDefault[i % baseLabelColorsDefault.length]
+            );
+
+      const labelPal =
+        Array.isArray(labelColors) && labelColors.length
+          ? ordered.map((_, i) => labelColors[i % labelColors.length])
+          : labelBase;
+
       return {
-        parts: [],
-        palette: [],
-        labelPalette: [],
-        legendNames: [],
-        counts: [],
+        parts: percents,
+        labels: lbls,
+        palette: pal,
+        labelPalette: labelPal,
+        legendNames: ordered.map((it) => statusLabels[it.status] || it.status),
+        counts: ordered.map((it) => it.count),
       };
-    }
-
-    const ordered = [...statusRows].sort((a, b) => b.count - a.count);
-    const initial = countsToPercentsInt(ordered);
-    const percents = enforceMinOnePercent(initial, ordered);
-
-    const pal = ordered.map(
-      (it, i) => STATUS_FILL[it.status] ?? baseColors[i % baseColors.length]
-    );
-
-    const labelBase =
-      Array.isArray(labelColors) && labelColors.length
-        ? labelColors
-        : ordered.map(
-            (it, i) =>
-              STATUS_TEXT[it.status] ??
-              baseLabelColorsDefault[i % baseLabelColorsDefault.length]
-          );
-
-    const labelPal =
-      Array.isArray(labelColors) && labelColors.length
-        ? ordered.map((_, i) => labelColors[i % labelColors.length])
-        : labelBase;
-
-    return {
-      parts: percents,
-      palette: pal,
-      labelPalette: labelPal,
-      legendNames: ordered.map((it) => statusLabels[it.status] || it.status),
-      counts: ordered.map((it) => it.count),
-    };
-  }, [statusRows, labelColors]);
-
-  const equalWidth = parts.length > 0 ? 100 / parts.length : 0;
+    }, [statusRows, labelColors]);
 
   const series = parts.map((p, idx) => {
+    const scale = Math.min(1, Math.max(0, (p - 1) / (FULL_FONT_PCT - 1)));
+    const fontSize = Math.round(MIN_FONT + (baseFont - MIN_FONT) * scale);
+
     return {
       name: legendNames[idx],
       type: "bar",
       stack: "total",
-      data: [equalWidth],
+      data: [p],
       barWidth: "100%",
       zlevel: 10,
       label: {
-        show: true,
+        show: p >= 1,
         position: "inside",
         align: "center",
         verticalAlign: "middle",
         distance: 0,
-        formatter: () => `${p}%`,
+        formatter: `${p}%`,
         color: labelPalette[idx],
-        fontSize: MIN_FONT,
+        fontSize,
         fontWeight: 700,
         textShadowColor: "rgba(0,0,0,0.25)",
         textShadowBlur: 2,
@@ -257,6 +271,7 @@ export function TutorialCard({ labelColors }) {
     animationEasingUpdate: "cubicOut",
     xAxis: { type: "value", min: 0, max: 100, show: false },
     yAxis: { type: "category", data: [""], show: false },
+
     grid: { left: 0, right: 0, top: 0, bottom: 0, containLabel: false },
     tooltip: {
       show: true,
