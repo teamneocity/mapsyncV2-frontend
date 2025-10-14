@@ -108,7 +108,7 @@ export function Dashboard() {
 
         <div className="mt-5 mb-10 grid grid-cols-1 xl:grid-cols-2 gap-3 px-4">
           {/* Card 1 */}
-          <div className="px-4 h-[340px] sm:h-[360px] xl:h-[408px]">
+          <div className="px-4 h-auto sm:h-[360px] xl:h-[408px]">
             <div className="w-full h-full">
               {loadingPilots ? (
                 <div className="w-full h-full flex items-center justify-center text-gray-500">
@@ -197,7 +197,7 @@ export function Dashboard() {
           </div>
 
           {/* Card 2 */}
-          <div className="bg-white rounded-2xl shadow px-4 pt-4 pb-2 flex flex-col h-[340px] sm:h-[360px] xl:h-[408px]">
+          <div className="bg-white rounded-2xl shadow px-4 pt-4 pb-2 flex flex-col h-auto sm:h-[360px] xl:h-[408px]">
             <div className="flex items-center justify-start mb-2 gap-2">
               <Airplane className="w-5 h-5 text-gray-700" />
               <h3 className="text-lg md:text-xl ">
@@ -206,7 +206,7 @@ export function Dashboard() {
             </div>
 
             <div className="flex-1 flex items-center justify-center">
-              <NeighborhoodNightingale className="w-full h-full" />
+              <NeighborhoodNightingale className="w-full h-64 sm:h-full" />
             </div>
           </div>
         </div>
