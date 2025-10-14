@@ -17,6 +17,39 @@ function countsToPercentsInt(items) {
   return items.map((it) => mapBack.get(it.status));
 }
 
+function enforceMinOnePercent(parts, items) {
+  const result = [...parts];
+  let need = 0;
+  for (let i = 0; i < result.length; i++) {
+    if ((items[i]?.count || 0) > 0 && result[i] === 0) {
+      result[i] = 1;
+      need += 1;
+    }
+  }
+  if (need === 0) return result;
+
+  const pickMaxGtOne = () => {
+    let idx = -1;
+    let best = -1;
+    for (let i = 0; i < result.length; i++) {
+      const v = result[i];
+      if (v > 1 && v > best) {
+        best = v;
+        idx = i;
+      }
+    }
+    return idx;
+  };
+
+  while (need > 0) {
+    const j = pickMaxGtOne();
+    if (j === -1) break;
+    result[j] -= 1;
+    need -= 1;
+  }
+  return result;
+}
+
 export function TutorialCard({ labelColors }) {
   const [statusRows, setStatusRows] = useState(null);
 
@@ -109,8 +142,9 @@ export function TutorialCard({ labelColors }) {
     return () => clearTimeout(t);
   }, [w, h]);
 
-  const labelFont = w < 380 ? 12 : w < 520 ? 16 : w < 760 ? 24 : 32;
-  const minLabelPercent = w < 520 ? 10 : 5;
+  const baseFont = w < 380 ? 12 : w < 520 ? 16 : w < 760 ? 24 : 32;
+  const MIN_FONT = 9; // piso para caber mesmo em 1%
+  const FULL_FONT_PCT = 12; // a partir de 12% já usamos fonte cheia
 
   const hasData =
     Array.isArray(statusRows) && statusRows.some((r) => (r.count || 0) > 0);
@@ -153,9 +187,14 @@ export function TutorialCard({ labelColors }) {
       }
 
       const ordered = [...statusRows].sort((a, b) => b.count - a.count);
-      const percents = countsToPercentsInt(ordered);
 
-      const lbls = percents.map((p) => (p >= minLabelPercent ? `${p}%` : ""));
+      // 1) inteiros que somam 100
+      const initial = countsToPercentsInt(ordered);
+      // 2) mínimo de 1% para quem tem count>0
+      const percents = enforceMinOnePercent(initial, ordered);
+
+      // rótulos: mostra sempre que parte >= 1%
+      const lbls = percents.map((p) => (p >= 1 ? `${p}%` : ""));
 
       const pal = ordered.map(
         (it, i) => STATUS_FILL[it.status] ?? baseColors[i % baseColors.length]
@@ -183,33 +222,46 @@ export function TutorialCard({ labelColors }) {
         legendNames: ordered.map((it) => statusLabels[it.status] || it.status),
         counts: ordered.map((it) => it.count),
       };
-    }, [statusRows, minLabelPercent, labelColors]);
+    }, [statusRows, labelColors]);
 
-  const series = parts.map((v, idx) => ({
-    name: legendNames[idx],
-    type: "bar",
-    stack: "total",
-    data: [v],
-    barWidth: "100%",
-    label: {
-      show: Boolean(labels[idx]),
-      position: "inside",
-      formatter: labels[idx],
-      color: labelPalette[idx],
-      fontSize: labelFont,
-      fontWeight: 600,
-    },
-    itemStyle: {
-      color: palette[idx],
-      borderRadius:
-        idx === 0
-          ? [12, 0, 0, 12]
-          : idx === parts.length - 1
-          ? [0, 12, 12, 0]
-          : 0,
-    },
-    silent: false,
-  }));
+  const series = parts.map((p, idx) => {
+    const scale = Math.min(1, Math.max(0, (p - 1) / (FULL_FONT_PCT - 1)));
+    const fontSize = Math.round(MIN_FONT + (baseFont - MIN_FONT) * scale);
+
+    return {
+      name: legendNames[idx],
+      type: "bar",
+      stack: "total",
+      data: [p],
+      barWidth: "100%",
+      zlevel: 10,
+      label: {
+        show: p >= 1,
+        position: "inside",
+        align: "center",
+        verticalAlign: "middle",
+        distance: 0,
+        formatter: `${p}%`,
+        color: labelPalette[idx],
+        fontSize,
+        fontWeight: 700,
+        textShadowColor: "rgba(0,0,0,0.25)",
+        textShadowBlur: 2,
+      },
+      labelLayout: { hideOverlap: false },
+      itemStyle: {
+        color: palette[idx],
+        borderRadius:
+          idx === 0
+            ? [12, 0, 0, 12]
+            : idx === parts.length - 1
+            ? [0, 12, 12, 0]
+            : 0,
+      },
+      silent: false,
+      emphasis: { disabled: true },
+    };
+  });
 
   const option = {
     animation: true,
@@ -219,7 +271,8 @@ export function TutorialCard({ labelColors }) {
     animationEasingUpdate: "cubicOut",
     xAxis: { type: "value", min: 0, max: 100, show: false },
     yAxis: { type: "category", data: [""], show: false },
-    grid: { left: 0, right: 0, top: 0, bottom: 0 },
+
+    grid: { left: 0, right: 0, top: 0, bottom: 0, containLabel: false },
     tooltip: {
       show: true,
       trigger: "item",
@@ -244,6 +297,8 @@ export function TutorialCard({ labelColors }) {
     const mes = new Intl.DateTimeFormat("pt-BR", { month: "long" }).format(now);
     return `${mes} `;
   }, []);
+
+  const hasLegend = hasData && Array.isArray(parts) && parts.length > 0;
 
   return (
     <div ref={wrapRef} className="relative min-w-0">
@@ -277,11 +332,11 @@ export function TutorialCard({ labelColors }) {
         </div>
       </div>
 
-      {hasData && legendNames?.length > 0 && (
+      {hasLegend && (
         <div className="flex flex-wrap gap-3 sm:gap-4 mt-3 min-w-0">
-          {legendNames.map((name, idx) => (
+          {parts.map((_, idx) => (
             <div
-              key={`${name}-${idx}`}
+              key={`${legendNames[idx]}-${idx}`}
               className="flex items-center gap-2 text-xs sm:text-sm"
             >
               <span
@@ -289,7 +344,7 @@ export function TutorialCard({ labelColors }) {
                 style={{ backgroundColor: palette[idx] }}
                 aria-hidden
               />
-              <span className="capitalize">{name}</span>
+              <span className="capitalize">{legendNames[idx]}</span>
             </div>
           ))}
         </div>

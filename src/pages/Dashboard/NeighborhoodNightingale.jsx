@@ -4,12 +4,52 @@ import ReactECharts from "echarts-for-react";
 import { api } from "@/services/api";
 
 const DECALS = [
-  { symbol: "rect", dashArrayX: [4, 2], dashArrayY: [2, 2], symbolSize: 1, rotation: 0, color: "rgba(0,0,0,0.12)" },
-  { symbol: "circle", dashArrayX: [1, 0], dashArrayY: [2, 2], symbolSize: 0.9, color: "rgba(0,0,0,0.14)" },
-  { symbol: "triangle", dashArrayX: [1, 0], dashArrayY: [2, 4], symbolSize: 1, rotation: Math.PI / 4, color: "rgba(0,0,0,0.12)" },
-  { symbol: "diamond", dashArrayX: [1, 0], dashArrayY: [2, 3], symbolSize: 1, rotation: Math.PI / 6, color: "rgba(0,0,0,0.12)" },
-  { symbol: "rect", dashArrayX: [8, 4], dashArrayY: [6, 0], symbolSize: 1, rotation: Math.PI / 3, color: "rgba(0,0,0,0.10)" },
-  { symbol: "circle", dashArrayX: [2, 2], dashArrayY: [2, 2], symbolSize: 0.8, color: "rgba(0,0,0,0.12)" },
+  {
+    symbol: "rect",
+    dashArrayX: [4, 2],
+    dashArrayY: [2, 2],
+    symbolSize: 1,
+    rotation: 0,
+    color: "rgba(0,0,0,0.12)",
+  },
+  {
+    symbol: "circle",
+    dashArrayX: [1, 0],
+    dashArrayY: [2, 2],
+    symbolSize: 0.9,
+    color: "rgba(0,0,0,0.14)",
+  },
+  {
+    symbol: "triangle",
+    dashArrayX: [1, 0],
+    dashArrayY: [2, 4],
+    symbolSize: 1,
+    rotation: Math.PI / 4,
+    color: "rgba(0,0,0,0.12)",
+  },
+  {
+    symbol: "diamond",
+    dashArrayX: [1, 0],
+    dashArrayY: [2, 3],
+    symbolSize: 1,
+    rotation: Math.PI / 6,
+    color: "rgba(0,0,0,0.12)",
+  },
+  {
+    symbol: "rect",
+    dashArrayX: [8, 4],
+    dashArrayY: [6, 0],
+    symbolSize: 1,
+    rotation: Math.PI / 3,
+    color: "rgba(0,0,0,0.10)",
+  },
+  {
+    symbol: "circle",
+    dashArrayX: [2, 2],
+    dashArrayY: [2, 2],
+    symbolSize: 0.8,
+    color: "rgba(0,0,0,0.12)",
+  },
 ];
 
 export function NeighborhoodNightingale({ className = "" }) {
@@ -17,7 +57,6 @@ export function NeighborhoodNightingale({ className = "" }) {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
 
-  // ⬇️ NOVO: medição responsiva
   const containerRef = useRef(null);
   const [width, setWidth] = useState(0);
 
@@ -70,17 +109,19 @@ export function NeighborhoodNightingale({ className = "" }) {
     }));
     const total = seriesData.reduce((sum, it) => sum + (it.value || 0), 0);
 
-    // ⬇️ NOVO: regras de “compactação”
-    const isCompact = width > 0 && width < 520; // limiar simples; ajuste se quiser
+    const isCompact = width > 0 && width < 520;
     const showLegend = !isCompact;
     const showTitle = !isCompact;
 
-    // quando some a legenda/título, recentro e aumento o raio para aproveitar o espaço
     const center = showLegend ? ["32%", "50%"] : ["50%", "50%"];
-    const radius = showLegend ? [20, 120] : [24, Math.min(120, Math.floor((width || 300) * 0.36))];
+    const radius = showLegend
+      ? [20, 120]
+      : [24, Math.min(120, Math.floor((width || 300) * 0.36))];
 
-    // legenda alinhada com valores (só quando exibida)
-    const maxLength = seriesData.reduce((acc, cur) => Math.max(acc, cur.name.length), 0);
+    const maxLength = seriesData.reduce(
+      (acc, cur) => Math.max(acc, cur.name.length),
+      0
+    );
 
     return {
       title: showTitle
@@ -91,7 +132,12 @@ export function NeighborhoodNightingale({ className = "" }) {
             subtext: String(total),
             textAlign: "left",
             textStyle: { fontSize: 14, fontWeight: 400, color: "#000000" },
-            subtextStyle: { fontSize: 40, fontWeight: 700, color: "#111", lineHeight: 28 },
+            subtextStyle: {
+              fontSize: 40,
+              fontWeight: 700,
+              color: "#111",
+              lineHeight: 28,
+            },
           }
         : undefined,
 
@@ -145,7 +191,10 @@ export function NeighborhoodNightingale({ className = "" }) {
 
   if (loading) {
     return (
-      <div ref={containerRef} className={`h-full min-h-64 flex items-center justify-center ${className}`}>
+      <div
+        ref={containerRef}
+        className={`h-full min-h-64 flex items-center justify-center ${className}`}
+      >
         Carregando…
       </div>
     );
@@ -153,7 +202,10 @@ export function NeighborhoodNightingale({ className = "" }) {
 
   if (err) {
     return (
-      <div ref={containerRef} className={`h-full min-h-64 flex items-center justify-center text-red-600 ${className}`}>
+      <div
+        ref={containerRef}
+        className={`h-full min-h-64 flex items-center justify-center text-red-600 ${className}`}
+      >
         {err}
       </div>
     );
@@ -161,7 +213,10 @@ export function NeighborhoodNightingale({ className = "" }) {
 
   if (data.length === 0) {
     return (
-      <div ref={containerRef} className={`h-full min-h-64 flex items-center justify-center text-gray-500 ${className}`}>
+      <div
+        ref={containerRef}
+        className={`h-full min-h-64 flex items-center justify-center text-gray-500 ${className}`}
+      >
         Sem dados para exibir
       </div>
     );
@@ -169,7 +224,12 @@ export function NeighborhoodNightingale({ className = "" }) {
 
   return (
     <div ref={containerRef} className={`w-full h-full ${className}`}>
-      <ReactECharts option={option} style={{ height: "100%", width: "100%" }} notMerge lazyUpdate />
+      <ReactECharts
+        option={option}
+        style={{ height: "100%", width: "100%" }}
+        notMerge
+        lazyUpdate
+      />
     </div>
   );
 }

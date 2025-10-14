@@ -528,6 +528,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 onClick={async () => {
                   await handleFinalizeExecution();
                   setIsFinalizeModalOpen(false);
+                  window.location.reload();
                 }}
                 disabled={!selectedPhoto}
                 className={`flex items-center justify-center gap-2 w-full rounded-2xl ${
