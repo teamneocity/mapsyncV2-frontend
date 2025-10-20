@@ -2,52 +2,81 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactECharts from "echarts-for-react";
 import { api } from "@/services/api";
 
-function countsToPercentsInt(items) {
-  const total = items.reduce((s, it) => s + (it.count || 0), 0);
-  if (!total) return items.map(() => 0);
-  const withFracs = items.map((it) => {
-    const raw = (it.count / total) * 100;
-    return { ...it, raw, floor: Math.floor(raw), frac: raw - Math.floor(raw) };
-  });
-  let sumFloors = withFracs.reduce((s, it) => s + it.floor, 0);
-  let diff = 100 - sumFloors;
-  const sorted = [...withFracs].sort((a, b) => b.frac - a.frac);
-  for (let i = 0; i < diff; i++) sorted[i % sorted.length].floor += 1;
-  const mapBack = new Map(sorted.map((it) => [it.status, it.floor]));
-  return items.map((it) => mapBack.get(it.status));
-}
+function computePercentsIntWithMinPx(items, availableWidthPx, minLabelPx) {
+  const totalCount = items.reduce((s, it) => s + (it.count || 0), 0);
+  if (!totalCount) return items.map(() => 0);
 
-function enforceMinOnePercent(parts, items) {
-  const result = [...parts];
-  let need = 0;
-  for (let i = 0; i < result.length; i++) {
-    if ((items[i]?.count || 0) > 0 && result[i] === 0) {
-      result[i] = 1;
-      need += 1;
-    }
+  const minPctFromPx = Math.max(
+    0,
+    Math.min(100, (minLabelPx / Math.max(1, availableWidthPx)) * 100)
+  );
+
+  const positivesIdx = items
+    .map((it, i) => ((it.count || 0) > 0 ? i : -1))
+    .filter((i) => i !== -1);
+
+  if (positivesIdx.length === 0) return items.map(() => 0);
+
+  const rawPerc = items.map((it) => ((it.count || 0) / totalCount) * 100);
+
+  const base = new Array(items.length).fill(0);
+  let required = 0;
+  for (const i of positivesIdx) {
+    base[i] = minPctFromPx;
+    required += minPctFromPx;
   }
-  if (need === 0) return result;
 
-  const pickMaxGtOne = () => {
-    let idx = -1;
-    let best = -1;
-    for (let i = 0; i < result.length; i++) {
-      const v = result[i];
-      if (v > 1 && v > best) {
-        best = v;
-        idx = i;
-      }
-    }
-    return idx;
-  };
+  if (required >= 100) {
+    const n = positivesIdx.length;
+    const floor = Math.floor(100 / n);
+    let rest = 100 - floor * n;
+    const out = items.map(() => 0);
+    for (const i of positivesIdx) out[i] = floor;
+    for (let k = 0; k < rest; k++) out[positivesIdx[k % n]] += 1;
+    return out;
+  }
 
-  while (need > 0) {
-    const j = pickMaxGtOne();
+  const remaining = 100 - required;
+
+  const weights = positivesIdx.map((i) =>
+    Math.max(0, rawPerc[i] - minPctFromPx)
+  );
+  const weightSum = weights.reduce((s, v) => s + v, 0);
+
+  const fracs = items.map(() => 0);
+  if (weightSum > 0) {
+    positivesIdx.forEach((i, k) => {
+      fracs[i] = (weights[k] / weightSum) * remaining;
+    });
+  } else {
+    positivesIdx.forEach((i) => {
+      fracs[i] = remaining / positivesIdx.length;
+    });
+  }
+
+  const floats = items.map((_, i) => base[i] + fracs[i]);
+  const floors = floats.map((v) => Math.floor(v));
+  let diff = 100 - floors.reduce((s, v) => s + v, 0);
+
+  const remainder = floats.map((v, i) => ({ i, frac: v - Math.floor(v) }));
+  remainder.sort((a, b) => b.frac - a.frac);
+
+  for (let k = 0; k < diff; k++) floors[remainder[k % remainder.length].i] += 1;
+
+  for (const i of positivesIdx) {
+    if (floors[i] === 0) floors[i] = 1;
+  }
+
+  let sum = floors.reduce((s, v) => s + v, 0);
+  while (sum > 100) {
+    let j = floors.findIndex((v, idx) => v > 1 && positivesIdx.includes(idx));
+    if (j === -1) j = floors.findIndex((v) => v > 0);
     if (j === -1) break;
-    result[j] -= 1;
-    need -= 1;
+    floors[j] -= 1;
+    sum -= 1;
   }
-  return result;
+
+  return floors;
 }
 
 export function TutorialCard({ labelColors }) {
@@ -142,39 +171,14 @@ export function TutorialCard({ labelColors }) {
     return () => clearTimeout(t);
   }, [w, h]);
 
-  const baseFont = w < 380 ? 12 : w < 520 ? 12 : w < 760 ? 12 : 12;
-  const MIN_FONT = 12; 
-  const FULL_FONT_PCT = 12; 
+  const FONT_PX = 32;
+  const MIN_LABEL_PX = 60;
 
   const hasData =
     Array.isArray(statusRows) && statusRows.some((r) => (r.count || 0) > 0);
 
   const { parts, labels, palette, labelPalette, legendNames, counts } =
     useMemo(() => {
-      const baseColors = [
-        "#E8F2FF",
-        "#F6FFC6",
-        "#FFE8E8",
-        "#EBD4EA",
-        "#E9E4FC",
-        "#FFF1CB",
-        "#FFE8DC",
-        "#C9F2E9",
-        "#EDEDED",
-      ];
-
-      const baseLabelColorsDefault = [
-        "#4593F5",
-        "#79811C",
-        "#96132C",
-        "#5D2A61",
-        "#4F26F0",
-        "#845B00",
-        "#824F24",
-        "#1C7551",
-        "#5F5F5F",
-      ];
-
       if (!Array.isArray(statusRows) || statusRows.length === 0) {
         return {
           parts: [],
@@ -187,9 +191,39 @@ export function TutorialCard({ labelColors }) {
       }
 
       const ordered = [...statusRows].sort((a, b) => b.count - a.count);
-      const initial = countsToPercentsInt(ordered);
-      const percents = enforceMinOnePercent(initial, ordered);
-      const lbls = percents.map((p) => (p >= 1 ? `${p}%` : ""));
+
+      const availableWidthPx = Math.max(1, w - 16);
+
+      const percents = computePercentsIntWithMinPx(
+        ordered,
+        availableWidthPx,
+        MIN_LABEL_PX
+      );
+
+      const lbls = percents.map((p) => (p > 0 ? `${p}%` : ""));
+
+      const baseColors = [
+        "#E8F2FF",
+        "#F6FFC6",
+        "#FFE8E8",
+        "#EBD4EA",
+        "#E9E4FC",
+        "#FFF1CB",
+        "#FFE8DC",
+        "#C9F2E9",
+        "#EDEDED",
+      ];
+      const baseLabelColorsDefault = [
+        "#4593F5",
+        "#79811C",
+        "#96132C",
+        "#5D2A61",
+        "#4F26F0",
+        "#845B00",
+        "#824F24",
+        "#1C7551",
+        "#5F5F5F",
+      ];
 
       const pal = ordered.map(
         (it, i) => STATUS_FILL[it.status] ?? baseColors[i % baseColors.length]
@@ -217,46 +251,41 @@ export function TutorialCard({ labelColors }) {
         legendNames: ordered.map((it) => statusLabels[it.status] || it.status),
         counts: ordered.map((it) => it.count),
       };
-    }, [statusRows, labelColors]);
+    }, [statusRows, labelColors, w]);
 
-  const series = parts.map((p, idx) => {
-    const scale = Math.min(1, Math.max(0, (p - 1) / (FULL_FONT_PCT - 1)));
-    const fontSize = Math.round(MIN_FONT + (baseFont - MIN_FONT) * scale);
-
-    return {
-      name: legendNames[idx],
-      type: "bar",
-      stack: "total",
-      data: [p],
-      barWidth: "100%",
-      zlevel: 10,
-      label: {
-        show: p >= 1,
-        position: "inside",
-        align: "center",
-        verticalAlign: "middle",
-        distance: 0,
-        formatter: `${p}%`,
-        color: labelPalette[idx],
-        fontSize,
-        fontWeight: 700,
-        textShadowColor: "rgba(0,0,0,0.25)",
-        textShadowBlur: 2,
-      },
-      labelLayout: { hideOverlap: false },
-      itemStyle: {
-        color: palette[idx],
-        borderRadius:
-          idx === 0
-            ? [12, 0, 0, 12]
-            : idx === parts.length - 1
-            ? [0, 12, 12, 0]
-            : 0,
-      },
-      silent: false,
-      emphasis: { disabled: true },
-    };
-  });
+  const series = parts.map((p, idx) => ({
+    name: legendNames[idx],
+    type: "bar",
+    stack: "total",
+    data: [p],
+    barWidth: "100%",
+    zlevel: 10,
+    label: {
+      show: p > 0,
+      position: "inside",
+      align: "center",
+      verticalAlign: "middle",
+      distance: 0,
+      formatter: `${p}%`,
+      color: labelPalette[idx],
+      fontSize: FONT_PX,
+      fontWeight: 700,
+      textShadowColor: "rgba(0,0,0,0.12)",
+      textShadowBlur: 1,
+    },
+    labelLayout: { hideOverlap: false },
+    itemStyle: {
+      color: palette[idx],
+      borderRadius:
+        idx === 0
+          ? [12, 0, 0, 12]
+          : idx === parts.length - 1
+          ? [0, 12, 12, 0]
+          : 0,
+    },
+    silent: false,
+    emphasis: { disabled: true },
+  }));
 
   const option = {
     animation: true,
@@ -266,7 +295,6 @@ export function TutorialCard({ labelColors }) {
     animationEasingUpdate: "cubicOut",
     xAxis: { type: "value", min: 0, max: 100, show: false },
     yAxis: { type: "category", data: [""], show: false },
-
     grid: { left: 0, right: 0, top: 0, bottom: 0, containLabel: false },
     tooltip: {
       show: true,

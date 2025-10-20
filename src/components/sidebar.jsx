@@ -188,7 +188,6 @@ export function Sidebar() {
                   </NavLink>
                   <NavLink to="/servicePlanning" className={linkClass}>
                     <CalendarIcon className="w-5 h-5 shrink-0" /> Planejamento
-                    diário
                   </NavLink>
                   <NavLink to="/Warranty" className={linkClass}>
                     <Ninety className="w-5 h-5 shrink-0" /> Garantia 90 dias
@@ -224,7 +223,7 @@ export function Sidebar() {
           )} */}
 
           {/* Ajustes */}
-          
+
           <div className="w-full border-b pb-3">
             <p className="text-base font-normal mb-2 text-[#4B4B62]">Ajustes</p>
             <div className="flex flex-col gap-1 text-[#787891]">
@@ -239,7 +238,6 @@ export function Sidebar() {
               )} */}
             </div>
           </div>
-         
 
           {/* Feedback */}
           {/*
@@ -418,7 +416,7 @@ export function Sidebar() {
                         className={linkClassMobile}
                       >
                         <CalendarIcon className="w-5 h-5 shrink-0" />{" "}
-                        Planejamento diário
+                        Planejamento
                       </NavLink>
 
                       <NavLink to="/inspection" className={linkClassMobile}>

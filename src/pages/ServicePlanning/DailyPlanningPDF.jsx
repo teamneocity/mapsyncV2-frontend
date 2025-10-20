@@ -1,10 +1,54 @@
 "use client";
 
-import { Page, Text, View, Document, StyleSheet, Image } from "@react-pdf/renderer";
+import {
+  Page,
+  Text,
+  View,
+  Document,
+  StyleSheet,
+  Image,
+} from "@react-pdf/renderer";
 
-// Importando logos
 import AjuLogo from "@/assets/Aju2.png";
 import EmurbLogo from "@/assets/Emurb.png";
+
+function parseDateSafe(value) {
+  if (!value) return null;
+
+  if (value instanceof Date && !isNaN(value)) return value;
+
+  if (typeof value === "number") {
+    const d = new Date(value);
+    return isNaN(d) ? null : d;
+  }
+
+  if (typeof value === "string") {
+    const s = value.trim();
+    if (!s) return null;
+
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+      const d = new Date(s);
+      return isNaN(d) ? null : d;
+    }
+
+    const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (m) {
+      const [, dd, mm, yyyy] = m;
+      const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+      return isNaN(d) ? null : d;
+    }
+
+    const fallback = new Date(s);
+    return isNaN(fallback) ? null : fallback;
+  }
+
+  return null;
+}
+
+function formatDatePtBR(value) {
+  const d = parseDateSafe(value);
+  return d ? d.toLocaleDateString("pt-BR") : "—";
+}
 
 // Colunas da tabela
 const columns = [
@@ -106,7 +150,7 @@ const getStatusStyle = (status) => {
   return map[status] || { backgroundColor: "#f0f0f0", color: "#666" };
 };
 
-// 🟢 NOVO — Máscaras legíveis para exibição de status
+//  Máscaras legíveis para exibição de status
 const statusLabels = {
   em_analise: "Em análise",
   emergencial: "Emergencial",
@@ -121,7 +165,6 @@ const statusLabels = {
   rejeitada: "Rejeitada",
 };
 
-// helper pequeno pra fallback (caso algum status não exista no mapa)
 const toTitle = (s) =>
   s
     .split(" ")
@@ -129,8 +172,8 @@ const toTitle = (s) =>
     .join(" ");
 
 // Componente principal
-export function DailyPlanningPDF({ data, formattedDate }) {
-  const today = new Date(formattedDate + "T00:00:00");
+export function DailyPlanningPDF({ data = [], formattedDate }) {
+  const today = parseDateSafe(formattedDate) || new Date();
   const dayName = today.toLocaleDateString("pt-BR", { weekday: "long" });
 
   return (
@@ -150,7 +193,7 @@ export function DailyPlanningPDF({ data, formattedDate }) {
             <Image src={EmurbLogo} style={styles.logoImage} />
           </View>
           <View style={styles.infoRight}>
-            <Text style={styles.infoText}>{formattedDate}</Text>
+            <Text style={styles.infoText}>{formatDatePtBR(today)}</Text>
             <Text style={styles.infoText}>{dayName}</Text>
           </View>
         </View>
@@ -158,7 +201,10 @@ export function DailyPlanningPDF({ data, formattedDate }) {
         {/* Cabeçalho da tabela */}
         <View style={styles.headerRow}>
           {columns.map((col, i) => (
-            <Text key={i} style={{ ...styles.cell, flex: col.flex, fontWeight: 600 }}>
+            <Text
+              key={i}
+              style={{ ...styles.cell, flex: col.flex, fontWeight: 600 }}
+            >
               {col.label}
             </Text>
           ))}
@@ -191,21 +237,26 @@ export function DailyPlanningPDF({ data, formattedDate }) {
                   case "address":
                     content = `${item.fullOccurrence?.address?.street || ""}, ${
                       item.fullOccurrence?.address?.number || ""
-                    }`;
+                    }`
+                      .trim()
+                      .replace(/,\s*$/, "");
                     break;
                   case "service":
                     content = item.serviceNature?.name;
                     break;
                   case "date":
-                    content = item.scheduledDate
-                      ? new Date(item.scheduledDate).toLocaleDateString("pt-BR")
-                      : "—";
+                    // (alteração mínima) – usa formatter seguro
+                    content = formatDatePtBR(item.scheduledDate);
                     break;
                   case "status":
-                    // 🟢 substituição: usa a máscara do statusLabels se existir
-                    const raw = (item.status || "").toString().trim().toLowerCase();
+                    // usa a máscara do statusLabels se existir
+                    const raw = (item.status || "")
+                      .toString()
+                      .trim()
+                      .toLowerCase();
                     const masked =
-                      statusLabels[raw] || (raw ? toTitle(raw.replace(/_/g, " ")) : "—");
+                      statusLabels[raw] ||
+                      (raw ? toTitle(raw.replace(/_/g, " ")) : "—");
 
                     return (
                       <View
