@@ -25,14 +25,14 @@ const resolveMediaUrl = (u) => {
   return `${BASE_MEDIA_URL}/${sanitizeKey(u)}`;
 };
 
-// Badge simples para status
 function StatusBadge({
   status,
   isEmergencial,
   isDelayed,
   labelOverrides = {},
 }) {
-  const getStatusClasses = (status) => {
+  const getStatusClasses = (status, emerg) => {
+    if (emerg) return "bg-red-600 text-white";
     const map = {
       em_analise: "bg-[#D0E4FC] text-[#1678F2]",
       emergencial: "bg-[#FFE8E8] text-[#FF2222]",
@@ -64,7 +64,7 @@ function StatusBadge({
   };
 
   const label = labelOverrides[status] || statusLabels[status] || status || "—";
-  const classes = getStatusClasses(status);
+  const classes = getStatusClasses(status, isEmergencial === true);
 
   return (
     <span
@@ -156,9 +156,10 @@ export function AerialOccurrenceCard({ occurrence, expanded, onToggle }) {
     });
   }
 
+  const isEmerg = (occurrence?.isEmergency ?? occurrence?.isEmergencial ?? false) === true;
+
   return (
     <div className="rounded-2xl bg-white border border-zinc-200 overflow-hidden shadow-sm">
-      {/* imagem */}
       <div className="relative w-full aspect-[16/9] bg-white p-2 rounded-2xl">
         <img
           src={photos[activeIdx]}
@@ -206,7 +207,6 @@ export function AerialOccurrenceCard({ occurrence, expanded, onToggle }) {
         )}
       </div>
 
-      {/*  ações + status */}
       <div className="flex items-center px-1 sm:px-2 py-3 border-b border-zinc-200">
         <button
           onClick={handleDownloadVideos}
@@ -231,18 +231,14 @@ export function AerialOccurrenceCard({ occurrence, expanded, onToggle }) {
         </button>
 
         <div className="ml-auto">
-          <StatusBadge status={status} />
+          <StatusBadge status={status} isEmergencial={isEmerg} />
         </div>
       </div>
 
-      {/* info  + timeline  */}
       <div className="p-4 sm:p-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Informações  */}
           <div>
             <ul className="space-y-1.5 text-sm">
-              
-
               <li className="text-zinc-500">
                 <span className="font-semibold text-zinc-700">
                   Solicitado por:{" "}
@@ -284,7 +280,6 @@ export function AerialOccurrenceCard({ occurrence, expanded, onToggle }) {
             </ul>
           </div>
 
-          {/* Timeline */}
           <div>
             <Timeline timeline={timelineSteps} />
           </div>

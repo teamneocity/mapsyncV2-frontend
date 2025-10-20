@@ -142,9 +142,9 @@ export function TutorialCard({ labelColors }) {
     return () => clearTimeout(t);
   }, [w, h]);
 
-  const baseFont = w < 380 ? 12 : w < 520 ? 16 : w < 760 ? 24 : 32;
-  const MIN_FONT = 9; 
-  const FULL_FONT_PCT = 12; // a partir de 12% já usamos fonte cheia
+  const baseFont = w < 380 ? 12 : w < 520 ? 12 : w < 760 ? 12 : 12;
+  const MIN_FONT = 12; 
+  const FULL_FONT_PCT = 12; 
 
   const hasData =
     Array.isArray(statusRows) && statusRows.some((r) => (r.count || 0) > 0);

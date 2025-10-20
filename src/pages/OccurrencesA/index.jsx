@@ -22,6 +22,7 @@ export function OccurrencesA() {
   const [neighborhoodId, setNeighborhoodId] = useState(null);
   const [order, setOrder] = useState("recent");
   const [type, setType] = useState(null);
+  const ALLOWED_TYPES = ["mapeamento", "metragem", "comunicacao"];
   const [status, setStatus] = useState(null);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -31,36 +32,35 @@ export function OccurrencesA() {
   const [loading, setLoading] = useState(false);
   const [neighborhoods, setNeighborhoods] = useState([]);
 
+  // formData local
   const [formData, setFormData] = useState({
-    type: "mapeamento_metragem",
+    type: "mapeamento",
     street: "",
     zipCode: "",
     latitude: "",
     longitude: "",
     neighborhoodId: "",
     observation: "",
+    isEmergency: false,
+    verificationDate: "",
+    verificationTime: "",
   });
 
   const toYMD = (d) =>
     d instanceof Date && !isNaN(d) ? format(d, "yyyy-MM-dd") : undefined;
 
+  // Busca principal
   const fetchInspections = async (page = 1) => {
     try {
       const params = {
         page,
         street: street || undefined,
         neighborhoodId: neighborhoodId || undefined,
-        order: order || undefined, // 'recent' | 'oldest'
-        type:
-          type === "mapeamento_metragem" || type === "analise_pavimentacao"
-            ? type
-            : undefined,
-        status: ["pendente", "aceita", "rejeitada", "verificada"].includes(
-          status
-        )
+        order: order || undefined,
+        type: ALLOWED_TYPES.includes(type) ? type : undefined,
+        status: ["pendente", "aceita", "rejeitada", "verificada"].includes(status)
           ? status
           : undefined,
-
         startDate: toYMD(startDate),
         endDate: toYMD(endDate),
       };
@@ -93,16 +93,7 @@ export function OccurrencesA() {
 
   useEffect(() => {
     fetchInspections(currentPage);
-  }, [
-    currentPage,
-    street,
-    neighborhoodId,
-    order,
-    type,
-    status,
-    startDate,
-    endDate,
-  ]);
+  }, [currentPage, street, neighborhoodId, order, type, status, startDate, endDate]);
 
   const fetchNeighborhoods = async () => {
     try {
@@ -128,28 +119,72 @@ export function OccurrencesA() {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post("/aerial-inspections", formData);
+      if (formData.type === "comunicacao") {
+        if (!formData.verificationDate || !formData.verificationTime) {
+          toast({
+            title: "Preencha data e hora",
+            description:
+              "Para o tipo comunicação, data e hora são obrigatórias.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+      }
+
+      const timeToBeVerified =
+        formData.type === "comunicacao"
+          ? `${formData.verificationDate}T${formData.verificationTime}`
+          : undefined;
+
+      const payload = {
+        type: formData.type,
+        street: formData.street,
+        isEmergency: formData.isEmergency,
+        zipCode: formData.zipCode,
+        latitude:
+          formData.latitude === ""
+            ? undefined
+            : parseFloat(String(formData.latitude)),
+        longitude:
+          formData.longitude === ""
+            ? undefined
+            : parseFloat(String(formData.longitude)),
+        neighborhoodId: formData.neighborhoodId,
+        observation: formData.observation || undefined,
+        ...(formData.type === "comunicacao" ? { timeToBeVerified } : {}),
+      };
+
+      await api.post("/aerial-inspections", payload);
+
       toast({
         title: "Inspeção criada com sucesso!",
         description: "Sua solicitação foi enviada.",
       });
+
       setModalOpen(false);
       setFormData({
-        type: "mapeamento_metragem",
+        type: "mapeamento",
         street: "",
         zipCode: "",
         latitude: "",
         longitude: "",
         neighborhoodId: "",
         observation: "",
+        isEmergency: false,
+        verificationDate: "",
+        verificationTime: "",
       });
 
       setCurrentPage(1);
+      window.location.reload();
     } catch (error) {
       console.error(error);
       toast({
         title: "Erro ao criar inspeção",
-        description: "Verifique os dados e tente novamente.",
+        description:
+          error?.response?.data?.message ||
+          "Verifique os dados e tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -176,12 +211,7 @@ export function OccurrencesA() {
             setCurrentPage(1);
           }}
           onFilterType={(value) => {
-            setType(
-              value === "mapeamento_metragem" ||
-                value === "analise_pavimentacao"
-                ? value
-                : null
-            );
+            setType(ALLOWED_TYPES.includes(value) ? value : null);
             setCurrentPage(1);
           }}
           onFilterRecent={(value) => {
@@ -231,14 +261,16 @@ export function OccurrencesA() {
           )}
 
           {occurrences?.map((occ) => (
-            <AerialOccurrenceCard
-              key={occ.id}
-              occurrence={occ}
-              expanded={expandedId === occ.id}
-              onToggle={() =>
-                setExpandedId((prev) => (prev === occ.id ? null : occ.id))
-              }
-            />
+            <div key={occ.id} className="relative">
+              <AerialOccurrenceCard
+                key={occ.id}
+                occurrence={occ}
+                expanded={expandedId === occ.id}
+                onToggle={() =>
+                  setExpandedId((prev) => (prev === occ.id ? null : occ.id))
+                }
+              />
+            </div>
           ))}
         </div>
       </div>
@@ -263,6 +295,28 @@ export function OccurrencesA() {
             </h2>
 
             <form onSubmit={handleCreateInspection} className="space-y-3">
+              {/* Emergencial */}
+              <div className="flex items-center gap-2">
+                <input
+                  id="isEmergency"
+                  type="checkbox"
+                  checked={formData.isEmergency === true}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      isEmergency: e.target.checked,
+                    })
+                  }
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <label
+                  htmlFor="isEmergency"
+                  className="text-sm text-gray-700"
+                >
+                  Emergencial?
+                </label>
+              </div>
+
               <div>
                 <label className="text-sm font-medium text-gray-700">
                   Tipo de inspeção
@@ -274,12 +328,50 @@ export function OccurrencesA() {
                   }
                   className="w-full mt-1 border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#1C7551]"
                 >
-                  <option value="mapeamento_metragem">
-                    Mapeamento / Metragem
-                  </option>
-                  <option value="outro_tipo">Outro tipo</option>
+                  <option value="mapeamento">Mapeamento</option>
+                  <option value="metragem">Metragem</option>
+                  <option value="comunicacao">Comunicação</option>
                 </select>
               </div>
+
+              {formData.type === "comunicacao" && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">
+                      Data
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.verificationDate}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          verificationDate: e.target.value,
+                        })
+                      }
+                      className="w-full mt-1 border rounded-lg px-3 py-2 text-sm"
+                      required={formData.type === "comunicacao"}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">
+                      Hora
+                    </label>
+                    <input
+                      type="time"
+                      value={formData.verificationTime}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          verificationTime: e.target.value,
+                        })
+                      }
+                      className="w-full mt-1 border rounded-lg px-3 py-2 text-sm"
+                      required={formData.type === "comunicacao"}
+                    />
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="text-sm font-medium text-gray-700">
@@ -351,7 +443,10 @@ export function OccurrencesA() {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        latitude: parseFloat(e.target.value),
+                        latitude:
+                          e.target.value === ""
+                            ? ""
+                            : parseFloat(e.target.value),
                       })
                     }
                     className="w-full mt-1 border rounded-lg px-3 py-2 text-sm"
@@ -370,7 +465,10 @@ export function OccurrencesA() {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        longitude: parseFloat(e.target.value),
+                        longitude:
+                          e.target.value === ""
+                            ? ""
+                            : parseFloat(e.target.value),
                       })
                     }
                     className="w-full mt-1 border rounded-lg px-3 py-2 text-sm"
