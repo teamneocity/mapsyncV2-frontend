@@ -51,6 +51,8 @@ export function OccurrenceList({
       aceita: "bg-[#FFF4D6] text-[#986F00]",
       verificada: "bg-[#DDF2EE] text-[#40C4AA]",
       rejeitada: "bg-[#FFE8E8] text-[#9D0000]",
+      encaminhada_externa: "bg-[#EDEDED] text-[#5F5F5F]"
+
     };
     return map[status] || "bg-gray-100 text-gray-600";
   };
@@ -81,6 +83,7 @@ export function OccurrenceList({
       aceita: "Aceita",
       verificada: "Verificada",
       rejeitada: "Rejeitada",
+      encaminhada_externa: "Arquivada"
     };
 
     const labelBase =

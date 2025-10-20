@@ -46,6 +46,7 @@ export function Analysis() {
     endDate: null,
   });
   const [filterNeighborhood, setFilterNeighborhood] = useState(null);
+  const [filterExternalCompany, setFilterExternalCompany] = useState("");
 
   const [editableSectorId, setEditableSectorId] = useState(null);
   const [editableDescription, setEditableDescription] = useState("");
@@ -79,6 +80,7 @@ export function Analysis() {
     filterNeighborhood,
     filterDateRange.startDate,
     filterDateRange.endDate,
+    filterExternalCompany,
   ]);
 
   const handleToggleDateOrder = (order) => {
@@ -105,6 +107,7 @@ export function Analysis() {
                 new Date(filterDateRange.endDate).setHours(23, 59, 59, 999)
               ).toISOString()
             : undefined,
+          externalCompanyName: filterExternalCompany || undefined,
         },
       });
 
@@ -153,14 +156,12 @@ export function Analysis() {
         return;
       }
 
-      
       const body = {
         occurrenceId,
         sectorId: editableSectorId,
         isEmergencial,
       };
 
-     
       if (extras.externalCompany) {
         body.externalCompany = extras.externalCompany;
         if (extras.externalCompanyNote) {
@@ -247,6 +248,11 @@ export function Analysis() {
           }}
           onFilterDateRange={(range) => {
             setFilterDateRange(range);
+            setCurrentPage(1);
+          }}
+          onFilterCompany={(companyName) => {
+            const name = typeof companyName === "string" ? companyName : "";
+            setFilterExternalCompany(name || "");
             setCurrentPage(1);
           }}
           handleApplyFilters={handleApplyFiltersClick}
