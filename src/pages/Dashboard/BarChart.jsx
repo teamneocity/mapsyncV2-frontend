@@ -143,7 +143,7 @@ export function TutorialCard({ labelColors }) {
   }, [w, h]);
 
   const baseFont = w < 380 ? 12 : w < 520 ? 16 : w < 760 ? 24 : 32;
-  const MIN_FONT = 9; // piso para caber mesmo em 1%
+  const MIN_FONT = 9; 
   const FULL_FONT_PCT = 12; // a partir de 12% já usamos fonte cheia
 
   const hasData =
@@ -187,13 +187,8 @@ export function TutorialCard({ labelColors }) {
       }
 
       const ordered = [...statusRows].sort((a, b) => b.count - a.count);
-
-      // 1) inteiros que somam 100
       const initial = countsToPercentsInt(ordered);
-      // 2) mínimo de 1% para quem tem count>0
       const percents = enforceMinOnePercent(initial, ordered);
-
-      // rótulos: mostra sempre que parte >= 1%
       const lbls = percents.map((p) => (p >= 1 ? `${p}%` : ""));
 
       const pal = ordered.map(

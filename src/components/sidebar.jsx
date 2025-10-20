@@ -18,6 +18,7 @@ import { PanelLeftClose } from "lucide-react";
 import PurpleCheck from "@/assets/icons/PurpleCheck.svg?react";
 import DesktopIcon from "@/assets/icons/desktop.svg?react";
 import Ninety from "@/assets/icons/Ninety.svg?react";
+import DataAnalytics from "@/assets/icons/DataAnalytics.svg?react";
 import { useAnalysisNotification } from "@/hooks/useAnalysisNotification";
 
 import {
@@ -204,7 +205,7 @@ export function Sidebar() {
                   */}
 
                   {/* <NavLink to="/reports" className={linkClass}>
-                    <NewsIcon className="w-5 h-5 shrink-0" /> Relatórios
+                    <DataAnalytics className="w-5 h-5 shrink-0" /> Relatórios
                   </NavLink> */}
                 </>
               )}
@@ -433,7 +434,7 @@ export function Sidebar() {
                       */}
 
                       {/* <NavLink to="/reports" className={linkClassMobile}>
-                        <NewsIcon className="w-5 h-5 shrink-0" /> Relatórios
+                        <DataAnalytics className="w-5 h-5 shrink-0" /> Relatórios
                       </NavLink> */}
                     </>
                   )}
