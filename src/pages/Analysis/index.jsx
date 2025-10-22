@@ -84,7 +84,7 @@ export function Analysis() {
   ]);
 
   const handleToggleDateOrder = (order) => {
-    setFilterRecent(order); // 'recent' | 'oldest'
+    setFilterRecent(order); 
     setCurrentPage(1);
   };
 
