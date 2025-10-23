@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { GoogleMaps } from "@/components/googleMaps";
@@ -15,6 +15,41 @@ import { Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { api } from "@/services/api";
+
+// serve pare evitar erro caso a foto ainda não esteja anexada na ocorrência replicada
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function replicateWithRetry(
+  api,
+  occurrenceId,
+  { tries = 5, baseDelay = 600 } = {}
+) {
+  let lastError;
+  for (let attempt = 1; attempt <= tries; attempt++) {
+    try {
+      const res = await api.post(
+        "/occurrences/attachments/replicate-from-occurrence",
+        { occurrenceId }
+      );
+      const id = res?.data?.attachmentId;
+      if (id) return id;
+      lastError = new Error("attachmentId ausente na resposta");
+    } catch (err) {
+      lastError = err;
+      const msg = err?.response?.data?.message || err?.message || "";
+      const notReady =
+        err?.response?.status === 404 &&
+        typeof msg === "string" &&
+        msg.toLowerCase().includes("no final attachments found");
+      if (!notReady) {
+        throw err;
+      }
+    }
+    const wait = baseDelay + (attempt - 1) * 300;
+    await sleep(wait);
+  }
+  throw lastError || new Error("Falha ao replicar após tentativas");
+}
 
 export function ExpandedRowServiceOrder({ occurrence }) {
   const rescheduleSteps =
@@ -67,6 +102,11 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   const [newScheduledDate, setNewScheduledDate] = useState(null);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
 
+  const [sectors, setSectors] = useState([]);
+  const [selectedSectorId, setSelectedSectorId] = useState("");
+  const [sectorsLoading, setSectorsLoading] = useState(false);
+  const [sectorsError, setSectorsError] = useState("");
+
   const navigate = useNavigate();
 
   const [isRescheduleHistoryModalOpen, setIsRescheduleHistoryModalOpen] =
@@ -115,7 +155,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     }
   };
 
-  // Finaliza a ocorrencia
+  // Finaliza a ocorrência
   const handleFinalizeExecution = async () => {
     const serviceOrderId = occurrence?.id;
     const occurrenceId = occurrence?.occurrence?.id;
@@ -141,17 +181,23 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       setSelectedPhoto(null);
       setIsFinalizeModalOpen(false);
 
-      // Replica a imagem final da ocorrência original
-      const replicateResponse = await api.post(
-        "/occurrences/attachments/replicate-from-occurrence",
-        {
-          occurrenceId,
-        }
-      );
+      // Espera a foto final chegar na ocorrência e tenta replicar
+      try {
+        const novoAttachmentId = await replicateWithRetry(api, occurrenceId, {
+          tries: 5,
+          baseDelay: 600,
+        });
 
-      const novoAttachmentId = replicateResponse?.data?.attachmentId;
-
-      setFormFotoId(novoAttachmentId || "");
+        setFormFotoId(novoAttachmentId || "");
+        console.log("Replicação concluída:", novoAttachmentId);
+      } catch (repErr) {
+        console.warn("Replicação não disponível agora:", repErr);
+        toast({
+          title: "Observação",
+          description:
+            "Finalizamos a OS, mas a foto final ainda não ficou disponível para replicação. Você pode prosseguir sem a foto ou tentar novamente mais tarde.",
+        });
+      }
 
       // Se for do setor de drenagem, pergunta se quer criar nova ocorrência
       if (occurrence?.sector?.name?.toLowerCase().includes("drenagem")) {
@@ -167,6 +213,45 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     }
   };
 
+  //Carrega os setores quando modal abre
+  useEffect(() => {
+    if (!isCreatePavingModalOpen) return;
+
+    let mounted = true;
+    async function fetchSectors() {
+      setSectorsLoading(true);
+      setSectorsError("");
+      try {
+        const res = await api.get("/sectors/details");
+        const list = res?.data?.sectors ?? res?.data ?? [];
+
+        if (mounted) {
+          setSectors(list);
+          const pav = list.find((s) =>
+            s?.name?.toLowerCase().includes("paviment")
+          );
+          setSelectedSectorId(pav?.id ?? "");
+        }
+      } catch (err) {
+        console.warn("Falha ao carregar setores:", err);
+        if (mounted) {
+          setSectorsError(
+            err?.response?.data?.message ||
+              "Não foi possível carregar os setores."
+          );
+        }
+      } finally {
+        if (mounted) setSectorsLoading(false);
+      }
+    }
+
+    fetchSectors();
+
+    return () => {
+      mounted = false;
+    };
+  }, [isCreatePavingModalOpen]);
+
   // cria nova ocorrencia
   const handleCreatePavingOccurrence = async () => {
     try {
@@ -175,6 +260,10 @@ export function ExpandedRowServiceOrder({ occurrence }) {
 
       if (!address || !setorAtualId) {
         throw new Error("Endereço ou setor não encontrado.");
+      }
+
+      if (!selectedSectorId) {
+        throw new Error("Selecione o setor de destino para encaminhar.");
       }
 
       const body = {
@@ -194,35 +283,38 @@ export function ExpandedRowServiceOrder({ occurrence }) {
 
       const response = await api.post("/occurrences/employee", body);
 
-      if (response?.status === 201 && response.data?.data) {
-        const novaOcorrenciaId = response.data.data;
+      const novaOcorrenciaId =
+        response?.data?.data ??
+        response?.data?.occurrenceId ??
+        response?.data?.id ??
+        null;
 
-        // Aprova para setor de pavimentação
-        const setorPavimentacaoId = "3500cd38-d37c-44dc-9e85-f94290a7881a";
-
-        await api.post("/occurrences/approve", {
-          occurrenceId: novaOcorrenciaId,
-          sectorId: setorPavimentacaoId,
-        });
-
-        toast({
-          title: "Ocorrência criada e encaminhada com sucesso!",
-          description:
-            "A nova ocorrência foi enviada ao setor de pavimentação.",
-        });
-      } else {
-        throw new Error("Falha inesperada ao criar a ocorrência.");
+      if (!(response?.status === 201) || !novaOcorrenciaId) {
+        console.error("Criação sem ID:", response?.data);
+        throw new Error("Falha ao criar ocorrência (ID não retornado).");
       }
+
+      // Aprova para o setor escolhido no modal
+      await api.post("/occurrences/approve", {
+        occurrenceId: novaOcorrenciaId,
+        sectorId: selectedSectorId,
+      });
+
+      toast({
+        title: "Ocorrência criada e encaminhada com sucesso!",
+        description: "A nova ocorrência foi enviada para o setor selecionado.",
+      });
     } catch (error) {
       console.error(" Erro ao criar:", error);
       toast({
         variant: "destructive",
-        title: "Erro ao criar ocorrência",
+        title: "Erro ao criar/encaminhar",
         description: error?.message || "Erro inesperado.",
       });
     } finally {
       setIsCreatePavingModalOpen(false);
       setFormFotoId("");
+      setSelectedSectorId("");
     }
   };
 
@@ -528,7 +620,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 onClick={async () => {
                   await handleFinalizeExecution();
                   setIsFinalizeModalOpen(false);
-                  window.location.reload();
                 }}
                 disabled={!selectedPhoto}
                 className={`flex items-center justify-center gap-2 w-full rounded-2xl ${
@@ -580,6 +671,36 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 </select>
               </div>
 
+              {/* Setor de destino */}
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Setor de destino
+                </label>
+
+                {sectorsLoading ? (
+                  <div className="mt-2 text-xs text-gray-500">
+                    Carregando setores...
+                  </div>
+                ) : sectorsError ? (
+                  <div className="mt-2 text-xs text-red-600">
+                    {sectorsError}
+                  </div>
+                ) : (
+                  <select
+                    value={selectedSectorId}
+                    onChange={(e) => setSelectedSectorId(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg p-2 text-sm mt-1"
+                  >
+                    <option value="">Selecione um setor</option>
+                    {sectors.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
               {/* Descrição */}
               <div>
                 <label className="text-sm font-medium text-gray-700">
@@ -611,7 +732,12 @@ export function ExpandedRowServiceOrder({ occurrence }) {
             <div className="flex flex-col gap-3 pt-4">
               <button
                 onClick={handleCreatePavingOccurrence}
-                className="bg-black hover:bg-gray-900 text-white py-3 rounded-2xl font-medium text-sm"
+                disabled={!selectedSectorId || sectorsLoading}
+                className={`py-3 rounded-2xl font-medium text-sm text-white ${
+                  !selectedSectorId || sectorsLoading
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-black hover:bg-gray-900"
+                }`}
               >
                 Criar ocorrência
               </button>
