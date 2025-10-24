@@ -83,8 +83,8 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   const lat = parseFloat(occurrence.occurrence?.address?.latitude ?? 0);
   const lng = parseFloat(occurrence.occurrence?.address?.longitude ?? 0);
 
-  const [isModalOpen, setIsModalOpen] = useState(false); // modal iniciar
-  const [isFinalizeModalOpen, setIsFinalizeModalOpen] = useState(false); // modal finalizar
+  const [isModalOpen, setIsModalOpen] = useState(false); 
+  const [isFinalizeModalOpen, setIsFinalizeModalOpen] = useState(false); 
   const [selectedPhoto, setSelectedPhoto] = useState(null);
 
   const [isCreatePavingModalOpen, setIsCreatePavingModalOpen] = useState(false);

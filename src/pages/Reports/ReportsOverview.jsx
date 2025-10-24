@@ -3,6 +3,8 @@
 import React, { useMemo, useState, useEffect } from "react";
 import ReportsPieCard from "./ReportsPieCard";
 import { api } from "@/services/api";
+import { useSearchParams } from "react-router-dom";
+import { SelectField } from "@/components/selectField";
 
 export default function ReportsOverview({
   title = "Relatórios",
@@ -19,7 +21,7 @@ export default function ReportsOverview({
   const [loadingCoverage, setLoadingCoverage] = useState(false);
 
   const [selectedStatus, setSelectedStatus] = useState("em_analise");
-  const [selectedPeriod, setSelectedPeriod] = useState("day"); 
+  const [selectedPeriod, setSelectedPeriod] = useState("day");
 
   const isDashboard =
     selectedSector === "Escolha o painél de exibição do setor" ||
@@ -150,6 +152,16 @@ export default function ReportsOverview({
     fetchCoverage();
   }, [selectedSector, selectedStatus, sectors, isDashboard]);
 
+  const [, setParams] = useSearchParams();
+
+  function goToBuilder() {
+    setParams((prev) => {
+      const p = new URLSearchParams(prev);
+      p.set("view", "builder"); // ativa o outro componente
+      return p;
+    });
+  }
+
   function getNeighborhoodNamesForPeriod(period) {
     const fromCoverage = coverage?.neighborhoodNamesByWindow?.[period] || null;
 
@@ -166,7 +178,7 @@ export default function ReportsOverview({
     const raw = stats?.[key] || [];
     return (raw || []).map((n) => ({
       name: n?.name ?? n?.neighborhood_name ?? n?.neighborhood ?? "-",
-      count: n?.count ?? n?.total ?? null, 
+      count: n?.count ?? n?.total ?? null,
     }));
   }
 
@@ -237,17 +249,31 @@ export default function ReportsOverview({
         </div>
 
         <div className="w-full md:w-auto">
-          <select
+          <SelectField
+            className="[&_[data-radix-select-item]]:text-left [&_[data-radix-select-item]]:justify-start"
+            label=""
             value={selectedSector}
-            onChange={(e) => onSectorChange(e.target.value)}
-            className="w-full md:w-[300px] h-[64px] rounded-lg border border-neutral-200/80 bg-white px-3 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition"
-          >
-            {sectorOptions.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => {
+              if (val === "builder") {
+                goToBuilder();
+              } else {
+                onSectorChange(val);
+              }
+            }}
+            placeholder="Escolha o painél de exibição do setor"
+            options={[
+              {
+                value: "Escolha o painél de exibição do setor",
+                label: "Escolha o painél de exibição do setor",
+              },
+              ...sectors.map((s) => ({
+                value: s.name,
+                label: s.name,
+              })),
+              { value: "builder", label: "Chatbot" },
+            ]}
+          />
+
           {loadingSectors && (
             <p className="text-xs text-gray-400 mt-1">Carregando setores…</p>
           )}
@@ -405,13 +431,16 @@ export default function ReportsOverview({
 
               <div className="mt-6 flex items-center gap-3">
                 <button className="h-12 px-4 rounded-lg border border-neutral-200 bg-white text-gray-700 text-sm">
-                  Configure o tipo de relatório
-                </button>
-                <button className="h-12 px-4 rounded-lg border border-neutral-200 bg-white text-gray-700 text-sm">
                   Imprimir
                 </button>
                 <button className="h-12 px-4 rounded-lg border border-neutral-200 bg-white text-gray-700 text-sm">
                   Export PDF
+                </button>
+                <button
+                  onClick={goToBuilder}
+                  className="h-12 px-4 rounded-lg border border-neutral-200 bg-white text-gray-700 text-sm"
+                >
+                  Configure o tipo de relatório
                 </button>
               </div>
             </div>
@@ -477,9 +506,7 @@ export default function ReportsOverview({
               <h3 className="text-lg font-semibold mt-6">
                 Endereços co-relacionados
               </h3>
-              <div className="text-gray-400 text-sm mt-2">
-                
-              </div>
+              <div className="text-gray-400 text-sm mt-2"></div>
             </div>
           </div>
         </>

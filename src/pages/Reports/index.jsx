@@ -3,6 +3,7 @@
 
 // React
 import React, { useState } from "react";
+import { useSearchParams } from "react-router-dom"; // <-- adicionado
 
 // Componentes globais
 import { Sidebar } from "@/components/sidebar";
@@ -13,9 +14,14 @@ import ImgUsers from "@/assets/icons/imgUsers.svg";
 
 // Componentes locais
 import ReportsOverview from "./ReportsOverview";
+import ReportsBuilder from "./ReportsBuilder"; // <-- adicionado
 
 export function Reports() {
   const [selected, setSelected] = useState("Dashboard");
+
+  // explicação: leio ?view=... para decidir qual miolo renderizar
+  const [params] = useSearchParams();
+  const view = params.get("view") || "overview";
 
   return (
     <div className="bg-[#EBEBEB] min-h-screen font-inter">
@@ -48,11 +54,26 @@ export function Reports() {
           </div>
         </section>
 
-        <ReportsOverview
-          title="Resumo de indicadores operacionais"
-          selectedSector={selected}
-          onSectorChange={setSelected}
-        />
+        {/*
+          explicação:
+          - Mantive seu ReportsOverview como está.
+          - Quando ?view=builder estiver na URL (definido lá de dentro do ReportsOverview),
+            eu rendo o ReportsBuilder.
+          - O wrapper de largura/estilo é igual (max-w-[1500px], bg-white, rounded, etc.)
+            para o visual ficar idêntico ao do que já renderiza.
+        */}
+        {view === "builder" ? (
+          <section className="max-w-[1500px] w-full mx-auto bg-white rounded-xl p-4 sm:p-6">
+            <ReportsBuilder selectedSector={selected} />
+          </section>
+        ) : (
+          <ReportsOverview
+            title="Resumo de indicadores operacionais"
+            selectedSector={selected}
+            onSectorChange={setSelected}
+          />
+        )}
+
         <div aria-hidden className="h-8 md:h-3" />
       </main>
     </div>
