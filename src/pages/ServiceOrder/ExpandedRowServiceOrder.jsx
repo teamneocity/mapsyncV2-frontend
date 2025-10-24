@@ -198,7 +198,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       setSelectedPhoto(null);
       setIsFinalizeModalOpen(false);
 
-      // Espera a foto final chegar na ocorrência e tenta replicar
+      // Tenta replicar a foto final para usar na criação da ocorrência de pavimentação
       try {
         const novoAttachmentId = await replicateWithRetry(api, occurrenceId, {
           tries: 5,
@@ -216,9 +216,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         });
       }
 
-      // Se for do setor de drenagem, pergunta se quer criar nova ocorrência
-      // Se for do setor de drenagem, abre modal de CONFIRMAÇÃO (sem select)
-      // e tenta descobrir o ID do setor "Pavimentação" automaticamente
+      // Se for do setor de drenagem, abre o modal para criar ocorrência de pavimentação
       if (
         occurrence?.sector?.name &&
         normalize(occurrence.sector.name).includes("drenagem")
@@ -244,7 +242,13 @@ export function ExpandedRowServiceOrder({ occurrence }) {
           );
         }
 
-        setIsCreatePavingModalOpen(true); // sempre abre para confirmação
+        // Abre modal de criação/encaminhamento (refresh só após confirmar/cancelar no modal)
+        setIsCreatePavingModalOpen(true);
+      } else {
+        // NÃO é drenagem faz refresh logo após finalizar
+        setTimeout(() => {
+          window.location.reload();
+        }, 1200);
       }
     } catch (err) {
       console.error("Erro ao finalizar execução:", err);
@@ -304,7 +308,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         throw new Error("Endereço não encontrado.");
       }
 
-      // usa o ID detectado automaticamente
       const targetSectorId = pavSectorId;
       if (!targetSectorId) {
         throw new Error("Setor 'Pavimentação' não disponível no momento.");
@@ -345,6 +348,11 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         title: "Ocorrência criada e encaminhada",
         description: "Encaminhada para Pavimentação com sucesso.",
       });
+
+      // 🔄 reload após sucesso (espera 1,2s pro toast aparecer)
+      setTimeout(() => {
+        window.location.reload();
+      }, 1200);
     } catch (error) {
       console.error(" Erro ao criar:", error);
       toast({
@@ -773,6 +781,10 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                   setIsCreatePavingModalOpen(false);
                   setPavSectorId("");
                   setPavLookupError("");
+
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 400);
                 }}
                 className="text-sm text-gray-500 underline hover:text-gray-700 transition"
               >
