@@ -51,6 +51,20 @@ async function replicateWithRetry(
   throw lastError || new Error("Falha ao replicar após tentativas");
 }
 
+function normalize(str = "") {
+  return str
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .trim();
+}
+
+function getPavSectorId(sectors = []) {
+  const alvo = ["pavimentação", "pavimentacao"];
+  const found = sectors.find((s) => alvo.includes(normalize(s?.name)));
+  return found?.id || "";
+}
+
 export function ExpandedRowServiceOrder({ occurrence }) {
   const rescheduleSteps =
     Array.isArray(occurrence?.rescheduleHistory) &&
@@ -83,8 +97,8 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   const lat = parseFloat(occurrence.occurrence?.address?.latitude ?? 0);
   const lng = parseFloat(occurrence.occurrence?.address?.longitude ?? 0);
 
-  const [isModalOpen, setIsModalOpen] = useState(false); 
-  const [isFinalizeModalOpen, setIsFinalizeModalOpen] = useState(false); 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFinalizeModalOpen, setIsFinalizeModalOpen] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
 
   const [isCreatePavingModalOpen, setIsCreatePavingModalOpen] = useState(false);
@@ -108,6 +122,9 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   const [sectorsError, setSectorsError] = useState("");
 
   const navigate = useNavigate();
+
+  const [pavSectorId, setPavSectorId] = useState("");
+  const [pavLookupError, setPavLookupError] = useState("");
 
   const [isRescheduleHistoryModalOpen, setIsRescheduleHistoryModalOpen] =
     useState(false);
@@ -200,8 +217,34 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       }
 
       // Se for do setor de drenagem, pergunta se quer criar nova ocorrência
-      if (occurrence?.sector?.name?.toLowerCase().includes("drenagem")) {
-        setIsCreatePavingModalOpen(true);
+      // Se for do setor de drenagem, abre modal de CONFIRMAÇÃO (sem select)
+      // e tenta descobrir o ID do setor "Pavimentação" automaticamente
+      if (
+        occurrence?.sector?.name &&
+        normalize(occurrence.sector.name).includes("drenagem")
+      ) {
+        try {
+          setPavLookupError("");
+          const res = await api.get("/sectors/details");
+          const list = res?.data?.sectors ?? res?.data ?? [];
+          const pavId = getPavSectorId(list);
+
+          if (pavId) {
+            setPavSectorId(pavId);
+          } else {
+            setPavSectorId("");
+            setPavLookupError(
+              "Setor 'Pavimentação' não encontrado para este usuário."
+            );
+          }
+        } catch (e) {
+          setPavSectorId("");
+          setPavLookupError(
+            "Falha ao buscar setores. Tente novamente mais tarde."
+          );
+        }
+
+        setIsCreatePavingModalOpen(true); // sempre abre para confirmação
       }
     } catch (err) {
       console.error("Erro ao finalizar execução:", err);
@@ -256,14 +299,15 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   const handleCreatePavingOccurrence = async () => {
     try {
       const address = occurrence?.occurrence?.address;
-      const setorAtualId = occurrence?.sector?.id;
 
-      if (!address || !setorAtualId) {
-        throw new Error("Endereço ou setor não encontrado.");
+      if (!address) {
+        throw new Error("Endereço não encontrado.");
       }
 
-      if (!selectedSectorId) {
-        throw new Error("Selecione o setor de destino para encaminhar.");
+      // usa o ID detectado automaticamente
+      const targetSectorId = pavSectorId;
+      if (!targetSectorId) {
+        throw new Error("Setor 'Pavimentação' não disponível no momento.");
       }
 
       const body = {
@@ -279,8 +323,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         initialPhotosUrls: formFotoId ? [formFotoId] : [],
       };
 
-      console.log(" Enviando:", body);
-
       const response = await api.post("/occurrences/employee", body);
 
       const novaOcorrenciaId =
@@ -294,15 +336,14 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         throw new Error("Falha ao criar ocorrência (ID não retornado).");
       }
 
-      // Aprova para o setor escolhido no modal
       await api.post("/occurrences/approve", {
         occurrenceId: novaOcorrenciaId,
-        sectorId: selectedSectorId,
+        sectorId: targetSectorId,
       });
 
       toast({
-        title: "Ocorrência criada e encaminhada com sucesso!",
-        description: "A nova ocorrência foi enviada para o setor selecionado.",
+        title: "Ocorrência criada e encaminhada",
+        description: "Encaminhada para Pavimentação com sucesso.",
       });
     } catch (error) {
       console.error(" Erro ao criar:", error);
@@ -314,7 +355,8 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     } finally {
       setIsCreatePavingModalOpen(false);
       setFormFotoId("");
-      setSelectedSectorId("");
+      setPavSectorId("");
+      setPavLookupError("");
     }
   };
 
@@ -643,13 +685,13 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         </div>
       )}
       {isCreatePavingModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
           <div className="bg-white rounded-[2rem] w-full max-w-md p-6 shadow-lg space-y-5 text-left">
             <h2 className="text-xl font-semibold text-gray-900">
               Criar ocorrência de pavimentação
             </h2>
 
-            {/* Formulário */}
+            {/* Formulário (sem select) */}
             <div className="flex flex-col gap-4">
               {/* Tipo */}
               <div>
@@ -671,33 +713,18 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 </select>
               </div>
 
-              {/* Setor de destino */}
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  Setor de destino
-                </label>
-
-                {sectorsLoading ? (
-                  <div className="mt-2 text-xs text-gray-500">
-                    Carregando setores...
-                  </div>
-                ) : sectorsError ? (
-                  <div className="mt-2 text-xs text-red-600">
-                    {sectorsError}
-                  </div>
+              {/* Info: setor destino fixo */}
+              <div className="rounded-lg border p-3 bg-[#F8F8F8]">
+                <p className="text-sm text-gray-700">
+                  <strong>Setor de destino:</strong> Pavimentação
+                </p>
+                {pavLookupError ? (
+                  <p className="mt-2 text-xs text-red-600">{pavLookupError}</p>
                 ) : (
-                  <select
-                    value={selectedSectorId}
-                    onChange={(e) => setSelectedSectorId(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg p-2 text-sm mt-1"
-                  >
-                    <option value="">Selecione um setor</option>
-                    {sectors.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Esta ação irá encaminhar a nova ocorrência diretamente para
+                    o setor de Pavimentação.
+                  </p>
                 )}
               </div>
 
@@ -732,17 +759,21 @@ export function ExpandedRowServiceOrder({ occurrence }) {
             <div className="flex flex-col gap-3 pt-4">
               <button
                 onClick={handleCreatePavingOccurrence}
-                disabled={!selectedSectorId || sectorsLoading}
+                disabled={!pavSectorId || !!pavLookupError}
                 className={`py-3 rounded-2xl font-medium text-sm text-white ${
-                  !selectedSectorId || sectorsLoading
+                  !pavSectorId || pavLookupError
                     ? "bg-gray-300 cursor-not-allowed"
                     : "bg-black hover:bg-gray-900"
                 }`}
               >
-                Criar ocorrência
+                Confirmar criação e encaminhar
               </button>
               <button
-                onClick={() => setIsCreatePavingModalOpen(false)}
+                onClick={() => {
+                  setIsCreatePavingModalOpen(false);
+                  setPavSectorId("");
+                  setPavLookupError("");
+                }}
                 className="text-sm text-gray-500 underline hover:text-gray-700 transition"
               >
                 Cancelar
