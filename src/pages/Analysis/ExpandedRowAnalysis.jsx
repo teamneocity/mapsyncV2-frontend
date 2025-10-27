@@ -23,6 +23,7 @@ import {
 import { ThumbsDown, ThumbsUp, Copy } from "lucide-react";
 import Location from "@/assets/icons/Location.svg?react";
 import Folder from "@/assets/icons/Folder.svg?react";
+import Warning from "@/assets/icons/Warning.svg?react";
 
 export function ExpandedRowAnalysis({
   occurrence,
@@ -75,6 +76,12 @@ export function ExpandedRowAnalysis({
   const [externalCompany, setExternalCompany] = useState("");
   const [confirmExternalOpen, setConfirmExternalOpen] = useState(false);
   const [archivingExternal, setArchivingExternal] = useState(false);
+
+  const [isPossibleDuplicateOpen, setIsPossibleDuplicateOpen] = useState(false);
+  const [nearbyLoading, setNearbyLoading] = useState(false);
+  const [nearbyError, setNearbyError] = useState("");
+  const [nearbyBaseId, setNearbyBaseId] = useState(null);
+  const [nearbyItems, setNearbyItems] = useState([]);
 
   function openConfirmExternal() {
     setConfirmExternalOpen(true);
@@ -184,6 +191,50 @@ export function ExpandedRowAnalysis({
       mounted = false;
     };
   }, [occurrence.id]);
+
+  // busca duplicatas
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchNearby() {
+      try {
+        setNearbyError("");
+        setNearbyLoading(true);
+
+        const { data } = await api.get(`/occurrences/${occurrence.id}/nearby`);
+        // Esperado da sua rota: { baseId, count, occurrences: [...] }
+        if (!mounted) return;
+
+        setNearbyBaseId(data?.baseId ?? null);
+        setNearbyItems(
+          Array.isArray(data?.occurrences) ? data.occurrences : []
+        );
+      } catch (err) {
+        if (!mounted) return;
+        console.error("Erro ao buscar duplicatas próximas:", err);
+        setNearbyError(
+          err?.response?.data?.message ||
+            "Não foi possível carregar possíveis duplicatas."
+        );
+      } finally {
+        if (mounted) setNearbyLoading(false);
+      }
+    }
+
+    if (isPossibleDuplicateOpen) {
+      fetchNearby();
+    } else {
+      // ao fechar, opcional: limpar estado
+      setNearbyBaseId(null);
+      setNearbyItems([]);
+      setNearbyError("");
+      setNearbyLoading(false);
+    }
+
+    return () => {
+      mounted = false;
+    };
+  }, [isPossibleDuplicateOpen, occurrence.id]);
 
   const createdAt = occurrence.createdAt
     ? format(new Date(occurrence.createdAt), "dd/MM/yyyy HH:mm")
@@ -309,6 +360,26 @@ export function ExpandedRowAnalysis({
               <Copy className="w-4 h-4 shrink-0 opacity-70" />
             </button>
           </div>
+          {/* Exibe aviso de possível duplicata quando vier true */}
+          {occurrence?.isAPossibleDuplicate === true && (
+            <button
+              type="button"
+              onClick={() => setIsPossibleDuplicateOpen(true)}
+              className="w-full h-[52px] mt-2 text-left flex items-center justify-between gap-3 rounded-lg border px-3 py-2
+               bg-yellow-50 border-yellow-300 text-yellow-800 hover:bg-yellow-100"
+              aria-label="Abrir detalhes de possível duplicata"
+              title="Abrir detalhes de possível duplicata"
+            >
+              <span className="truncate font-medium">Possível duplicata</span>
+              <span className="text-xl leading-none" aria-hidden>
+                <Warning
+                  className="w-5 h-5 shrink-0 text-yellow-800"
+                  fill="currentColor"
+                />
+              </span>
+            </button>
+          )}
+
           <p>
             <span className="text-black font-medium">Data:</span> {createdAt}
           </p>
@@ -551,6 +622,124 @@ export function ExpandedRowAnalysis({
         lng={parseFloat(localAddress.longitude || 0)}
       />
 
+      {/* Modal de possível duplicata */}
+      <Dialog
+        open={isPossibleDuplicateOpen}
+        onOpenChange={setIsPossibleDuplicateOpen}
+      >
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Possível duplicata</DialogTitle>
+            <DialogDescription>
+              Esta ocorrência pode ter registros muito próximos (mesmo
+              local/tempo).
+            </DialogDescription>
+          </DialogHeader>
+
+          {nearbyLoading && (
+            <p className="text-sm text-gray-600">
+              Carregando possíveis duplicatas...
+            </p>
+          )}
+
+          {!nearbyLoading && nearbyError && (
+            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">
+              {nearbyError}
+            </div>
+          )}
+
+          {!nearbyLoading && !nearbyError && (
+            <>
+              {Array.isArray(nearbyItems) && nearbyItems.length > 0 ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">
+                      ID:{" "}
+                      <span className="font-mono">{nearbyBaseId ?? "—"}</span>
+                    </span>
+                    <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">
+                      {nearbyItems.length} possível(is) duplicata(s)
+                    </span>
+                  </div>
+
+                  <ul className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                    {nearbyItems.map((o) => {
+                      const created = o?.createdAt
+                        ? format(new Date(o.createdAt), "dd/MM/yyyy HH:mm")
+                        : "—";
+                      const rua = o?.address?.street ?? "Rua não informada";
+                      const num = o?.address?.number ?? "s/n";
+                      const bairro = o?.address?.neighborhoodName ?? "—";
+                      const protocolo = o?.protocolNumber ?? "—";
+                      const status = o?.status ?? "—";
+
+                      return (
+                        <li
+                          key={o.id}
+                          className="border rounded-lg p-3 bg-[#F8F8F8] text-sm text-gray-800"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">
+                                {o.type ?? "Ocorrência"}
+                              </p>
+                              <p className="text-gray-700 truncate">
+                                {rua}, {num} — {bairro}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                Criada em: {created}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Protocolo:{" "}
+                                <span className="font-mono">{protocolo}</span>
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Status: {status}
+                              </p>
+                            </div>
+
+                            <div className="shrink-0 flex flex-col gap-2">
+                              <Button
+                                variant="outline"
+                                className="h-8 px-2 text-xs"
+                                onClick={() => {
+                                  if (
+                                    protocolo &&
+                                    typeof navigator !== "undefined"
+                                  ) {
+                                    navigator.clipboard?.writeText(protocolo);
+                                  }
+                                }}
+                                title="Copiar protocolo"
+                              >
+                                Copiar protocolo
+                              </Button>
+                            </div>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-600">
+                  Nenhuma possível duplicata encontrada para esta ocorrência.
+                </p>
+              )}
+            </>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsPossibleDuplicateOpen(false)}
+            >
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Modal de arquivamento */}
       <Dialog open={confirmExternalOpen} onOpenChange={setConfirmExternalOpen}>
         <DialogContent>
@@ -648,7 +837,7 @@ export function ExpandedRowAnalysis({
         </DialogContent>
       </Dialog>
 
-      {/* Modal - Histórico de alterações de endereço */}
+      {/* Modal de Histórico de alterações de endereço */}
       <Dialog
         open={isAddressHistoryOpen}
         onOpenChange={setIsAddressHistoryOpen}
