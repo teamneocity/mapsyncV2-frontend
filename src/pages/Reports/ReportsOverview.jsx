@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import ReportsPieCard from "./ReportsPieCard";
+import ReportsNeighborhoodNightingale from "./ReportsNeighborhoodNightingale";
 import { api } from "@/services/api";
 import { useSearchParams } from "react-router-dom";
 import { SelectField } from "@/components/selectField";
@@ -336,7 +337,11 @@ export default function ReportsOverview({
               </p>
             </div>
             <div className="lg:col-span-5 h-[388px] rounded-xl border border-neutral-200/70 bg-white shadow-sm">
-              <ReportsPieCard />
+              <ReportsNeighborhoodNightingale
+                mobileHeight="h-full"
+                height="md:h-full xl:h-full"
+                className="h-full"
+              />
             </div>
           </div>
         </>

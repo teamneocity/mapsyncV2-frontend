@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ExpandedRowA } from "./ExpandedRowA";
 import { Timeline } from "./Timeline";
-import { Copy } from "lucide-react";
+import { Copy, Clock } from "lucide-react"; // ⟵ (novo) só para o ícone
 import Video from "@/assets/icons/Video.svg?react";
 import Image from "@/assets/icons/Image.svg?react";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +23,20 @@ const resolveMediaUrl = (u) => {
   if (!u) return "";
   if (/^https?:\/\//i.test(u)) return u;
   return `${BASE_MEDIA_URL}/${sanitizeKey(u)}`;
+};
+
+const formatDateTime = (value) => {
+  if (!value) return "—";
+  try {
+    const dt = new Date(value);
+    return new Intl.DateTimeFormat("pt-BR", {
+      dateStyle: "short",
+      timeStyle: "short",
+      timeZone: "America/Maceio",
+    }).format(dt);
+  } catch {
+    return String(value);
+  }
 };
 
 function StatusBadge({
@@ -112,6 +126,8 @@ export function AerialOccurrenceCard({ occurrence, expanded, onToggle }) {
   const solicitadoPor = occurrence?.requester?.name ?? "—";
   const osCode = occurrence?.id || "—";
 
+  const verifyUntil = occurrence?.timeToBeVerified;
+
   const imageUrls = photos;
 
   const videoUrls = useMemo(() => {
@@ -156,7 +172,8 @@ export function AerialOccurrenceCard({ occurrence, expanded, onToggle }) {
     });
   }
 
-  const isEmerg = (occurrence?.isEmergency ?? occurrence?.isEmergencial ?? false) === true;
+  const isEmerg =
+    (occurrence?.isEmergency ?? occurrence?.isEmergencial ?? false) === true;
 
   return (
     <div className="rounded-2xl bg-white border border-zinc-200 overflow-hidden shadow-sm">
@@ -207,7 +224,7 @@ export function AerialOccurrenceCard({ occurrence, expanded, onToggle }) {
         )}
       </div>
 
-      <div className="flex items-center px-1 sm:px-2 py-3 border-b border-zinc-200">
+      <div className="flex items-center px-1 sm:px-2 py-3 border-b border-zinc-200 gap-2">
         <button
           onClick={handleDownloadVideos}
           disabled={videoUrls.length === 0}
@@ -230,7 +247,7 @@ export function AerialOccurrenceCard({ occurrence, expanded, onToggle }) {
           Download imagens ({photosCount})
         </button>
 
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
           <StatusBadge status={status} isEmergencial={isEmerg} />
         </div>
       </div>
@@ -251,6 +268,16 @@ export function AerialOccurrenceCard({ occurrence, expanded, onToggle }) {
                 </span>
                 <span className="text-zinc-700">{tipoOcorrencia}</span>
               </li>
+              {verifyUntil && (
+                <li className="text-zinc-500">
+                  <span className="font-semibold text-zinc-700">
+                    Prazo de verificação:{" "}
+                  </span>
+                  <span className="text-zinc-700">
+                    {formatDateTime(verifyUntil)}
+                  </span>
+                </li>
+              )}
               <li className="text-zinc-500">
                 <span className="font-semibold text-zinc-700">Endereço: </span>
                 <span className="text-zinc-700">
