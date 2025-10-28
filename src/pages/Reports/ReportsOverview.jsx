@@ -24,6 +24,11 @@ export default function ReportsOverview({
   const [selectedStatus, setSelectedStatus] = useState("em_analise");
   const [selectedPeriod, setSelectedPeriod] = useState("day");
 
+  const [dashboardStatus, setDashboardStatus] = useState(null);
+  const [dashboardNeighborhoods, setDashboardNeighborhoods] = useState([]);
+  const [dashboardEmergency, setDashboardEmergency] = useState(0);
+  const [loadingDashboard, setLoadingDashboard] = useState(false);
+
   const isDashboard =
     selectedSector === "Escolha o painél de exibição do setor" ||
     selectedSector === "Dashboard";
@@ -66,6 +71,64 @@ export default function ReportsOverview({
       clickable: true,
     },
   };
+
+  // busca ocorrencias do dashboard geral
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchDashboardStats() {
+      if (!isDashboard) return; // só busca quando for o painel geral
+      setLoadingDashboard(true);
+      try {
+        const { data } = await api.get("/occurrences/stats");
+
+        const statusRows = Array.isArray(data?.byStatus) ? data.byStatus : [];
+        const statusMap = statusRows.reduce((acc, r) => {
+          const key = r?.status ?? "";
+          const val = r?.count ?? 0;
+          if (key) acc[key] = val;
+          return acc;
+        }, {});
+
+        const neighborhoods = Array.isArray(data?.byNeighborhood)
+          ? data.byNeighborhood.map((n) => ({
+              name: n?.neighborhood ?? n?.name ?? "-",
+              current: Number(n?.current ?? 0),
+              previous: Number(n?.previous ?? 0),
+              difference: Number(n?.difference ?? 0),
+            }))
+          : [];
+
+        const emerg =
+          typeof data?.currentEmergencial === "number"
+            ? data.currentEmergencial
+            : 0;
+
+        if (mounted) {
+          setDashboardStatus(statusMap);
+          setDashboardNeighborhoods(neighborhoods);
+          setDashboardEmergency(emerg);
+        }
+      } catch (e) {
+        console.warn(
+          "[ReportsOverview] erro /occurrences/stats (dashboard):",
+          e
+        );
+        if (mounted) {
+          setDashboardStatus(null);
+          setDashboardNeighborhoods([]);
+          setDashboardEmergency(0);
+        }
+      } finally {
+        if (mounted) setLoadingDashboard(false);
+      }
+    }
+
+    fetchDashboardStats();
+    return () => {
+      mounted = false;
+    };
+  }, [isDashboard]);
 
   useEffect(() => {
     let mounted = true;
@@ -153,6 +216,24 @@ export default function ReportsOverview({
     fetchCoverage();
   }, [selectedSector, selectedStatus, sectors, isDashboard]);
 
+  //conta a quantidade de bairros
+  const neighborhoodsAttendedCount = useMemo(() => {
+    if (!Array.isArray(dashboardNeighborhoods)) return 0;
+    return dashboardNeighborhoods.reduce((acc, n) => {
+      const cur = Number(n?.current ?? 0);
+      return acc + (cur > 0 ? 1 : 0);
+    }, 0);
+  }, [dashboardNeighborhoods]);
+
+  //conta a quantidade geral de ocorrencias
+  const totalCurrentOccurrences = useMemo(() => {
+    if (!Array.isArray(dashboardNeighborhoods)) return 0;
+    return dashboardNeighborhoods.reduce((acc, n) => {
+      const cur = Number(n?.current ?? 0);
+      return acc + cur;
+    }, 0);
+  }, [dashboardNeighborhoods]);
+
   const [, setParams] = useSearchParams();
 
   function goToBuilder() {
@@ -192,7 +273,6 @@ export default function ReportsOverview({
     return [...arr].sort((a, b) => a.name.localeCompare(b.name));
   }, [coverage, stats, selectedPeriod]);
 
-  // Valores dos cards
   const dayCount = coverage?.neighborhoodsCountByWindow?.day ?? 0;
   const weekCount = coverage?.neighborhoodsCountByWindow?.week ?? 0;
   const monthCount = coverage?.neighborhoodsCountByWindow?.month ?? 0;
@@ -283,30 +363,32 @@ export default function ReportsOverview({
 
       {isDashboard ? (
         <>
-          {/* Cards mockados do dashboard geral */}
+          {/* Cards do dashboard geral */}
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             {[
               {
                 label: "Bairros atendidos",
-                value: 5,
+                value: loadingDashboard ? "..." : neighborhoodsAttendedCount,
                 bg: "#F6F8FA",
                 text: "#787891",
               },
               {
                 label: "Ocorrências em andamento",
-                value: 700,
+                value: loadingDashboard
+                  ? "..."
+                  : dashboardStatus?.em_execucao ?? 0,
                 bg: "#FFF6E0",
                 text: "#966422",
               },
               {
                 label: "Ocorrências emergenciais",
-                value: 14,
+                value: loadingDashboard ? "..." : dashboardEmergency,
                 bg: "#FFF0F3",
                 text: "#96132C",
               },
               {
-                label: "Total de ocorrências finalizadas",
-                value: 4789,
+                label: "Total de ocorrências",
+                value: loadingDashboard ? "..." : totalCurrentOccurrences,
                 bg: "#EFFEFA",
                 text: "#40C4AA",
               },

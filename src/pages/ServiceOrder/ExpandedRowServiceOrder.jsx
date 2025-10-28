@@ -126,6 +126,11 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   const [pavSectorId, setPavSectorId] = useState("");
   const [pavLookupError, setPavLookupError] = useState("");
 
+  // verifica se é de limpa fossa
+  const isLimpaFossa =
+    typeof occurrence?.sector?.name === "string" &&
+    normalize(occurrence.sector.name) === "limpa fossa";
+
   const [isRescheduleHistoryModalOpen, setIsRescheduleHistoryModalOpen] =
     useState(false);
 
@@ -177,34 +182,40 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     const serviceOrderId = occurrence?.id;
     const occurrenceId = occurrence?.occurrence?.id;
 
-    if (!serviceOrderId || !selectedPhoto || !occurrenceId) {
-      alert("ID da OS, ocorrência ou imagem ausente.");
+    if (!serviceOrderId || !occurrenceId) {
+      alert("ID da OS ou ocorrência ausente.");
+      return;
+    }
+
+    // Só exige foto se NÃO for Limpa Fossa
+    if (!selectedPhoto && !isLimpaFossa) {
+      alert("É necessário anexar a foto final para finalizar esta OS.");
       return;
     }
 
     try {
-      // Envia a imagem final e finaliza a OS
+      // Envia a imagem final (se houver) e finaliza a OS
       const formData = new FormData();
       formData.append("serviceOrderId", serviceOrderId);
-      formData.append("photos", selectedPhoto);
+
+      // Só anexa foto se ela existir
+      if (selectedPhoto) {
+        formData.append("photos", selectedPhoto);
+      }
 
       await api.post("/service-orders/finalize", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       toast({ title: "Execução finalizada com sucesso!" });
       setSelectedPhoto(null);
       setIsFinalizeModalOpen(false);
 
-      // Tenta replicar a foto final para usar na criação da ocorrência de pavimentação
       try {
         const novoAttachmentId = await replicateWithRetry(api, occurrenceId, {
           tries: 5,
           baseDelay: 600,
         });
-
         setFormFotoId(novoAttachmentId || "");
         console.log("Replicação concluída:", novoAttachmentId);
       } catch (repErr) {
@@ -216,7 +227,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         });
       }
 
-      // Se for do setor de drenagem, abre o modal para criar ocorrência de pavimentação
       if (
         occurrence?.sector?.name &&
         normalize(occurrence.sector.name).includes("drenagem")
@@ -226,10 +236,8 @@ export function ExpandedRowServiceOrder({ occurrence }) {
           const res = await api.get("/sectors/details");
           const list = res?.data?.sectors ?? res?.data ?? [];
           const pavId = getPavSectorId(list);
-
-          if (pavId) {
-            setPavSectorId(pavId);
-          } else {
+          if (pavId) setPavSectorId(pavId);
+          else {
             setPavSectorId("");
             setPavLookupError(
               "Setor 'Pavimentação' não encontrado para este usuário."
@@ -241,14 +249,9 @@ export function ExpandedRowServiceOrder({ occurrence }) {
             "Falha ao buscar setores. Tente novamente mais tarde."
           );
         }
-
-        // Abre modal de criação/encaminhamento (refresh só após confirmar/cancelar no modal)
         setIsCreatePavingModalOpen(true);
       } else {
-        // NÃO é drenagem faz refresh logo após finalizar
-        setTimeout(() => {
-          window.location.reload();
-        }, 1200);
+        setTimeout(() => window.location.reload(), 1200);
       }
     } catch (err) {
       console.error("Erro ao finalizar execução:", err);
@@ -655,6 +658,17 @@ export function ExpandedRowServiceOrder({ occurrence }) {
               Anexar foto final
             </h2>
 
+            {isLimpaFossa ? (
+              <p className="text-xs text-gray-600 -mt-2">
+                Para o setor <strong>Limpa Fossa</strong>, a foto final é
+                opcional.
+              </p>
+            ) : (
+              <p className="text-xs text-gray-600 -mt-2">
+                Para este setor, a foto final é <strong>obrigatória</strong>.
+              </p>
+            )}
+
             <input
               type="file"
               accept="image/png, image/jpeg"
@@ -671,9 +685,12 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                   await handleFinalizeExecution();
                   setIsFinalizeModalOpen(false);
                 }}
-                disabled={!selectedPhoto}
+                // sem foto se for Limpa Fossa
+                disabled={!selectedPhoto && !isLimpaFossa}
                 className={`flex items-center justify-center gap-2 w-full rounded-2xl ${
-                  selectedPhoto ? "bg-black hover:bg-gray-900" : "bg-gray-300"
+                  selectedPhoto || isLimpaFossa
+                    ? "bg-black hover:bg-gray-900"
+                    : "bg-gray-300"
                 } text-white py-3 font-medium text-sm transition`}
               >
                 Confirmar Finalização
@@ -692,6 +709,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
           </div>
         </div>
       )}
+
       {isCreatePavingModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
           <div className="bg-white rounded-[2rem] w-full max-w-md p-6 shadow-lg space-y-5 text-left">
