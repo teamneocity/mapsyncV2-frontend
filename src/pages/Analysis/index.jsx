@@ -264,7 +264,7 @@ export function Analysis() {
         occurrences={occurrences || []}
         dateOrder={filterRecent ?? "recent"}
         onToggleDateOrder={handleToggleDateOrder}
-        hiddenColumns={["origin", "reviewedBy"]} // escondendo só nessa tela
+        hiddenColumns={[ "reviewedBy","sentBy"]} // escondendo só nessa tela
         renderExpandedRow={(occurrence) => (
           <ExpandedRowAnalysis
             occurrence={occurrence}

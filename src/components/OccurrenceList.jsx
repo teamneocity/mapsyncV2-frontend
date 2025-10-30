@@ -18,21 +18,68 @@ export function OccurrenceList({
 }) {
   const [expandedRow, setExpandedRow] = useState(null);
 
-  // esconde colunas
   const hide = (key) => hiddenColumns?.includes(key);
-  const hiddenCountDesktop =
-    (hide("origin") ? 1 : 0) + (hide("reviewedBy") ? 1 : 0);
 
-  const addressSpanHeader =
-    hiddenCountDesktop === 0
-      ? "col-span-3"
-      : hiddenCountDesktop === 1
-      ? "col-span-4"
-      : "col-span-5";
+  const spanClass = (n) => {
+    const map = {
+      1: "col-span-1",
+      2: "col-span-2",
+      3: "col-span-3",
+      4: "col-span-4",
+      5: "col-span-5",
+      6: "col-span-6",
+      7: "col-span-7",
+      8: "col-span-8",
+      9: "col-span-9",
+      10: "col-span-10",
+      11: "col-span-11",
+      12: "col-span-12",
+    };
+    return map[Math.max(1, Math.min(12, n))];
+  };
 
-  const typeSpanHeader = "col-span-2";
-  const addressSpanRow = addressSpanHeader;
-  const typeSpanRow = typeSpanHeader;
+  const BASE_SPANS = {
+    data: 1,
+    origin: 1,
+    protocol: 1,
+    sentBy: 1,
+    reviewedBy: 1,
+    neighborhood: 1,
+    address: 3,
+    type: 2,
+    status: 1,
+  };
+
+  const visibleSpans = Object.entries(BASE_SPANS).reduce((sum, [key, span]) => {
+    return hide(key) ? sum : sum + span;
+  }, 0);
+
+  let deficit = Math.max(0, 12 - visibleSpans);
+
+  let addressSpanNum = hide("address") ? 0 : BASE_SPANS.address;
+  let typeSpanNum = hide("type") ? 0 : BASE_SPANS.type;
+
+  if (deficit > 0) {
+    if (!hide("address")) {
+      const add = deficit;
+      addressSpanNum = Math.min(12, addressSpanNum + add);
+      deficit -= add;
+    }
+    if (deficit > 0 && !hide("type")) {
+      typeSpanNum = Math.min(12 - addressSpanNum, typeSpanNum + deficit);
+      deficit = 0;
+    }
+  }
+
+  if (addressSpanNum + typeSpanNum > 12) {
+    const extra = addressSpanNum + typeSpanNum - 12;
+    if (typeSpanNum >= extra) typeSpanNum -= extra;
+    else {
+      const rest = extra - typeSpanNum;
+      typeSpanNum = 0;
+      addressSpanNum = Math.max(1, addressSpanNum - rest);
+    }
+  }
 
   const dataToRender =
     serviceorders?.length > 0
@@ -43,13 +90,6 @@ export function OccurrenceList({
           raw: s,
         }))
       : occurrences;
-
-  if (serviceorders?.length > 0) {
-    console.log(
-      "isEmergencial da primeira OS:",
-      serviceorders[0].occurrence?.isEmergencial
-    );
-  }
 
   const toggleRow = (id) => {
     setExpandedRow((prev) => (prev === id ? null : id));
@@ -161,7 +201,7 @@ export function OccurrenceList({
             </div>
           )}
           {!hide("protocol") && (
-            <div className="col-span-1 " title="Protocolo">
+            <div className="col-span-1" title="Protocolo">
               Protocolo
             </div>
           )}
@@ -181,12 +221,12 @@ export function OccurrenceList({
             </div>
           )}
           {!hide("address") && (
-            <div className={addressSpanHeader} title="Endereço">
+            <div className={`${spanClass(addressSpanNum)}`} title="Endereço">
               Endereço
             </div>
           )}
           {!hide("type") && (
-            <div className={typeSpanHeader} title="Tipo">
+            <div className={`${spanClass(typeSpanNum)}`} title="Tipo">
               Tipo
             </div>
           )}
@@ -219,7 +259,7 @@ export function OccurrenceList({
               (typeof occ?.externalCompany === "string" &&
                 occ.externalCompany.trim()) ||
               (typeof occ?.occurrence?.externalCompany === "string" &&
-                occ.urrence?.externalCompany?.trim?.()) ||
+                occ.occurrence.externalCompany.trim()) ||
               (typeof occ?.raw?.occurrence?.externalCompany === "string" &&
                 occ.raw.occurrence.externalCompany.trim()) ||
               occ?.externalCompany ||
@@ -324,7 +364,6 @@ export function OccurrenceList({
                             </div>
                           )}
 
-                          {/* Companhia (MOBILE) */}
                           {!hide("company") && (
                             <div>
                               <span className="text-xs font-medium text-gray-400 block">
@@ -422,16 +461,23 @@ export function OccurrenceList({
                       )}
 
                       {!hide("address") && (
-                        <div className={`${addressSpanRow} text-sm truncate`}>
+                        <div
+                          className={`${spanClass(
+                            addressSpanNum
+                          )} text-sm truncate`}
+                        >
                           {`${occ.address?.street || ""}, ${
                             occ.address?.number || ""
                           } - ${occ.address?.city || ""}`}
                         </div>
                       )}
 
-                      {/* Tipo + Companhia  */}
                       {!hide("type") && (
-                        <div className={`${typeSpanRow} text-sm truncate`}>
+                        <div
+                          className={`${spanClass(
+                            typeSpanNum
+                          )} text-sm truncate`}
+                        >
                           <div className="truncate">
                             {typeLabels[occ.type] || occ.type || "—"}
                           </div>
