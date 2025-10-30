@@ -84,7 +84,7 @@ export function Analysis() {
   ]);
 
   const handleToggleDateOrder = (order) => {
-    setFilterRecent(order); 
+    setFilterRecent(order);
     setCurrentPage(1);
   };
 
@@ -264,6 +264,7 @@ export function Analysis() {
         occurrences={occurrences || []}
         dateOrder={filterRecent ?? "recent"}
         onToggleDateOrder={handleToggleDateOrder}
+        hiddenColumns={["origin", "reviewedBy"]} // escondendo só nessa tela
         renderExpandedRow={(occurrence) => (
           <ExpandedRowAnalysis
             occurrence={occurrence}
