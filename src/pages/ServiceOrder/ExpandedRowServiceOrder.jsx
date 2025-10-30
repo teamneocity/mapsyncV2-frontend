@@ -233,9 +233,13 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       ) {
         try {
           setPavLookupError("");
-          const res = await api.get("/sectors/details");
-          const list = res?.data?.sectors ?? res?.data ?? [];
-          const pavId = getPavSectorId(list);
+          const res = await api.get("/sectors/names");
+          const list = Array.isArray(res?.data?.sectors)
+            ? res.data.sectors
+            : [];
+
+          const pavId = getPavSectorId(list); 
+
           if (pavId) setPavSectorId(pavId);
           else {
             setPavSectorId("");
@@ -272,14 +276,12 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       setSectorsLoading(true);
       setSectorsError("");
       try {
-        const res = await api.get("/sectors/details");
-        const list = res?.data?.sectors ?? res?.data ?? [];
+        const res = await api.get("/sectors/names");
+        const list = Array.isArray(res?.data?.sectors) ? res.data.sectors : [];
 
         if (mounted) {
           setSectors(list);
-          const pav = list.find((s) =>
-            s?.name?.toLowerCase().includes("paviment")
-          );
+          const pav = list.find((s) => normalize(s?.name) === "pavimentacao");
           setSelectedSectorId(pav?.id ?? "");
         }
       } catch (err) {
@@ -311,9 +313,11 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         throw new Error("Endereço não encontrado.");
       }
 
-      const targetSectorId = pavSectorId;
+      const targetSectorId = (pavSectorId || selectedSectorId || "").trim();
       if (!targetSectorId) {
-        throw new Error("Setor 'Pavimentação' não disponível no momento.");
+        throw new Error(
+          "Setor de destino 'Pavimentação' não disponível. Informe o ID do setor."
+        );
       }
 
       const body = {
@@ -352,7 +356,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         description: "Encaminhada para Pavimentação com sucesso.",
       });
 
-      // 🔄 reload após sucesso (espera 1,2s pro toast aparecer)
       setTimeout(() => {
         window.location.reload();
       }, 1200);
@@ -785,9 +788,11 @@ export function ExpandedRowServiceOrder({ occurrence }) {
             <div className="flex flex-col gap-3 pt-4">
               <button
                 onClick={handleCreatePavingOccurrence}
-                disabled={!pavSectorId || !!pavLookupError}
+                disabled={
+                  !(pavSectorId || selectedSectorId) || !!pavLookupError
+                }
                 className={`py-3 rounded-2xl font-medium text-sm text-white ${
-                  !pavSectorId || pavLookupError
+                  !(pavSectorId || selectedSectorId) || pavLookupError
                     ? "bg-gray-300 cursor-not-allowed"
                     : "bg-black hover:bg-gray-900"
                 }`}
