@@ -130,7 +130,6 @@ export function WarrantyCard({ occurrence, expanded, onToggle }) {
     { label: "Verificado", date: occurrence?.updatedAt },
     { label: "Iniciada", date: occurrence?.startedAt },
     { label: "Finalizada", date: occurrence?.finishedAt },
-    
   ];
 
   function handleCopyProtocol() {
@@ -167,7 +166,6 @@ export function WarrantyCard({ occurrence, expanded, onToggle }) {
           Imagem {activeIdx + 1}/{photos.length}
         </div>
 
-        {/* === NAV BOTTOM IGUAL AO InspectionCard === */}
         {photos.length > 1 && (
           <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-4">
             <button
@@ -229,7 +227,13 @@ export function WarrantyCard({ occurrence, expanded, onToggle }) {
                 <span className="font-semibold text-zinc-700">
                   Ocorrência:{" "}
                 </span>
-                <span className="text-zinc-700">{tipoOcorrencia}</span>
+                <span className="text-zinc-700">
+                  {occurrence.type === "DESOBSTRUCAO"
+                    ? "Drenagem"
+                    : occurrence.type === "TAPA_BURACO"
+                    ? "Asfalto"
+                    : occurrence.type}
+                </span>
               </li>
               <li className="text-zinc-500">
                 <span className="font-semibold text-zinc-700">Endereço: </span>

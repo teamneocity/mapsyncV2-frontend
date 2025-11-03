@@ -66,10 +66,10 @@ export function InspectionCard({ serviceorder }) {
   const timelineEntries = Object.entries(timeline);
 
   const typeLabels = {
-    TAPA_BURACO: "Buraco",
+    TAPA_BURACO: "Asfalto",
     AUSENCIA_DE_MEIO_FIO: "Ausência de meio fio",
     MEIO_FIO: "Meio fio",
-    DESOBSTRUCAO: "Desobstrução",
+    DESOBSTRUCAO: "Drenagem",
     LIMPA_FOSSA: "Limpa fossa",
   };
 
@@ -169,7 +169,6 @@ export function InspectionCard({ serviceorder }) {
 
       {/* Conteúdo */}
       <div className="px-4 pb-4 text-sm text-[#787891] grid grid-cols-12 gap-2 min-h-[400px] sm:min-h-[auto]">
-        {/* Coluna 1 */}
         {/* Coluna 1 */}
         <div className="col-span-6 space-y-1">
           <button

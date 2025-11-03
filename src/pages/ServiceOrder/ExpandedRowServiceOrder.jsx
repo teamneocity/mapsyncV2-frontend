@@ -58,9 +58,15 @@ function normalize(str = "") {
     .toLowerCase()
     .trim();
 }
-
+// encontra setor Pavimentação
 function getPavSectorId(sectors = []) {
   const alvo = ["pavimentação", "pavimentacao"];
+  const found = sectors.find((s) => alvo.includes(normalize(s?.name)));
+  return found?.id || "";
+}
+//  encontra setor Drenagem
+function getDrainSectorId(sectors = []) {
+  const alvo = ["drenagem"];
   const found = sectors.find((s) => alvo.includes(normalize(s?.name)));
   return found?.id || "";
 }
@@ -125,6 +131,16 @@ export function ExpandedRowServiceOrder({ occurrence }) {
 
   const [pavSectorId, setPavSectorId] = useState("");
   const [pavLookupError, setPavLookupError] = useState("");
+
+  const [isCreateDrainModalOpen, setIsCreateDrainModalOpen] = useState(false);
+  const [drainSectorId, setDrainSectorId] = useState("");
+  const [drainLookupError, setDrainLookupError] = useState("");
+
+  const [formTipoDrain, setFormTipoDrain] = useState("DESOBSTRUCAO");
+  const [formDescricaoDrain, setFormDescricaoDrain] = useState(
+    "Ocorrência gerada após limpa fossa"
+  );
+  const [formEmergencialDrain, setFormEmergencialDrain] = useState(true);
 
   // verifica se é de limpa fossa
   const isLimpaFossa =
@@ -194,7 +210,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     }
 
     try {
-      // Envia a imagem final (se houver) e finaliza a OS
+      // 1) Envia a imagem final (se houver) e finaliza a OS
       const formData = new FormData();
       formData.append("serviceOrderId", serviceOrderId);
 
@@ -211,6 +227,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       setSelectedPhoto(null);
       setIsFinalizeModalOpen(false);
 
+      //  Tenta replicar foto final para usar como foto inicial da nova ocorrência
       try {
         const novoAttachmentId = await replicateWithRetry(api, occurrenceId, {
           tries: 5,
@@ -227,6 +244,8 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         });
       }
 
+      // Encaminhamentos automáticos pós-finalização
+      // Se veio de Drenagem, abrir fluxo para criar Pavimentação (já existia)
       if (
         occurrence?.sector?.name &&
         normalize(occurrence.sector.name).includes("drenagem")
@@ -238,7 +257,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
             ? res.data.sectors
             : [];
 
-          const pavId = getPavSectorId(list); 
+          const pavId = getPavSectorId(list);
 
           if (pavId) setPavSectorId(pavId);
           else {
@@ -254,6 +273,35 @@ export function ExpandedRowServiceOrder({ occurrence }) {
           );
         }
         setIsCreatePavingModalOpen(true);
+
+        // Se for Limpa Fossa, abrir fluxo para criar Drenagem
+      } else if (isLimpaFossa) {
+        try {
+          setDrainLookupError("");
+          const res = await api.get("/sectors/names");
+          const list = Array.isArray(res?.data?.sectors)
+            ? res.data.sectors
+            : [];
+
+          // procura "Drenagem"
+          const drain = list.find((s) => normalize(s?.name) === "drenagem");
+          if (drain?.id) {
+            setDrainSectorId(drain.id);
+          } else {
+            setDrainSectorId("");
+            setDrainLookupError(
+              "Setor 'Drenagem' não encontrado para este usuário."
+            );
+          }
+        } catch (e) {
+          setDrainSectorId("");
+          setDrainLookupError(
+            "Falha ao buscar setores. Tente novamente mais tarde."
+          );
+        }
+        setIsCreateDrainModalOpen(true);
+
+        // Caso não tenha nenhum encaminhamento, apenas recarrega
       } else {
         setTimeout(() => window.location.reload(), 1200);
       }
@@ -374,11 +422,77 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     }
   };
 
+  // cria ocorrência e encaminha para Drenagem
+  const handleCreateDrainOccurrence = async () => {
+    try {
+      const address = occurrence?.occurrence?.address;
+      if (!address) throw new Error("Endereço não encontrado.");
+
+      const targetSectorId = (drainSectorId || "").trim();
+      if (!targetSectorId) {
+        throw new Error(
+          "Setor de destino 'Drenagem' não disponível. Informe o ID do setor."
+        );
+      }
+
+      const body = {
+        type: formTipoDrain, // por padrão DESOBSTRUCAO
+        description: formDescricaoDrain,
+        street: address.street,
+        number: address.number,
+        zipCode: address.zipCode,
+        neighborhoodId: address.neighborhoodId,
+        latitude: parseFloat(address.latitude),
+        longitude: parseFloat(address.longitude),
+        isEmergencial: formEmergencialDrain,
+        initialPhotosUrls: formFotoId ? [formFotoId] : [], // usa a foto replicada se existir
+      };
+
+      const response = await api.post("/occurrences/employee", body);
+
+      const novaOcorrenciaId =
+        response?.data?.data ??
+        response?.data?.occurrenceId ??
+        response?.data?.id ??
+        null;
+
+      if (!(response?.status === 201) || !novaOcorrenciaId) {
+        console.error("Criação sem ID:", response?.data);
+        throw new Error("Falha ao criar ocorrência (ID não retornado).");
+      }
+
+      await api.post("/occurrences/approve", {
+        occurrenceId: novaOcorrenciaId,
+        sectorId: targetSectorId,
+      });
+
+      toast({
+        title: "Ocorrência criada e encaminhada",
+        description: "Encaminhada para Drenagem com sucesso.",
+      });
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1200);
+    } catch (error) {
+      console.error("Erro ao criar:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao criar/encaminhar",
+        description: error?.message || "Erro inesperado.",
+      });
+    } finally {
+      setIsCreateDrainModalOpen(false);
+      setDrainSectorId("");
+      setDrainLookupError("");
+    }
+  };
+
   const typeLabels = {
-    TAPA_BURACO: "Buraco",
+    TAPA_BURACO: "Asfalto",
     AUSENCIA_DE_MEIO_FIO: "Ausência de meio fio",
     MEIO_FIO: "Meio fio",
-    DESOBSTRUCAO: "Desobstrução",
+    DESOBSTRUCAO: "Drenagem",
     LIMPA_FOSSA: "Limpa fossa",
   };
 
@@ -436,18 +550,14 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                   {occurrence.occurrence?.author?.name || "—"}
                 </p>
                 <p>
-                  <strong>Setor:</strong> {occurrence.sector?.name || "—"}
+                  <span className="font-bold">Tipo:</span>{" "}
+                  {typeLabels[occurrence.occurrence.type] ||
+                    occurrence.occurrence.type ||
+                    "—"}
                 </p>
                 <p>
-                  <strong>Chefe de Setor:</strong>{" "}
-                  {occurrence.sector?.chiefs &&
-                  occurrence.sector.chiefs.length > 0
-                    ? occurrence.sector.chiefs
-                        .map((chief) => chief.name)
-                        .join(", ")
-                    : "—"}
+                  <strong>Setor:</strong> {occurrence.sector?.name || "—"}
                 </p>
-
                 <p>
                   <strong>Natureza:</strong>{" "}
                   {occurrence.serviceNature?.name || "—"}
@@ -804,6 +914,115 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                   setIsCreatePavingModalOpen(false);
                   setPavSectorId("");
                   setPavLookupError("");
+
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 400);
+                }}
+                className="text-sm text-gray-500 underline hover:text-gray-700 transition"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* NEW: Modal para criar ocorrência de Drenagem (pós Limpa Fossa) */}
+      {isCreateDrainModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
+          <div className="bg-white rounded-[2rem] w-full max-w-md p-6 shadow-lg space-y-5 text-left">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Criar ocorrência de drenagem
+            </h2>
+
+            {/* Formulário (sem select de setor) */}
+            <div className="flex flex-col gap-4">
+              {/* Tipo */}
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Tipo
+                </label>
+                <select
+                  value={formTipoDrain}
+                  onChange={(e) => setFormTipoDrain(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg p-2 text-sm"
+                >
+                  <option value="DESOBSTRUCAO">DESOBSTRUCAO</option>
+                  {/* mesmas opções do modal de Pavimentação, por consistência */}
+                  <option value="TAPA_BURACO">TAPA_BURACO</option>
+                  <option value="MEIO_FIO">MEIO_FIO</option>
+                  <option value="LIMPA_FOSSA">LIMPA_FOSSA</option>
+                  <option value="AUSENCIA_DE_MEIO_FIO">
+                    AUSENCIA_DE_MEIO_FIO
+                  </option>
+                </select>
+              </div>
+
+              {/* Info: setor destino fixo */}
+              <div className="rounded-lg border p-3 bg-[#F8F8F8]">
+                <p className="text-sm text-gray-700">
+                  <strong>Setor de destino:</strong> Drenagem
+                </p>
+                {drainLookupError ? (
+                  <p className="mt-2 text-xs text-red-600">
+                    {drainLookupError}
+                  </p>
+                ) : (
+                  <p className="mt-2 text-xs text-gray-500">
+                    Esta ação irá encaminhar a nova ocorrência diretamente para
+                    o setor de Drenagem.
+                  </p>
+                )}
+              </div>
+
+              {/* Descrição */}
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Descrição
+                </label>
+                <textarea
+                  value={formDescricaoDrain}
+                  onChange={(e) => setFormDescricaoDrain(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg p-2 text-sm"
+                  rows={3}
+                />
+              </div>
+
+              {/* Emergencial */}
+              <div className="flex items-center gap-2">
+                <input
+                  id="emergencialDrain"
+                  type="checkbox"
+                  checked={formEmergencialDrain}
+                  onChange={(e) => setFormEmergencialDrain(e.target.checked)}
+                />
+                <label
+                  htmlFor="emergencialDrain"
+                  className="text-sm text-gray-700"
+                >
+                  É emergencial?
+                </label>
+              </div>
+            </div>
+
+            {/* Ações */}
+            <div className="flex flex-col gap-3 pt-4">
+              <button
+                onClick={handleCreateDrainOccurrence}
+                disabled={!drainSectorId || !!drainLookupError}
+                className={`py-3 rounded-2xl font-medium text-sm text-white ${
+                  !drainSectorId || drainLookupError
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-black hover:bg-gray-900"
+                }`}
+              >
+                Confirmar criação e encaminhar
+              </button>
+              <button
+                onClick={() => {
+                  setIsCreateDrainModalOpen(false);
+                  setDrainSectorId("");
+                  setDrainLookupError("");
 
                   setTimeout(() => {
                     window.location.reload();

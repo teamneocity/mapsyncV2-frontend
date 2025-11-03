@@ -338,6 +338,15 @@ export function ExpandedRowAnalysis({
   const regionClean = (region ?? "").trim();
   const regionValue = REGION_OPTIONS.includes(regionClean) ? regionClean : "";
 
+  // máscara para tipos
+  const typeLabels = {
+    TAPA_BURACO: "Asfalto",
+    AUSENCIA_DE_MEIO_FIO: "Ausência de meio fio",
+    MEIO_FIO: "Meio fio",
+    DESOBSTRUCAO: "Drenagem",
+    LIMPA_FOSSA: "Limpa fossa",
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 bg-[#F7F7F7] p-4 rounded-lg shadow-sm text-sm">
       {/* Coluna 1 - Informações */}
@@ -385,7 +394,7 @@ export function ExpandedRowAnalysis({
           </p>
           <p>
             <span className="text-black font-medium">Tipo:</span>{" "}
-            {occurrence.type}
+            {typeLabels[occurrence.type] || occurrence.type}
           </p>
           <div>
             <label className="text-sm text-black font-semibold mb-1 block">

@@ -65,10 +65,10 @@ export function ExpandedRowT({
     : null;
 
   const typeLabels = {
-    TAPA_BURACO: "Buraco",
+    TAPA_BURACO: "Asfalto",
     AUSENCIA_DE_MEIO_FIO: "Ausência de meio fio",
     MEIO_FIO: "Meio fio",
-    DESOBSTRUCAO: "Desobstrução",
+    DESOBSTRUCAO: "Drenagem",
     LIMPA_FOSSA: "Limpa fossa",
   };
 
@@ -76,6 +76,8 @@ export function ExpandedRowT({
     occurrence.status !== "os_gerada" &&
     occurrence.status !== "em_execucao" &&
     occurrence.status !== "finalizada";
+
+  
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 bg-[#F7F7F7] rounded-lg text-sm">
@@ -110,7 +112,7 @@ export function ExpandedRowT({
                 {format(new Date(occurrence.createdAt), "dd/MM/yyyy HH:mm")}
               </p>
               <p>
-                <span className="font-bold">Ocorrência:</span>{" "}
+                <span className="font-bold">Tipo:</span>{" "}
                 {typeLabels[occurrence.type] || occurrence.type || "—"}
               </p>
               <p>
@@ -141,7 +143,6 @@ export function ExpandedRowT({
                 <span className="font-bold">Região:</span>{" "}
                 {occurrence.address?.state || "—"}
               </p>
-             
             </div>
           </div>
 
@@ -246,7 +247,6 @@ export function ExpandedRowT({
                 className="h-[55px] border border-[#FFFFFF]"
               />
 
-              
               <div className="grid grid-cols-1 gap-2">
                 {/* ALTERAÇÃO: campo para período (início e fim) */}
                 <DateRangePicker

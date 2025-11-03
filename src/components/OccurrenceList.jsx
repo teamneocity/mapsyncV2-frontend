@@ -114,10 +114,10 @@ export function OccurrenceList({
   };
 
   const typeLabels = {
-    TAPA_BURACO: "Buraco",
+    TAPA_BURACO: "Asfalto",
     AUSENCIA_DE_MEIO_FIO: "Ausência de meio fio",
     MEIO_FIO: "Meio fio",
-    DESOBSTRUCAO: "Desobstrução",
+    DESOBSTRUCAO: "Drenagem",
     LIMPA_FOSSA: "Limpa fossa",
   };
 

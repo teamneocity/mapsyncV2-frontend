@@ -14,7 +14,6 @@ import { Input } from "@/components/ui/input";
 import Stroke from "@/assets/icons/Stroke.svg?react";
 import { api } from "@/services/api";
 
-// Usaremos apenas Popover do shadcn (que você já tem)
 import {
   Popover,
   PopoverTrigger,
@@ -28,7 +27,7 @@ export function Filters({
   onFilterDateRange = () => {},
   onFilterNeighborhood = () => {},
   onFilterStatus = () => {},
-  onFilterCompany = () => {}, // <-- NOVO: callback do filtro de companhia
+  onFilterCompany = () => {},
   handleApplyFilters,
   onSearch = () => {},
   title = "Análises de ocorrências",
@@ -40,7 +39,7 @@ export function Filters({
   showDate = true,
   showNeighborhood = true,
   showStatus = true,
-  showCompany = true, // <-- NOVO: controla exibição do filtro de companhia
+  showCompany = true,
 }) {
   const [selectedRecent, setSelectedRecent] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
@@ -78,7 +77,7 @@ export function Filters({
 
   const handleNeighborhoodFilter = (neighborhoodId) => {
     setSelectedNeighborhood(neighborhoodId);
-    setNeighborhoodQuery(""); // limpa a busca após escolher
+    setNeighborhoodQuery("");
     onFilterNeighborhood(neighborhoodId);
   };
 
@@ -87,7 +86,6 @@ export function Filters({
     onFilterStatus(status);
   };
 
-  // NOVO: handler do filtro de companhia (SERGAS, IGUA ou null para remover)
   const handleCompanyFilter = (company) => {
     setSelectedCompany(company);
     onFilterCompany(company); // manda null para "Todas"
@@ -271,19 +269,27 @@ export function Filters({
               <DropdownMenuItem onClick={() => handleTypeFilter(null)}>
                 Todos
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleTypeFilter("MEIO_FIO")}>
-                Meio fio
+              <DropdownMenuItem onClick={() => handleTypeFilter("TAPA_BURACO")}>
+                Asfalto
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleTypeFilter("LIMPA_FOSSA")}>
                 Limpa Fossa
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleTypeFilter("TAPA_BURACO")}>
-                Buraco na Rua
-              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => handleTypeFilter("DESOBSTRUCAO")}
               >
-                Desobstrução
+                Drenagem
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleTypeFilter("TERRAPLANAGEM")}
+              >
+                Terraplanagem
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleTypeFilter("LOGRADOURO")}>
+                Logradouro
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleTypeFilter("MEIO_FIO")}>
+                Meio fio
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => handleTypeFilter("AUSENCIA_DE_MEIO_FIO")}
