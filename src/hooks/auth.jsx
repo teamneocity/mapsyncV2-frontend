@@ -17,15 +17,14 @@ function AuthProvider({ children }) {
       const { access_token, employee_name, employee_email } = response.data;
       const token = access_token;
 
-      // ⬇️ Decodificando o token para pegar o cargo (role)
+      // Decodificando o token para pegar o cargo (role)
       const decodedToken = jwtDecode(token);
-      console.log("🧠 Token decodificado:", decodedToken);
       const role = decodedToken.role;
 
       const user = {
         name: employee_name,
         email: employee_email,
-        role, // ⬅️ Aqui o cargo é armazenado
+        role, //  Aqui o cargo é armazenado
       };
 
       localStorage.setItem("@popcity:user", JSON.stringify(user));
@@ -126,16 +125,18 @@ function AuthProvider({ children }) {
   }, []);
 
   async function resetPassword(email) {
-  try {
-    await api.post("/employees/password/forgot", { email });
-  } catch (error) {
-    console.error("Erro ao enviar solicitação de senha:", error);
-    throw error;
+    try {
+      await api.post("/employees/password/forgot", { email });
+    } catch (error) {
+      console.error("Erro ao enviar solicitação de senha:", error);
+      throw error;
+    }
   }
-}
 
   return (
-    <AuthContext.Provider value={{ signIn, signOut, updateProfile, resetPassword, user: data.user }}>
+    <AuthContext.Provider
+      value={{ signIn, signOut, updateProfile, resetPassword, user: data.user }}
+    >
       {loading ? null : children}
     </AuthContext.Provider>
   );

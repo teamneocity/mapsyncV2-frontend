@@ -7,6 +7,8 @@ import { api } from "@/services/api";
 import { useSearchParams } from "react-router-dom";
 import { SelectField } from "@/components/selectField";
 
+import PrintableDashboardReport from "./PrintableDashboardReport";
+
 export default function ReportsOverview({
   title = "Relatórios",
   selectedSector = "Escolha o painél de exibição do setor",
@@ -234,12 +236,22 @@ export default function ReportsOverview({
     }, 0);
   }, [dashboardNeighborhoods]);
 
-  const [, setParams] = useSearchParams();
+  const [params, setParams] = useSearchParams();
 
   function goToBuilder() {
     setParams((prev) => {
       const p = new URLSearchParams(prev);
       p.set("view", "builder"); // ativa o outro componente
+      return p;
+    });
+  }
+
+  /* ADICIONADO: função que abre o relatório definindo params na URL */
+  function openReport(reportType = "overview") {
+    setParams((prev) => {
+      const p = new URLSearchParams(prev);
+      p.set("view", "report");
+      p.set("reportType", reportType); // exemplo: 'overview'|'neighborhoods'|'status'
       return p;
     });
   }
@@ -317,6 +329,22 @@ export default function ReportsOverview({
   }
 
   const anyLoading = loadingSectors || loadingStats || loadingCoverage;
+
+  const view = params.get("view");
+  if (view === "printable_dashboard") {
+    return (
+      <PrintableDashboardReport
+        onClose={() =>
+          setParams((prev) => {
+            const p = new URLSearchParams(prev);
+            p.delete("view");
+            p.delete("reportType");
+            return p;
+          })
+        }
+      />
+    );
+  }
 
   return (
     <section className="max-w-[1500px] w-full mx-auto bg-white rounded-xl p-6 mt-4">
@@ -425,6 +453,42 @@ export default function ReportsOverview({
                 className="h-full"
               />
             </div>
+          </div>
+
+          {/* ADICIONADO: Botões do dashboard (mesma ideia dos botões de setor) */}
+          <div className="mt-6 flex items-center gap-3">
+            <button
+              onClick={() => window.print()} /* impressão direta */
+              className="h-12 px-4 rounded-lg border border-neutral-200 bg-white text-gray-700 text-sm"
+            >
+              Imprimir
+            </button>
+            <button
+              onClick={() => openReport("export_pdf")}
+              className="h-12 px-4 rounded-lg border border-neutral-200 bg-white text-gray-700 text-sm"
+            >
+              Export PDF
+            </button>
+            <button
+              onClick={() =>
+                setParams((prev) => {
+                  const p = new URLSearchParams(prev);
+                  p.set("view", "printable_dashboard"); // muda para a view do relatório
+                  return p;
+                })
+              }
+              className="h-12 px-4 rounded-lg border border-neutral-200 bg-white text-gray-700 text-sm hover:bg-neutral-50 transition-colors"
+              title="Gerar relatório imprimível do dashboard geral"
+            >
+              Abrir relatório detalhado
+            </button>
+
+            <button
+              onClick={goToBuilder}
+              className="h-12 px-4 rounded-lg border border-neutral-200 bg-white text-gray-700 text-sm"
+            >
+              Configure o tipo de relatório
+            </button>
           </div>
         </>
       ) : (

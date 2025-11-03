@@ -3,7 +3,7 @@
 
 // React
 import React, { useState } from "react";
-import { useSearchParams } from "react-router-dom"; // <-- adicionado
+import { useSearchParams } from "react-router-dom"; 
 
 // Componentes globais
 import { Sidebar } from "@/components/sidebar";
@@ -14,14 +14,25 @@ import ImgUsers from "@/assets/icons/imgUsers.svg";
 
 // Componentes locais
 import ReportsOverview from "./ReportsOverview";
-import ReportsBuilder from "./ReportsBuilder"; // <-- adicionado
+import ReportsBuilder from "./ReportsBuilder"; 
+
+import PrintableDashboardReport from "./PrintableDashboardReport";
 
 export function Reports() {
   const [selected, setSelected] = useState("Dashboard");
 
-  // explicação: leio ?view=... para decidir qual miolo renderizar
+  
   const [params] = useSearchParams();
   const view = params.get("view") || "overview";
+
+    // Quando exibir o relatório apenas aparecerá ele
+  if (view === "printable_dashboard") {
+    return (
+      <div className="bg-white min-h-screen">
+        <PrintableDashboardReport />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#EBEBEB] min-h-screen font-inter">
