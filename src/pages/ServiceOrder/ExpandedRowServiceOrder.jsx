@@ -842,13 +842,11 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                   onChange={(e) => setFormTipo(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg p-2 text-sm"
                 >
-                  <option value="TAPA_BURACO">TAPA_BURACO</option>
-                  <option value="DESOBSTRUCAO">DESOBSTRUCAO</option>
-                  <option value="MEIO_FIO">MEIO_FIO</option>
-                  <option value="LIMPA_FOSSA">LIMPA_FOSSA</option>
-                  <option value="AUSENCIA_DE_MEIO_FIO">
-                    AUSENCIA_DE_MEIO_FIO
-                  </option>
+                  <option value="DESOBSTRUCAO">Drenagem</option>
+                  <option value="TAPA_BURACO">Asfalto</option>
+                  <option value="LOGRADOURO">Logradouro</option>
+                  <option value="LIMPA_FOSSA">limpa fossa</option>
+                  <option value="TERRAPLANAGEM">Terraplanagem</option>
                 </select>
               </div>
 
@@ -927,7 +925,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
           </div>
         </div>
       )}
-      {/* NEW: Modal para criar ocorrência de Drenagem (pós Limpa Fossa) */}
+      {/* Modal para criar ocorrência de Drenagem (pós Limpa Fossa) */}
       {isCreateDrainModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
           <div className="bg-white rounded-[2rem] w-full max-w-md p-6 shadow-lg space-y-5 text-left">
@@ -947,14 +945,11 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                   onChange={(e) => setFormTipoDrain(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg p-2 text-sm"
                 >
-                  <option value="DESOBSTRUCAO">DESOBSTRUCAO</option>
-                  {/* mesmas opções do modal de Pavimentação, por consistência */}
-                  <option value="TAPA_BURACO">TAPA_BURACO</option>
-                  <option value="MEIO_FIO">MEIO_FIO</option>
-                  <option value="LIMPA_FOSSA">LIMPA_FOSSA</option>
-                  <option value="AUSENCIA_DE_MEIO_FIO">
-                    AUSENCIA_DE_MEIO_FIO
-                  </option>
+                  <option value="DESOBSTRUCAO">Drenagem</option>
+                  <option value="TAPA_BURACO">Asfalto</option>
+                  <option value="LOGRADOURO">Logradouro</option>
+                  <option value="LIMPA_FOSSA">limpa fossa</option>
+                  <option value="TERRAPLANAGEM">Terraplanagem</option>
                 </select>
               </div>
 
