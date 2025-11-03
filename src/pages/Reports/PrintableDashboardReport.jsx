@@ -2,7 +2,6 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { api } from "@/services/api";
-import Emurb from "@/assets/Emurb.svg?react";
 
 const STATUS_COLOR_MAP = {
   aguardando_execucao: {
@@ -365,10 +364,6 @@ export default function PrintableDashboardReport() {
       <main className="mx-auto max-w-[900px] px-6 py-6">
         {/* Cabeçalho */}
         <header className="relative mb-8">
-          <Emurb
-            className="absolute right-0 top-0 w-32 h-auto object-contain"
-            aria-label="Emurb"
-          />
           <div className="text-center mt-10">
             <h1 className="text-3xl font-bold text-gray-800">
               Relatório fotográfico
