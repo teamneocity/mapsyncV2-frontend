@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { api } from "@/services/api";
-import Emurb from "@/assets/Emurb.svg";
+
 
 // Cores por status
 const STATUS_COLOR_MAP = {
@@ -277,13 +277,7 @@ export default function PrintableDashboardReport() {
                 Relatório — Ordens de Serviço
               </p>
             </div>
-            <div className="flex-shrink-0">
-              <img
-                src={Emurb}
-                alt="Logo Emurb"
-                className="w-42 h-auto object-contain"
-              />
-            </div>
+            
           </div>
 
           <div className="mt-6 flex flex-col items-center text-sm text-gray-600 text-center">

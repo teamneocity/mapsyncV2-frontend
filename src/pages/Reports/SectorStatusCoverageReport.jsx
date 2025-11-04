@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { api } from "@/services/api";
 import { useSearchParams } from "react-router-dom";
-import Emurb from "@/assets/Emurb.svg";
+
 
 const BASE_MEDIA_URL = (
   import.meta.env.VITE_MEDIA_CDN ||
@@ -236,11 +236,6 @@ export default function SectorStatusCoverageReport({ onClose }) {
                 — Setor: <span className="font-semibold">{sectorName}</span>
               </p>
             </div>
-            <img
-              src={Emurb}
-              alt="Logo Emurb"
-              className="w-42 h-auto object-contain flex-shrink-0"
-            />
           </div>
 
           <div className="mt-6 flex flex-col items-center text-sm text-gray-600 text-center">
