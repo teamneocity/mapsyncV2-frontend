@@ -8,6 +8,8 @@ import { useSearchParams } from "react-router-dom";
 import { SelectField } from "@/components/selectField";
 
 import PrintableDashboardReport from "./PrintableDashboardReport";
+import CustomPrintableSOReport from "./CustomPrintableSOReport";
+import SectorStatusCoverageReport from "./SectorStatusCoverageReport";
 
 export default function ReportsOverview({
   title = "Relatórios",
@@ -20,6 +22,10 @@ export default function ReportsOverview({
   const [stats, setStats] = useState(null);
   const [loadingStats, setLoadingStats] = useState(false);
 
+  function clearStatus() {
+    setSelectedStatus(""); // sem filtro
+  }
+
   const [coverage, setCoverage] = useState(null);
   const [loadingCoverage, setLoadingCoverage] = useState(false);
 
@@ -30,6 +36,7 @@ export default function ReportsOverview({
   const [dashboardNeighborhoods, setDashboardNeighborhoods] = useState([]);
   const [dashboardEmergency, setDashboardEmergency] = useState(0);
   const [loadingDashboard, setLoadingDashboard] = useState(false);
+  const [params, setParams] = useSearchParams();
 
   const isDashboard =
     selectedSector === "Escolha o painél de exibição do setor" ||
@@ -73,6 +80,37 @@ export default function ReportsOverview({
       clickable: true,
     },
   };
+
+  const [builderOpen, setBuilderOpen] = useState(false);
+
+  const foundSector = useMemo(
+    () => sectors.find((s) => s.name === selectedSector),
+    [sectors, selectedSector]
+  );
+
+  function openSectorReport() {
+    if (!foundSector?.id) return;
+    setParams((prev) => {
+      const p = new URLSearchParams(prev);
+      p.set("view", "sector_report");
+      p.set("sectorId", String(foundSector.id));
+      p.set("sectorName", String(foundSector.name));
+      p.set("period", String(selectedPeriod || "month"));
+
+      if (selectedStatus) p.set("status", String(selectedStatus));
+      else p.delete("status");
+
+      return p;
+    });
+  }
+
+  // pega o período
+  useEffect(() => {
+    const p = params.get("period");
+    if (p === "day" || p === "week" || p === "month") {
+      setSelectedPeriod(p);
+    }
+  }, [params]);
 
   // busca ocorrencias do dashboard geral
   useEffect(() => {
@@ -181,7 +219,10 @@ export default function ReportsOverview({
       setLoadingStats(true);
       try {
         const { data } = await api.get("/sectors/stats/by-status", {
-          params: { sectorId, status: selectedStatus },
+          params: {
+            sectorId,
+            ...(selectedStatus ? { status: selectedStatus } : {}),
+          },
         });
         setStats(data?.data || null);
       } catch (err) {
@@ -205,7 +246,10 @@ export default function ReportsOverview({
       setLoadingCoverage(true);
       try {
         const { data } = await api.get("/reports/neighborhood-coverage", {
-          params: { sectorId, status: selectedStatus },
+          params: {
+            sectorId,
+            ...(selectedStatus ? { status: selectedStatus } : {}),
+          },
         });
         setCoverage(data?.data || null);
       } catch (err) {
@@ -236,22 +280,15 @@ export default function ReportsOverview({
     }, 0);
   }, [dashboardNeighborhoods]);
 
-  const [params, setParams] = useSearchParams();
-
   function goToBuilder() {
-    setParams((prev) => {
-      const p = new URLSearchParams(prev);
-      p.set("view", "builder"); // ativa o outro componente
-      return p;
-    });
+    setBuilderOpen(true);
   }
 
-  /* ADICIONADO: função que abre o relatório definindo params na URL */
   function openReport(reportType = "overview") {
     setParams((prev) => {
       const p = new URLSearchParams(prev);
       p.set("view", "report");
-      p.set("reportType", reportType); // exemplo: 'overview'|'neighborhoods'|'status'
+      p.set("reportType", reportType);
       return p;
     });
   }
@@ -343,6 +380,163 @@ export default function ReportsOverview({
           })
         }
       />
+    );
+  }
+  if (view === "custom_report") {
+    return (
+      <CustomPrintableSOReport
+        onClose={() =>
+          setParams((prev) => {
+            const p = new URLSearchParams(prev);
+            p.delete("view");
+            return p;
+          })
+        }
+      />
+    );
+  }
+  if (view === "sector_report") {
+    return (
+      <SectorStatusCoverageReport
+        onClose={() =>
+          setParams((prev) => {
+            const p = new URLSearchParams(prev);
+            p.delete("view");
+            p.delete("sectorId");
+            p.delete("sectorName");
+            p.delete("status");
+            p.delete("period");
+            return p;
+          })
+        }
+      />
+    );
+  }
+
+  function BuilderModal() {
+    const [local, setLocal] = useState({
+      // 1 exibe, 0 oculta
+      list: "1", // Lista de bairros
+      pieN: "1", // Pizza por bairro
+      pieS: "1", // Pizza por status
+      cmp: "1", // Comparação mês atual vs anterior
+      all: "1", // Todas as ocorrências (2 por página)
+    });
+
+    const set = (patch) => setLocal((old) => ({ ...old, ...patch }));
+
+    function handleSave() {
+      setParams((prev) => {
+        const p = new URLSearchParams(prev);
+        p.set("view", "custom_report");
+        p.set("rt", "custom");
+
+        p.set("list", local.list);
+        p.set("pieN", local.pieN);
+        p.set("pieS", local.pieS);
+        p.set("cmp", local.cmp);
+        p.set("all", local.all);
+
+        return p;
+      });
+
+      setBuilderOpen(false);
+    }
+
+    function handleClose() {
+      setBuilderOpen(false);
+    }
+
+    return (
+      <div
+        className="fixed inset-0 z-40 flex items-center justify-center p-4"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div
+          className="absolute inset-0 z-40 bg-black/30 backdrop-blur-sm"
+          onClick={handleClose}
+        />
+
+        {/* Painel principal */}
+        <div className="relative z-50 w-full max-w-2xl rounded-2xl bg-white shadow-xl border border-neutral-200 p-6">
+          <h3 className="text-xl font-semibold text-neutral-900">
+            Configure o tipo de relatório
+          </h3>
+          <p className="text-sm text-neutral-500 mt-1">
+            Escolha o que entra no relatório e como ordenar/filtrar.
+          </p>
+
+          {/* selects */}
+          <div className="mt-5 grid grid-cols-1 gap-4">
+            <SelectField
+              label="Lista de bairros (mês atual)"
+              value={local.list}
+              onChange={(v) => set({ list: v })}
+              options={[
+                { value: "1", label: "Incluir" },
+                { value: "0", label: "Ocultar" },
+              ]}
+            />
+
+            <SelectField
+              label="Gráfico de pizza por bairro"
+              value={local.pieN}
+              onChange={(v) => set({ pieN: v })}
+              options={[
+                { value: "1", label: "Incluir" },
+                { value: "0", label: "Ocultar" },
+              ]}
+            />
+
+            <SelectField
+              label="Gráfico de pizza por status"
+              value={local.pieS}
+              onChange={(v) => set({ pieS: v })}
+              options={[
+                { value: "1", label: "Incluir" },
+                { value: "0", label: "Ocultar" },
+              ]}
+            />
+
+            <SelectField
+              label="Comparação mês atual vs anterior (por bairro)"
+              value={local.cmp}
+              onChange={(v) => set({ cmp: v })}
+              options={[
+                { value: "1", label: "Incluir" },
+                { value: "0", label: "Ocultar" },
+              ]}
+            />
+
+            <SelectField
+              label="Lista de todas as ocorrências (2 por página)"
+              value={local.all}
+              onChange={(v) => set({ all: v })}
+              options={[
+                { value: "1", label: "Incluir" },
+                { value: "0", label: "Ocultar" },
+              ]}
+            />
+          </div>
+
+          {/* Botões */}
+          <div className="mt-6 flex items-center justify-end gap-3">
+            <button
+              onClick={handleClose}
+              className="h-10 px-4 rounded-lg border border-neutral-200 bg-white text-neutral-700 text-sm hover:bg-neutral-50"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleSave}
+              className="h-10 px-4 rounded-lg bg-neutral-900 text-white text-sm hover:bg-neutral-800"
+            >
+              Salvar e abrir relatório
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -455,20 +649,8 @@ export default function ReportsOverview({
             </div>
           </div>
 
-          {/* ADICIONADO: Botões do dashboard (mesma ideia dos botões de setor) */}
+          {/*  Botões do dashboard  */}
           <div className="mt-6 flex items-center gap-3">
-            <button
-              onClick={() => window.print()} /* impressão direta */
-              className="h-12 px-4 rounded-lg border border-neutral-200 bg-white text-gray-700 text-sm"
-            >
-              Imprimir
-            </button>
-            <button
-              onClick={() => openReport("export_pdf")}
-              className="h-12 px-4 rounded-lg border border-neutral-200 bg-white text-gray-700 text-sm"
-            >
-              Export PDF
-            </button>
             <button
               onClick={() =>
                 setParams((prev) => {
@@ -480,14 +662,14 @@ export default function ReportsOverview({
               className="h-12 px-4 rounded-lg border border-neutral-200 bg-white text-gray-700 text-sm hover:bg-neutral-50 transition-colors"
               title="Gerar relatório imprimível do dashboard geral"
             >
-              Abrir relatório detalhado
+              Gere um relatório fotográfico
             </button>
 
             <button
               onClick={goToBuilder}
               className="h-12 px-4 rounded-lg border border-neutral-200 bg-white text-gray-700 text-sm"
             >
-              Configure o tipo de relatório
+              Gere um relatório customizado
             </button>
           </div>
         </>
@@ -504,7 +686,14 @@ export default function ReportsOverview({
                   <button
                     key={card.key}
                     type="button"
-                    onClick={() => setSelectedPeriod(card.key)}
+                    onClick={() => {
+                      setSelectedPeriod(card.key);
+                      setParams((prev) => {
+                        const p = new URLSearchParams(prev);
+                        p.set("period", card.key);
+                        return p;
+                      });
+                    }}
                     className={cardBoxClasses(isActive)}
                     title={`Mostrar bairros de ${card.label.toLowerCase()}`}
                   >
@@ -581,25 +770,32 @@ export default function ReportsOverview({
               )}
 
               <div className="mt-6 flex items-center gap-3">
-                <button className="h-12 px-4 rounded-lg border border-neutral-200 bg-white text-gray-700 text-sm">
-                  Imprimir
-                </button>
-                <button className="h-12 px-4 rounded-lg border border-neutral-200 bg-white text-gray-700 text-sm">
-                  Export PDF
-                </button>
                 <button
-                  onClick={goToBuilder}
-                  className="h-12 px-4 rounded-lg border border-neutral-200 bg-white text-gray-700 text-sm"
+                  onClick={openSectorReport}
+                  disabled={!foundSector?.id}
+                  className="h-12 px-4 rounded-lg border border-neutral-200 bg-white text-gray-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Abrir relatório do setor e status selecionados"
                 >
-                  Configure o tipo de relatório
+                  Abrir relatório deste setor
                 </button>
               </div>
             </div>
 
             <div className="lg:col-span-5 rounded-xl border border-neutral-200/70 bg-[#F6F8FA] shadow-sm p-5">
-              <h3 className="text-lg font-semibold mb-3">
-                Status co-relacionados
-              </h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold">
+                  Status co-relacionados
+                </h3>
+
+                <button
+                  type="button"
+                  onClick={clearStatus}
+                  disabled={!selectedStatus}
+                  className="text-xs h-8 px-3 rounded-md border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Remover status
+                </button>
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
@@ -662,6 +858,7 @@ export default function ReportsOverview({
           </div>
         </>
       )}
+      {builderOpen ? <BuilderModal /> : null}
     </section>
   );
 }

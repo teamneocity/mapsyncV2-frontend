@@ -3,7 +3,7 @@
 
 // React
 import React, { useState } from "react";
-import { useSearchParams } from "react-router-dom"; 
+import { useSearchParams } from "react-router-dom";
 
 // Componentes globais
 import { Sidebar } from "@/components/sidebar";
@@ -14,22 +14,56 @@ import ImgUsers from "@/assets/icons/imgUsers.svg";
 
 // Componentes locais
 import ReportsOverview from "./ReportsOverview";
-import ReportsBuilder from "./ReportsBuilder"; 
+import ReportsBuilder from "./ReportsBuilder";
 
+// Relatórios
 import PrintableDashboardReport from "./PrintableDashboardReport";
+import CustomPrintableSOReport from "./CustomPrintableSOReport";
+import SectorStatusCoverageReport from "./SectorStatusCoverageReport";
 
 export function Reports() {
   const [selected, setSelected] = useState("Dashboard");
 
-  
   const [params] = useSearchParams();
   const view = params.get("view") || "overview";
 
-    // Quando exibir o relatório apenas aparecerá ele
+  function handleCloseReport() {
+    const p = new URLSearchParams(window.location.search);
+    p.delete("view");
+    p.delete("reportType");
+
+    p.delete("sectorId");
+    p.delete("sectorName");
+    p.delete("status");
+    p.delete("period");
+
+    const next = `${window.location.pathname}?${p.toString()}`;
+    window.history.replaceState(null, "", next);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  }
+
   if (view === "printable_dashboard") {
     return (
       <div className="bg-white min-h-screen">
-        <PrintableDashboardReport />
+        <PrintableDashboardReport onClose={handleCloseReport} />
+      </div>
+    );
+  }
+
+  // Página única para o relatório custom
+  if (view === "custom_report") {
+    return (
+      <div className="bg-white min-h-screen">
+        <CustomPrintableSOReport onClose={handleCloseReport} />
+      </div>
+    );
+  }
+
+  // Página única para o relatório por Setor+Status
+  if (view === "sector_report") {
+    return (
+      <div className="bg-white min-h-screen">
+        <SectorStatusCoverageReport onClose={handleCloseReport} />
       </div>
     );
   }
@@ -65,14 +99,6 @@ export function Reports() {
           </div>
         </section>
 
-        {/*
-          explicação:
-          - Mantive seu ReportsOverview como está.
-          - Quando ?view=builder estiver na URL (definido lá de dentro do ReportsOverview),
-            eu rendo o ReportsBuilder.
-          - O wrapper de largura/estilo é igual (max-w-[1500px], bg-white, rounded, etc.)
-            para o visual ficar idêntico ao do que já renderiza.
-        */}
         {view === "builder" ? (
           <section className="max-w-[1500px] w-full mx-auto bg-white rounded-xl p-4 sm:p-6">
             <ReportsBuilder selectedSector={selected} />
