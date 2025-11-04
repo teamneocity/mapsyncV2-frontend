@@ -9,12 +9,11 @@ import { pdf, PDFDownloadLink } from "@react-pdf/renderer";
 // Componentes globais
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
-import { Filters } from "@/components/filters";
 import { OccurrenceList } from "@/components/OccurrenceList";
 
 // Componentes locais
 import { DailyPlanningPDF } from "./DailyPlanningPDF";
-import { ExpandedRowPlanning } from "./ExpandedRowPlanning"; 
+import { ExpandedRowPlanning } from "./ExpandedRowPlanning";
 // Serviços e utilitários
 import { api } from "@/services/api";
 
@@ -26,11 +25,13 @@ export function ServicePlanning() {
   const [serviceOrders, setServiceOrders] = useState([]);
   const [date, setDate] = useState(new Date());
 
-  const [street, setStreet] = useState("");
-  const [neighborhoodId, setNeighborhoodId] = useState("");
-  const [occurrenceType, setOccurrenceType] = useState("");
-  const [status, setStatus] = useState("");
-  const [sectorId, setSectorId] = useState("");
+  const inputValue = (() => {
+    try {
+      return formatTz(date, "yyyy-MM-dd", { timeZone: "America/Maceio" });
+    } catch {
+      return format(date, "yyyy-MM-dd");
+    }
+  })();
 
   const handlePrint = async () => {
     const blob = await pdf(
@@ -50,14 +51,7 @@ export function ServicePlanning() {
         timeZone: "America/Maceio",
       });
 
-      const queryParams = new URLSearchParams({
-        date: formatted,
-        ...(street && { street }),
-        ...(neighborhoodId && { neighborhoodId }),
-        ...(occurrenceType && { occurrenceType }),
-        ...(status && { status }),
-        ...(sectorId && { sectorId }),
-      });
+      const queryParams = new URLSearchParams({ date: formatted });
 
       const response = await api.get(
         `/service-orders/daily-planning?${queryParams.toString()}`
@@ -90,12 +84,18 @@ export function ServicePlanning() {
           foreman: order.foreman,
           team: order.team,
           serviceNature: order.serviceNature,
+
+          occurrence: {
+            sector: occ.sector || null,
+          },
+
           fullOccurrence: {
             address: {
               street: address.street,
               number: address.number,
               neighborhoodName: address.neighborhoodName,
             },
+            sector: occ.sector || null,
           },
         };
       });
@@ -110,33 +110,46 @@ export function ServicePlanning() {
     fetchPlanning(date);
   }, [date]);
 
+  function handleDateChange(e) {
+    const v = e.target.value;
+    if (!v) return;
+    const isoLocal = `${v}T00:00:00`;
+    const parsed = new Date(isoLocal);
+    if (!isNaN(parsed)) setDate(parsed);
+  }
+
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
       <TopHeader />
 
+      {/* Título + data */}
       <div className="px-6 py-4 sm:py-6">
-        <Filters
-          title="Planejamento"
-          subtitle="diário"
-          onSearch={(value) => setStreet(value)}
-          onFilterType={(value) => setOccurrenceType(value)}
-          onFilterRecent={(value) => setStatus(value)}
-          onFilterNeighborhood={(value) => setNeighborhoodId(value)}
-          onFilterSector={(value) => setSectorId(value)}
-          onFilterDateRange={(range) => {
-            if (range?.startDate) setDate(range.startDate);
-          }}
-          handleApplyFilters={() => fetchPlanning(date)}
-        />
+        <div className="flex flex-wrap items-end gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-semibold text-[#1C1C28]">
+              Planejamento
+            </h1>
+            <p className="text-sm text-[#6B7280]">diário</p>
+          </div>
+          // data
+          <input
+            type="date"
+            className="h-[56px] rounded-xl border border-gray-300 bg-white px-3 text-sm text-[#1C1C28] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-300 transition"
+            value={inputValue}
+            onChange={handleDateChange}
+          />
+        </div>
       </div>
 
+      {/* lista */}
       <OccurrenceList
         occurrences={serviceOrders}
         statusLabelOverrides={{ aguardando_execucao: "Agendada" }}
         renderExpandedRow={(occ) => <ExpandedRowPlanning occurrence={occ} />}
       />
 
+      {/* ações */}
       <div className="flex justify-end gap-3 px-6 pb-10 mt-4">
         <button
           onClick={handlePrint}

@@ -11,6 +11,8 @@ export function ExpandedRowPlanning({ occurrence }) {
     occurrence?.protocol_number ??
     "—";
 
+  const sector = occurrence?.sector?.name ?? "-";
+
   const { toast } = useToast();
   const [copying, setCopying] = useState(false);
 
@@ -42,10 +44,14 @@ export function ExpandedRowPlanning({ occurrence }) {
           title="Copiar protocolo"
         >
           <span className="truncate text-sm">
-            Protocolo : {protocol && protocol !== "—" ? protocol : "Sem protocolo"}
+            Protocolo :{" "}
+            {protocol && protocol !== "—" ? protocol : "Sem protocolo"}
           </span>
           <Copy className="w-4 h-4" />
         </button>
+        <div className="h-[56px] px-4 rounded-xl border bg-[#ffffff] flex items-center gap-2">
+          <span className="truncate text-sm">Setor : {sector}</span>
+        </div>
       </div>
     </div>
   );
