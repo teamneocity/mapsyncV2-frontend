@@ -132,7 +132,7 @@ export function ServicePlanning() {
             </h1>
             <p className="text-sm text-[#6B7280]">diário</p>
           </div>
-          // data
+          {/*data */}
           <input
             type="date"
             className="h-[56px] rounded-xl border border-gray-300 bg-white px-3 text-sm text-[#1C1C28] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-300 transition"
