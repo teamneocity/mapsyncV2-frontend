@@ -68,6 +68,7 @@ export function ServicePlanning() {
           origin: "Plataforma",
           type: occ.type,
           status: order.status,
+          sector: occ.sector,
           address: {
             street: address.street,
             number: address.number,
