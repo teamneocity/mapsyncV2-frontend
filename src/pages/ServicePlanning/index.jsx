@@ -9,34 +9,29 @@ import { pdf, PDFDownloadLink } from "@react-pdf/renderer";
 // Componentes globais
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
-import { OccurrenceList } from "@/components/OccurrenceList"; // ✅ import corrigido
+import { Filters } from "@/components/filters";
+import { OccurrenceList } from "@/components/OccurrenceList";
 
 // Componentes locais
 import { DailyPlanningPDF } from "./DailyPlanningPDF";
-import { ExpandedRowPlanning } from "./ExpandedRowPlanning";
-
+import { ExpandedRowPlanning } from "./ExpandedRowPlanning"; 
 // Serviços e utilitários
 import { api } from "@/services/api";
 
 // Assets
 import Printer from "@/assets/icons/Printer.svg?react";
 import FilePdf from "@/assets/icons/filePdf.svg?react";
-import { CalendarDays } from "lucide-react";
-
-// helper: hoje local em YYYY-MM-DD (timezone Maceió)
-function getTodayLocalYMD() {
-  const now = new Date();
-  return formatTz(now, "yyyy-MM-dd", { timeZone: "America/Maceio" });
-}
 
 export function ServicePlanning() {
   const [serviceOrders, setServiceOrders] = useState([]);
-
-  // mantive um Date (para o PDF) e um string YYYY-MM-DD (para a rota)
   const [date, setDate] = useState(new Date());
-  const [dateStr, setDateStr] = useState(getTodayLocalYMD());
 
-  // 🖨️ Gera e abre PDF em nova aba
+  const [street, setStreet] = useState("");
+  const [neighborhoodId, setNeighborhoodId] = useState("");
+  const [occurrenceType, setOccurrenceType] = useState("");
+  const [status, setStatus] = useState("");
+  const [sectorId, setSectorId] = useState("");
+
   const handlePrint = async () => {
     const blob = await pdf(
       <DailyPlanningPDF
@@ -49,11 +44,23 @@ export function ServicePlanning() {
     window.open(url, "_blank");
   };
 
-  // 🔄 Busca dados da rota /daily-planning?date=YYYY-MM-DD
-  const fetchPlanning = async (dateYYYYMMDD) => {
+  const fetchPlanning = async (selectedDate) => {
     try {
+      const formatted = formatTz(selectedDate, "yyyy-MM-dd", {
+        timeZone: "America/Maceio",
+      });
+
+      const queryParams = new URLSearchParams({
+        date: formatted,
+        ...(street && { street }),
+        ...(neighborhoodId && { neighborhoodId }),
+        ...(occurrenceType && { occurrenceType }),
+        ...(status && { status }),
+        ...(sectorId && { sectorId }),
+      });
+
       const response = await api.get(
-        `/service-orders/daily-planning?date=${dateYYYYMMDD}`
+        `/service-orders/daily-planning?${queryParams.toString()}`
       );
 
       const formattedData = response.data.map((order, index) => {
@@ -99,15 +106,9 @@ export function ServicePlanning() {
     }
   };
 
-  // dispara toda vez que a string YYYY-MM-DD mudar
   useEffect(() => {
-    fetchPlanning(dateStr);
-
-    const [y, m, d] = dateStr.split("-").map((n) => parseInt(n, 10));
-    if (!Number.isNaN(y) && !Number.isNaN(m) && !Number.isNaN(d)) {
-      setDate(new Date(y, m - 1, d));
-    }
-  }, [dateStr]);
+    fetchPlanning(date);
+  }, [date]);
 
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
@@ -115,38 +116,27 @@ export function ServicePlanning() {
       <TopHeader />
 
       <div className="px-6 py-4 sm:py-6">
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="text-left">
-            <h2 className="text-xl font-semibold text-[#1F1F2C] leading-none">
-              Planejamento
-            </h2>
-            <p className="text-sm text-[#6B7280] -mt-0.5">diário</p>
-          </div>
-
-          <div/>
-
-          <div className="relative">
-            <CalendarDays className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-700" />
-            <input
-              type="date"
-              value={dateStr}
-              onChange={(e) => setDateStr(e.target.value)}
-              className="h-[55px] pl-10 pr-4 rounded-xl border bg-[#fffff] hover:bg-gray-300 focus:bg-gray-200 outline-none transition-colors"
-              aria-label="Selecionar data"
-              title="Selecionar data"
-            />
-          </div>
-        </div>
+        <Filters
+          title="Planejamento"
+          subtitle="diário"
+          onSearch={(value) => setStreet(value)}
+          onFilterType={(value) => setOccurrenceType(value)}
+          onFilterRecent={(value) => setStatus(value)}
+          onFilterNeighborhood={(value) => setNeighborhoodId(value)}
+          onFilterSector={(value) => setSectorId(value)}
+          onFilterDateRange={(range) => {
+            if (range?.startDate) setDate(range.startDate);
+          }}
+          handleApplyFilters={() => fetchPlanning(date)}
+        />
       </div>
 
-      {/* Lista de Ordens */}
       <OccurrenceList
         occurrences={serviceOrders}
         statusLabelOverrides={{ aguardando_execucao: "Agendada" }}
         renderExpandedRow={(occ) => <ExpandedRowPlanning occurrence={occ} />}
       />
 
-      {/* Ações (imprimir/exportar) */}
       <div className="flex justify-end gap-3 px-6 pb-10 mt-4">
         <button
           onClick={handlePrint}
