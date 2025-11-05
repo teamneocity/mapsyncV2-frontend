@@ -15,6 +15,21 @@ export function OccurrenceList({
   onToggleDateOrder,
   statusLabelOverrides = {},
   hiddenColumns = [],
+  // ordem das colunas padrão
+  columnOrder = [
+    "data",
+    "origin",
+    "protocol",
+    "sentBy",
+    "reviewedBy",
+    "neighborhood",
+    "address",
+    "type",
+    "status",
+  ],
+  alwaysShowFullProtocol = false,
+  columnSpans = {}, // <- overrides por página (parcial)
+  spanPriority = ["protocol", "address", "type", "neighborhood"], // <- opcional, mantém o atual
 }) {
   const [expandedRow, setExpandedRow] = useState(null);
 
@@ -38,17 +53,21 @@ export function OccurrenceList({
     return map[Math.max(1, Math.min(12, n))];
   };
 
-  const BASE_SPANS = {
+  const BASE_SPANS_DEFAULT = {
     data: 1,
     origin: 1,
-    protocol: 1,
+    protocol: 2,
     sentBy: 1,
     reviewedBy: 1,
     neighborhood: 1,
-    address: 3,
+    address: 2,
     type: 2,
     status: 1,
+    inspector: 1,
+    foreman: 1,
   };
+
+  const BASE_SPANS = { ...BASE_SPANS_DEFAULT, ...columnSpans };
 
   const visibleSpans = Object.entries(BASE_SPANS).reduce((sum, [key, span]) => {
     return hide(key) ? sum : sum + span;
@@ -56,30 +75,76 @@ export function OccurrenceList({
 
   let deficit = Math.max(0, 12 - visibleSpans);
 
+  // spans dinâmicos controlados
+  let protocolSpanNum = hide("protocol") ? 0 : BASE_SPANS.protocol;
   let addressSpanNum = hide("address") ? 0 : BASE_SPANS.address;
   let typeSpanNum = hide("type") ? 0 : BASE_SPANS.type;
+  let neighborhoodSpanNum = hide("neighborhood") ? 0 : BASE_SPANS.neighborhood;
 
-  if (deficit > 0) {
-    if (!hide("address")) {
-      const add = deficit;
-      addressSpanNum = Math.min(12, addressSpanNum + add);
-      deficit -= add;
-    }
-    if (deficit > 0 && !hide("type")) {
-      typeSpanNum = Math.min(12 - addressSpanNum, typeSpanNum + deficit);
-      deficit = 0;
-    }
+  // Prioridade configurável
+  const applyGrowth = (key, current) => {
+    if (deficit <= 0 || hide(key)) return current;
+    const canGrow = 12 - current;
+    if (canGrow <= 0) return current;
+    const add = Math.min(deficit, canGrow);
+    deficit -= add;
+    return current + add;
+  };
+
+  for (const k of spanPriority) {
+    if (k === "protocol")
+      protocolSpanNum = applyGrowth("protocol", protocolSpanNum);
+    if (k === "address")
+      addressSpanNum = applyGrowth("address", addressSpanNum);
+    if (k === "type") typeSpanNum = applyGrowth("type", typeSpanNum);
+    if (k === "neighborhood")
+      neighborhoodSpanNum = applyGrowth("neighborhood", neighborhoodSpanNum);
   }
 
-  if (addressSpanNum + typeSpanNum > 12) {
-    const extra = addressSpanNum + typeSpanNum - 12;
+  // garante que o total nunca passe de 12
+  let sumDyn = protocolSpanNum + addressSpanNum + typeSpanNum + neighborhoodSpanNum;
+  if (sumDyn > 12) {
+    const extra = sumDyn - 12;
+    // tira primeiro de type, depois de address, mantendo protocolo largo
     if (typeSpanNum >= extra) typeSpanNum -= extra;
     else {
       const rest = extra - typeSpanNum;
       typeSpanNum = 0;
-      addressSpanNum = Math.max(1, addressSpanNum - rest);
+      if (addressSpanNum >= rest) addressSpanNum -= rest;
+      else {
+        const rest2 = rest - addressSpanNum;
+        addressSpanNum = 1;
+        protocolSpanNum = Math.max(1, protocolSpanNum - rest2);
+      }
     }
   }
+
+  // utilitários para ordem
+  const ALL_KEYS = [
+    "data",
+    "origin",
+    "protocol",
+    "sentBy",
+    "reviewedBy",
+    "neighborhood",
+    "address",
+    "type",
+    "status",
+    "company",
+    "inspector",
+    "foreman",
+  ];
+
+  const getOrderedCols = () =>
+    columnOrder.filter((k) => ALL_KEYS.includes(k)).filter((k) => !hide(k));
+
+  const getSpan = (key) => {
+    if (key === "protocol") return spanClass(protocolSpanNum);
+    if (key === "address") return spanClass(addressSpanNum);
+    if (key === "type") return spanClass(typeSpanNum);
+    if (key === "neighborhood") return spanClass(neighborhoodSpanNum);
+    return "col-span-1";
+  };
 
   const dataToRender =
     serviceorders?.length > 0
@@ -170,75 +235,58 @@ export function OccurrenceList({
 
   return (
     <div className="w-full mx-auto px-6">
-      {/* Header apenas para desktop */}
+      {/* Header desktop  */}
       <div className="hidden xl:block bg-[#D9DCE2] text-[#020231] font-semibold rounded-xl px-4 py-5 border border-gray-200 mb-2 md:text-sm">
         <div className="grid grid-cols-12 gap-4 items-center">
-          {!hide("data") && (
-            <div className="col-span-1" title="Data">
-              <button
-                type="button"
-                onClick={() =>
-                  onToggleDateOrder?.(
-                    dateOrder === "recent" ? "oldest" : "recent"
-                  )
-                }
-                className="group inline-flex items-center gap-4 select-none"
-              >
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform ${
-                    dateOrder === "recent" ? "" : "rotate-180"
-                  }`}
-                />
-                Data
-                <DoubleArrow className="max-[1430px]:hidden inline" />
-              </button>
-            </div>
-          )}
+          {getOrderedCols().map((key) => {
+            if (key === "data") {
+              return (
+                <div key="data" className={getSpan("data")} title="Data">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onToggleDateOrder?.(
+                        dateOrder === "recent" ? "oldest" : "recent"
+                      )
+                    }
+                    className="group inline-flex items-center gap-4 select-none"
+                  >
+                    <ChevronDown
+                      className={`h-4 w-4 transition-transform ${
+                        dateOrder === "recent" ? "" : "rotate-180"
+                      }`}
+                    />
+                    Data
+                    <DoubleArrow className="max-[1430px]:hidden inline" />
+                  </button>
+                </div>
+              );
+            }
 
-          {!hide("origin") && (
-            <div className="col-span-1" title="Origem">
-              Origem
-            </div>
-          )}
-          {!hide("protocol") && (
-            <div className="col-span-1" title="Protocolo">
-              Protocolo
-            </div>
-          )}
-          {!hide("sentBy") && (
-            <div className="col-span-1 truncate" title="Enviado por">
-              Enviado por
-            </div>
-          )}
-          {!hide("reviewedBy") && (
-            <div className="col-span-1 truncate" title="Revisado por">
-              Revisado por
-            </div>
-          )}
-          {!hide("neighborhood") && (
-            <div className="col-span-1" title="Bairro">
-              Bairro
-            </div>
-          )}
-          {!hide("address") && (
-            <div className={`${spanClass(addressSpanNum)}`} title="Endereço">
-              Endereço
-            </div>
-          )}
-          {!hide("type") && (
-            <div className={`${spanClass(typeSpanNum)}`} title="Tipo">
-              Tipo
-            </div>
-          )}
-          {!hide("status") && (
-            <div className="col-span-1" title="Status">
-              Status
-            </div>
-          )}
+            const titles = {
+              origin: "Origem",
+              protocol: "Protocolo",
+              sentBy: "Enviado por",
+              reviewedBy: "Revisado por",
+              neighborhood: "Bairro",
+              address: "Endereço",
+              type: "Tipo",
+              status: "Status",
+              company: "Companhia",
+              inspector: "Técnico",
+              foreman: "Encarregado",
+            };
+
+            return (
+              <div key={key} className={getSpan(key)} title={titles[key]}>
+                {titles[key]}
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Lista de ocorrências */}
+      {/* Lista */}
       <div className="space-y-1">
         {!dataToRender || dataToRender.length === 0 ? (
           <div className="w-full">
@@ -274,12 +322,12 @@ export function OccurrenceList({
                   expandedRow === occ.id ? "bg-[#F7F7F7]" : "bg-white"
                 } border border-gray-200 rounded-xl overflow-hidden`}
               >
-                {/* Linha principal */}
+                {/* Cabeçalho da linha */}
                 <div
                   className="hover:bg-gray-50 transition cursor-pointer"
                   onClick={() => toggleRow(occ.id)}
                 >
-                  {/* Layout Mobile */}
+                  {/* Mobile (inalterado pra manter idêntico) */}
                   <div className="xl:hidden p-4">
                     <div className="flex items-start gap-3">
                       <div className="flex items-center justify-center mt-1">
@@ -315,7 +363,6 @@ export function OccurrenceList({
                             </div>
                           )}
                         </div>
-
                         <div className="grid grid-cols-2 gap-3 text-sm text-gray-600">
                           {!hide("origin") && (
                             <div>
@@ -373,7 +420,6 @@ export function OccurrenceList({
                             </div>
                           )}
                         </div>
-
                         {!hide("address") && (
                           <div>
                             <span className="text-xs font-medium text-gray-400 block">
@@ -386,119 +432,273 @@ export function OccurrenceList({
                             </div>
                           </div>
                         )}
+                        +{" "}
+                        {!hide("inspector") && (
+                          <div>
+                            <span className="text-xs font-medium text-gray-400 block">
+                              Inspetor
+                            </span>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-[10px] font-medium text-blue-600">
+                                {getInicials(
+                                  occ?.inspector?.name ||
+                                    occ?.pilot?.name ||
+                                    "NA"
+                                )}
+                              </span>
+                              <span className="text-xs truncate">
+                                {occ?.inspector?.name ||
+                                  occ?.pilot?.name ||
+                                  "—"}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        {!hide("foreman") && (
+                          <div>
+                            <span className="text-xs font-medium text-gray-400 block">
+                              Encarregado
+                            </span>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-medium text-emerald-700">
+                                {getInicials(occ?.foreman?.name || "NA")}
+                              </span>
+                              <span className="text-xs truncate">
+                                {occ?.foreman?.name || "—"}
+                              </span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
 
-                  {/* Layout Desktop */}
+                  {/* Desktop  */}
                   <div className="hidden xl:block p-4">
                     <div className="grid grid-cols-12 gap-4 items-center text-[#787891]">
-                      {!hide("data") && (
-                        <div className="col-span-1 flex items-center gap-2">
-                          {expandedRow === occ.id ? (
-                            <ChevronDown className="h-4 w-4 text-gray-500" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4 text-gray-500" />
-                          )}
-                          <span className="text-sm">
-                            {occ.createdAt || occ.requestedAt
-                              ? format(
-                                  new Date(occ.createdAt || occ.requestedAt),
-                                  "dd/MM/yy"
-                                )
-                              : "—"}
-                          </span>
-                        </div>
-                      )}
-
-                      {!hide("origin") && (
-                        <div className="col-span-1 text-sm">
-                          {occ.origin || "Plataforma"}
-                        </div>
-                      )}
-
-                      {!hide("protocol") && (
-                        <div className="col-span-1 text-sm min-w-0">
-                          <span
-                            className="block truncate"
-                            title={occ.protocol || occ.protocolNumber || "—"}
-                          >
-                            {occ.protocol || occ.protocolNumber || "—"}
-                          </span>
-                        </div>
-                      )}
-
-                      {!hide("sentBy") && (
-                        <div className="col-span-1 flex items-center gap-2">
-                          <span className="flex h-7 w-7 px-3 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
-                            {getInicials(
-                              occ?.author?.name || occ?.requester?.name || "NA"
-                            )}
-                          </span>
-                          <span className="text-sm truncate">
-                            {occ?.author?.name || occ?.requester?.name || "—"}
-                          </span>
-                        </div>
-                      )}
-
-                      {!hide("reviewedBy") && (
-                        <div className="col-span-1 flex items-center gap-2">
-                          <span className="flex h-7 w-7 px-3 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
-                            {getInicials(occ?.pilot?.name || "NA")}
-                          </span>
-                          <span className="text-sm truncate">
-                            {occ?.approvedBy?.name || "—"}
-                          </span>
-                        </div>
-                      )}
-
-                      {!hide("neighborhood") && (
-                        <div className="col-span-1 text-sm">
-                          {occ?.address?.neighborhoodName ||
-                            occ?.address?.neighborhood ||
-                            "—"}
-                        </div>
-                      )}
-
-                      {!hide("address") && (
-                        <div
-                          className={`${spanClass(
-                            addressSpanNum
-                          )} text-sm truncate`}
-                        >
-                          {`${occ.address?.street || ""}, ${
-                            occ.address?.number || ""
-                          } - ${occ.address?.city || ""}`}
-                        </div>
-                      )}
-
-                      {!hide("type") && (
-                        <div
-                          className={`${spanClass(
-                            typeSpanNum
-                          )} text-sm truncate`}
-                        >
-                          <div className="truncate">
-                            {typeLabels[occ.type] || occ.type || "—"}
-                          </div>
-                          {!hide("company") && (
-                            <div className="text-xs text-gray-500 truncate">
-                              Companhia: {companyName}
+                      {getOrderedCols().map((key) => {
+                        if (key === "data") {
+                          return (
+                            <div
+                              key="data"
+                              className={`${getSpan(
+                                "data"
+                              )} flex items-center gap-2`}
+                            >
+                              {expandedRow === occ.id ? (
+                                <ChevronDown className="h-4 w-4 text-gray-500" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4 text-gray-500" />
+                              )}
+                              <span className="text-sm">
+                                {occ.createdAt || occ.requestedAt
+                                  ? format(
+                                      new Date(
+                                        occ.createdAt || occ.requestedAt
+                                      ),
+                                      "dd/MM/yy"
+                                    )
+                                  : "—"}
+                              </span>
                             </div>
-                          )}
-                        </div>
-                      )}
+                          );
+                        }
 
-                      {!hide("status") && (
-                        <div className="col-span-1 flex justify-center items-center gap-2">
-                          <StatusBadge
-                            status={occ.status}
-                            isEmergencial={occ.isEmergencial}
-                            isDelayed={occ.isDelayed}
-                            labelOverrides={statusLabelOverrides}
-                          />
-                        </div>
-                      )}
+                        if (key === "origin") {
+                          return (
+                            <div
+                              key="origin"
+                              className={`${getSpan("origin")} text-sm`}
+                            >
+                              {occ.origin || "Plataforma"}
+                            </div>
+                          );
+                        }
+
+                        if (key === "protocol") {
+                          return (
+                            <div
+                              key="protocol"
+                              className={`${getSpan(
+                                "protocol"
+                              )} text-sm min-w-0`}
+                            >
+                              <span
+                                className={`block ${
+                                  alwaysShowFullProtocol
+                                    ? "whitespace-normal break-all"
+                                    : "truncate"
+                                }`}
+                                title={
+                                  occ.protocol || occ.protocolNumber || "—"
+                                }
+                              >
+                                {occ.protocol || occ.protocolNumber || "—"}
+                              </span>
+                            </div>
+                          );
+                        }
+
+                        if (key === "sentBy") {
+                          return (
+                            <div
+                              key="sentBy"
+                              className={`${getSpan(
+                                "sentBy"
+                              )} flex items-center gap-2`}
+                            >
+                              <span className="flex h-7 w-7 px-3 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
+                                {getInicials(
+                                  occ?.author?.name ||
+                                    occ?.requester?.name ||
+                                    "NA"
+                                )}
+                              </span>
+                              <span className="text-sm truncate">
+                                {occ?.author?.name ||
+                                  occ?.requester?.name ||
+                                  "—"}
+                              </span>
+                            </div>
+                          );
+                        }
+
+                        if (key === "reviewedBy") {
+                          return (
+                            <div
+                              key="reviewedBy"
+                              className={`${getSpan(
+                                "reviewedBy"
+                              )} flex items-center gap-2`}
+                            >
+                              <span className="flex h-7 w-7 px-3 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-600">
+                                {getInicials(occ?.pilot?.name || "NA")}
+                              </span>
+                              <span className="text-sm truncate">
+                                {occ?.approvedBy?.name || "—"}
+                              </span>
+                            </div>
+                          );
+                        }
+
+                        if (key === "neighborhood") {
+                          return (
+                            <div
+                              key="neighborhood"
+                              className={`${getSpan("neighborhood")} text-sm`}
+                            >
+                              {occ?.address?.neighborhoodName ||
+                                occ?.address?.neighborhood ||
+                                "—"}
+                            </div>
+                          );
+                        }
+
+                        if (key === "address") {
+                          return (
+                            <div
+                              key="address"
+                              className={`${getSpan(
+                                "address"
+                              )} text-sm truncate`}
+                            >
+                              {`${occ.address?.street || ""}, ${
+                                occ.address?.number || ""
+                              } - ${occ.address?.city || ""}`}
+                            </div>
+                          );
+                        }
+
+                        if (key === "type") {
+                          return (
+                            <div
+                              key="type"
+                              className={`${getSpan("type")} text-sm truncate`}
+                            >
+                              <div className="truncate">
+                                {typeLabels[occ.type] || occ.type || "—"}
+                              </div>
+                              {!hide("company") && (
+                                <div className="text-xs text-gray-500 truncate">
+                                  Companhia: {companyName}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        if (key === "company") {
+                          return (
+                            <div
+                              key="cozmpany"
+                              className={`${getSpan(
+                                "company"
+                              )} text-sm truncate`}
+                            >
+                              {companyName}
+                            </div>
+                          );
+                        }
+
+                        if (key === "status") {
+                          return (
+                            <div
+                              key="status"
+                              className={`${getSpan(
+                                "status"
+                              )} flex justify-center items-center gap-2`}
+                            >
+                              <StatusBadge
+                                status={occ.status}
+                                isEmergencial={occ.isEmergencial}
+                                isDelayed={occ.isDelayed}
+                                labelOverrides={statusLabelOverrides}
+                              />
+                            </div>
+                          );
+                        }
+
+                        if (key === "inspector") {
+                          const name =
+                            occ?.inspector?.name || occ?.pilot?.name || "—";
+                          return (
+                            <div
+                              key="inspector"
+                              className={`${getSpan(
+                                "inspector"
+                              )} flex items-center gap-2`}
+                            >
+                              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-medium text-blue-600">
+                                {getInicials(name || "NA")}
+                              </span>
+                              <span className="text-sm truncate" title={name}>
+                                {name}
+                              </span>
+                            </div>
+                          );
+                        }
+
+                        if (key === "foreman") {
+                          const name = occ?.foreman?.name || "—";
+                          return (
+                            <div
+                              key="foreman"
+                              className={`${getSpan(
+                                "foreman"
+                              )} flex items-center gap-2`}
+                            >
+                              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-xs font-medium text-emerald-700">
+                                {getInicials(name || "NA")}
+                              </span>
+                              <span className="text-sm truncate" title={name}>
+                                {name}
+                              </span>
+                            </div>
+                          );
+                        }
+
+                        return null;
+                      })}
                     </div>
                   </div>
                 </div>

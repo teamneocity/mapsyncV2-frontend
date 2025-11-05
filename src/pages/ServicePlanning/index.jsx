@@ -20,6 +20,7 @@ import { api } from "@/services/api";
 // Assets
 import Printer from "@/assets/icons/Printer.svg?react";
 import FilePdf from "@/assets/icons/filePdf.svg?react";
+import { protocol } from "socket.io-client";
 
 export function ServicePlanning() {
   const [serviceOrders, setServiceOrders] = useState([]);
@@ -65,6 +66,10 @@ export function ServicePlanning() {
           id: order.id,
           createdAt: order.createdAt,
           protocol: order.protocolNumber,
+          scheduledStart: order.scheduledStart,
+          scheduledEnd: order.scheduledEnd,
+          externalCompany: occ.externalCompany || "Emurb",
+          neighborhood: address.neighborhoodName || "—",
           origin: "Plataforma",
           type: occ.type,
           status: order.status,
@@ -126,12 +131,12 @@ export function ServicePlanning() {
 
       {/* Título + data */}
       <div className="px-6 py-4 sm:py-6">
-        <div className="flex flex-wrap items-end gap-3">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-[#1C1C28]">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-baseline gap-1">
+            <h1 className="text-[18px] text-gray-700">
               Planejamento
             </h1>
-            <p className="text-sm text-[#6B7280]">diário</p>
+            <p className="text-[18px] font-semibold text-gray-900">diário</p>
           </div>
           {/*data */}
           <input
@@ -147,7 +152,21 @@ export function ServicePlanning() {
       <OccurrenceList
         occurrences={serviceOrders}
         statusLabelOverrides={{ aguardando_execucao: "Agendada" }}
+        hiddenColumns={["reviewedBy", "sentBy"]} // escondendo só nessa tela
         renderExpandedRow={(occ) => <ExpandedRowPlanning occurrence={occ} />}
+        columnOrder={[
+          "data", // Data
+          "protocol", // protocolo
+          "inspector",   // inspector
+          "foreman",  // encarregado
+          "company", // Companhia
+          "address", // Endereço
+          "neighborhood", // Bairro
+          "type", // Tipo
+          "status", // Status
+        ]}
+        alwaysShowFullProtocol
+        columnSpans={{ protocol: 1, address: 2, neighborhood: 2, type:1  }}
       />
 
       {/* ações */}

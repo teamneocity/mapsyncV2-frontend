@@ -264,7 +264,7 @@ export function Analysis() {
         occurrences={occurrences || []}
         dateOrder={filterRecent ?? "recent"}
         onToggleDateOrder={handleToggleDateOrder}
-        hiddenColumns={[ "reviewedBy","sentBy"]} // escondendo só nessa tela
+        hiddenColumns={[ "reviewedBy","sentBy"]} 
         renderExpandedRow={(occurrence) => (
           <ExpandedRowAnalysis
             occurrence={occurrence}
@@ -280,6 +280,7 @@ export function Analysis() {
             handleDeleteImage={handleDeleteImage}
           />
         )}
+        columnSpans={{ protocol: 2, address: 4, type: 2 }}
       />
 
       <footer className="bg-[#EBEBEB] p-4 mt-auto">

@@ -64,10 +64,11 @@ function getPavSectorId(sectors = []) {
   const found = sectors.find((s) => alvo.includes(normalize(s?.name)));
   return found?.id || "";
 }
-//  encontra setor Drenagem
+// encontra setor Desobstrução (prioriza "desobstrução"; mantém "drenagem" como fallback opcional)
 function getDrainSectorId(sectors = []) {
-  const alvo = ["drenagem"];
-  const found = sectors.find((s) => alvo.includes(normalize(s?.name)));
+  const aliases = ["desobstrução", "desobstrucao"];
+  const normalized = sectors.map((s) => ({ id: s?.id, n: normalize(s?.name) }));
+  const found = normalized.find((s) => aliases.includes(s.n));
   return found?.id || "";
 }
 
@@ -245,7 +246,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       }
 
       // Encaminhamentos automáticos pós-finalização
-      // Se veio de Drenagem, abrir fluxo para criar Pavimentação (já existia)
       if (
         occurrence?.sector?.name &&
         normalize(occurrence.sector.name).includes("drenagem")
@@ -273,8 +273,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
           );
         }
         setIsCreatePavingModalOpen(true);
-
-        // Se for Limpa Fossa, abrir fluxo para criar Drenagem
       } else if (isLimpaFossa) {
         try {
           setDrainLookupError("");
@@ -283,14 +281,13 @@ export function ExpandedRowServiceOrder({ occurrence }) {
             ? res.data.sectors
             : [];
 
-          // procura "Drenagem"
-          const drain = list.find((s) => normalize(s?.name) === "drenagem");
-          if (drain?.id) {
-            setDrainSectorId(drain.id);
+          const desobId = getDrainSectorId(list); // agora acha "Desobstrução"
+          if (desobId) {
+            setDrainSectorId(desobId);
           } else {
             setDrainSectorId("");
             setDrainLookupError(
-              "Setor 'Drenagem' não encontrado para este usuário."
+              "Setor 'Desobstrução' não encontrado para este usuário."
             );
           }
         } catch (e) {
@@ -431,7 +428,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       const targetSectorId = (drainSectorId || "").trim();
       if (!targetSectorId) {
         throw new Error(
-          "Setor de destino 'Drenagem' não disponível. Informe o ID do setor."
+          "Setor de destino 'Desobstrução' não disponível. Informe o ID do setor."
         );
       }
 
@@ -468,7 +465,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
 
       toast({
         title: "Ocorrência criada e encaminhada",
-        description: "Encaminhada para Drenagem com sucesso.",
+        description: "Encaminhada para Desobstrução com sucesso.",
       });
 
       setTimeout(() => {
@@ -930,7 +927,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
           <div className="bg-white rounded-[2rem] w-full max-w-md p-6 shadow-lg space-y-5 text-left">
             <h2 className="text-xl font-semibold text-gray-900">
-              Criar ocorrência de drenagem
+              Criar ocorrência de desobstrução
             </h2>
 
             {/* Formulário (sem select de setor) */}
@@ -956,7 +953,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
               {/* Info: setor destino fixo */}
               <div className="rounded-lg border p-3 bg-[#F8F8F8]">
                 <p className="text-sm text-gray-700">
-                  <strong>Setor de destino:</strong> Drenagem
+                  <strong>Setor de destino:</strong> Desobstrução
                 </p>
                 {drainLookupError ? (
                   <p className="mt-2 text-xs text-red-600">
@@ -965,7 +962,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 ) : (
                   <p className="mt-2 text-xs text-gray-500">
                     Esta ação irá encaminhar a nova ocorrência diretamente para
-                    o setor de Drenagem.
+                    o setor de Desobstrução.
                   </p>
                 )}
               </div>

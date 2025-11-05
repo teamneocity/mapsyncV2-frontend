@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
 
 export function ExpandedRowPlanning({ occurrence }) {
   const protocol =
@@ -12,6 +13,14 @@ export function ExpandedRowPlanning({ occurrence }) {
     "—";
 
   const sector = occurrence?.sector?.name ?? "-";
+
+  const startDate = occurrence?.scheduledStart
+    ? format(new Date(occurrence.scheduledStart), "dd/MM/yyyy HH:mm")
+    : "-";
+
+  const endDate = occurrence?.scheduledEnd
+    ? format(new Date(occurrence.scheduledEnd), "dd/MM/yyyy HH:mm")
+    : "-";
 
   const { toast } = useToast();
   const [copying, setCopying] = useState(false);
@@ -51,6 +60,11 @@ export function ExpandedRowPlanning({ occurrence }) {
         </button>
         <div className="h-[56px] px-4 rounded-xl border bg-[#ffffff] flex items-center gap-2">
           <span className="truncate text-sm">Setor : {sector}</span>
+        </div>
+        <div className="h-[56px] px-4 rounded-xl border bg-[#ffffff] flex items-center gap-2">
+          <span className="truncate text-sm">
+            Período de execução : {startDate} - {endDate}
+          </span>
         </div>
       </div>
     </div>
