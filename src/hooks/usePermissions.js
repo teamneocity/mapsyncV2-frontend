@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/auth";
+import { is } from "date-fns/locale";
 
 export const usePermissions = () => {
   const { user } = useAuth();
@@ -10,6 +11,7 @@ export const usePermissions = () => {
   const isInspector = user?.role == "INSPECTOR";
   const isChief = user?.role == "CHIEF";
   const isPilot = user?.role == "PILOT";
+  const isDroneOperator = user?.role == "DRONE_OPERATOR";
 
   return {
     isAdmin,
@@ -18,6 +20,7 @@ export const usePermissions = () => {
     isSupervisor,
     isInspector,
     isChief,
-    isPilot
+    isPilot,
+    isDroneOperator
   };
 };

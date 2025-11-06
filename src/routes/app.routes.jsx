@@ -27,7 +27,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 
 export function AppRoutes() {
   const { user } = useAuth();
-  const { isAdmin, isSupervisor, isAnalyst, isInspector, isChief, isPilot } =
+  const { isAdmin, isSupervisor, isAnalyst, isInspector, isChief, isPilot, isDroneOperator } =
     usePermissions();
   const canSeeAll = isAdmin || isSupervisor;
 
@@ -82,7 +82,7 @@ export function AppRoutes() {
       <Route
         path="/occurrencesa"
         element={
-          canSeeAll || isInspector || isChief ? (
+          canSeeAll || isInspector || isChief || isDroneOperator ? (
             <OccurrencesA />
           ) : (
             <Navigate to="/" />

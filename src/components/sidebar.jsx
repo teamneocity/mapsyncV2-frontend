@@ -74,8 +74,14 @@ export function Sidebar() {
     loadSidebarAvatarUrl();
   }, []);
 
-  const { isAdmin, isSupervisor, isAnalyst, isInspector, isChief } =
-    usePermissions();
+  const {
+    isAdmin,
+    isSupervisor,
+    isAnalyst,
+    isInspector,
+    isChief,
+    isDroneOperator,
+  } = usePermissions();
   const canSeeAll = isAdmin || isSupervisor;
 
   const roleLabel =
@@ -86,6 +92,7 @@ export function Sidebar() {
       ANALYST: "Analista",
       INSPECTOR: "Fiscal",
       FIELD_AGENT: "Agente de Campo",
+      DRONE_OPERATOR: "Operador de Drone",
     }[user?.role] || "Cargo desconhecido";
 
   const baseItem =
@@ -169,16 +176,19 @@ export function Sidebar() {
                 </NavLink>
               )}
 
-              {(canSeeAll || isInspector || isChief) && (
+              {(canSeeAll || isInspector || isChief || isDroneOperator) && (
                 <>
                   <NavLink to="/occurrencesa" className={linkClass}>
                     <DroneIcon className="w-5 h-5 shrink-0" /> Mapeamento Aéreo
                   </NavLink>
-                  <NavLink to="/occurrencest" className={linkClass}>
-                    <TrackIcon className="w-5 h-5 shrink-0" /> Mapeamento
-                    Terrestre
-                  </NavLink>
                 </>
+              )}
+
+              {(canSeeAll || isInspector || isChief) && (
+                <NavLink to="/occurrencest" className={linkClass}>
+                  <TrackIcon className="w-5 h-5 shrink-0" /> Mapeamento
+                  Terrestre
+                </NavLink>
               )}
 
               {(canSeeAll || isChief) && (
@@ -264,6 +274,7 @@ export function Sidebar() {
                       {{
                         CHIEF: "Avançado",
                         ADMIN: "Master",
+                        DRONE_OPERATOR: "básico",
                         SECTOR_CHIEF: "Médio",
                         ANALYST: "Básico",
                         INSPECTOR: "Básico",
@@ -290,6 +301,7 @@ export function Sidebar() {
                       ANALYST: 40,
                       INSPECTOR: 40,
                       FIELD_AGENT: 40,
+                      DRONE_OPERATOR: 40,
                     }[user?.role] || 0
                   }%`,
                   backgroundColor: "#003DF6",
@@ -385,17 +397,20 @@ export function Sidebar() {
                     </NavLink>
                   )}
 
-                  {(canSeeAll || isInspector || isChief) && (
+                  {(canSeeAll || isInspector || isChief || isDroneOperator) && (
                     <>
-                      <NavLink to="/occurrencesa" className={linkClassMobile}>
+                      <NavLink to="/occurrencesa" className={linkClass}>
                         <DroneIcon className="w-5 h-5 shrink-0" /> Mapeamento
                         Aéreo
                       </NavLink>
-                      <NavLink to="/occurrencest" className={linkClassMobile}>
-                        <TrackIcon className="w-5 h-5 shrink-0" /> Mapeamento
-                        Terrestre
-                      </NavLink>
                     </>
+                  )}
+
+                  {(canSeeAll || isInspector || isChief) && (
+                    <NavLink to="/occurrencest" className={linkClass}>
+                      <TrackIcon className="w-5 h-5 shrink-0" /> Mapeamento
+                      Terrestre
+                    </NavLink>
                   )}
 
                   {(canSeeAll || isChief) && (
