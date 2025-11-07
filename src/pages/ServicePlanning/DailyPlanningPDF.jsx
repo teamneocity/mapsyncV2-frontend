@@ -50,6 +50,22 @@ function formatDatePtBR(value) {
   return d ? d.toLocaleDateString("pt-BR") : "—";
 }
 
+// Helper para exibir período
+function formatPeriodPtBR(start, end) {
+  const ds = parseDateSafe(start);
+  const de = parseDateSafe(end);
+
+  if (!ds && !de) return "—";
+  if (ds && !de) return `de ${formatDatePtBR(ds)}`;
+  if (!ds && de) return `até ${formatDatePtBR(de)}`;
+
+  const left = formatDatePtBR(ds);
+  const right = formatDatePtBR(de);
+
+  if (left === right) return `em ${left}`;
+  return `de ${left} até ${right}`;
+}
+
 // Colunas da tabela
 const columns = [
   { label: "Ordem", flex: 1, key: "ordem" },
@@ -59,7 +75,7 @@ const columns = [
   { label: "Bairro", flex: 1, key: "neighborhood" },
   { label: "Endereço", flex: 2, key: "address" },
   { label: "Serviço", flex: 1, key: "service" },
-  { label: "Data", flex: 1, key: "date" },
+  { label: "Período", flex: 1, key: "period" },
   { label: "Status", flex: 1, key: "status" },
 ];
 
@@ -150,7 +166,7 @@ const getStatusStyle = (status) => {
   return map[status] || { backgroundColor: "#f0f0f0", color: "#666" };
 };
 
-//  Máscaras legíveis para exibição de status
+// Máscaras 
 const statusLabels = {
   em_analise: "Em análise",
   emergencial: "Emergencial",
@@ -220,7 +236,8 @@ export function DailyPlanningPDF({ data = [], formattedDate }) {
 
                 switch (col.key) {
                   case "ordem":
-                    content = item.ordem;
+                    // só uma sequência
+                    content = index + 1;
                     break;
                   case "inspector":
                     content = item.inspector?.name;
@@ -244,12 +261,13 @@ export function DailyPlanningPDF({ data = [], formattedDate }) {
                   case "service":
                     content = item.serviceNature?.name;
                     break;
-                  case "date":
-                    // (alteração mínima) – usa formatter seguro
-                    content = formatDatePtBR(item.scheduledDate);
+                  case "period":
+                    content = formatPeriodPtBR(
+                      item.scheduledStart,
+                      item.scheduledEnd
+                    );
                     break;
-                  case "status":
-                    // usa a máscara do statusLabels se existir
+                  case "status": {
                     const raw = (item.status || "")
                       .toString()
                       .trim()
@@ -277,6 +295,7 @@ export function DailyPlanningPDF({ data = [], formattedDate }) {
                         <Text style={{ fontSize: 7 }}>{masked}</Text>
                       </View>
                     );
+                  }
                   default:
                     break;
                 }

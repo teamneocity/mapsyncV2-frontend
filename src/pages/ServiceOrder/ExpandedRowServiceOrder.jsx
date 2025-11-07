@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import CloudShare from "@/assets/icons/cloudShare.svg?react";
 import FilePdf from "@/assets/icons/filePdf.svg?react";
 import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
+import Image from "@/assets/icons/Image.svg?react";
 import { MediaMapSection } from "@/components/MediaMapSection";
 
 import { useToast } from "@/hooks/use-toast";
@@ -64,7 +65,7 @@ function getPavSectorId(sectors = []) {
   const found = sectors.find((s) => alvo.includes(normalize(s?.name)));
   return found?.id || "";
 }
-// encontra setor Desobstrução (prioriza "desobstrução"; mantém "drenagem" como fallback opcional)
+// encontra setor Desobstrução
 function getDrainSectorId(sectors = []) {
   const aliases = ["desobstrução", "desobstrucao"];
   const normalized = sectors.map((s) => ({ id: s?.id, n: normalize(s?.name) }));
@@ -83,6 +84,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         }))
       : [];
 
+  // timeline
   const timeline = [
     { label: "Solicitação", date: occurrence.acceptedAt },
     { label: "Aceito", date: occurrence.createdAt },
@@ -91,9 +93,9 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     { label: "Finalizado", date: occurrence.finishedAt },
   ];
 
+  // período
   const scheduledStart =
     occurrence?.scheduledStart || occurrence?.scheduledDate || null;
-
   const scheduledEnd = occurrence?.scheduledEnd || null;
 
   const [photoOpen, setPhotoOpen] = useState(false);
@@ -103,6 +105,10 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   const photoUrl = occurrence?.result?.photos?.[0]?.url;
   const lat = parseFloat(occurrence.occurrence?.address?.latitude ?? 0);
   const lng = parseFloat(occurrence.occurrence?.address?.longitude ?? 0);
+
+  const [isAddPhotoModalOpen, setIsAddPhotoModalOpen] = useState(false);
+  const [inProgressFiles, setInProgressFiles] = useState([]); // File[]
+  const [inProgressObs, setInProgressObs] = useState("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFinalizeModalOpen, setIsFinalizeModalOpen] = useState(false);
@@ -151,6 +157,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   const [isRescheduleHistoryModalOpen, setIsRescheduleHistoryModalOpen] =
     useState(false);
 
+  // copiar protocolo
   function handleCopyProtocol() {
     const value = occurrence?.protocolNumber;
     if (!value) {
@@ -168,6 +175,57 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       });
     });
   }
+
+  // enviar fotos em andamento
+  const handleAddInProgressPhotos = async () => {
+    const serviceOrderId = occurrence?.id;
+    if (!serviceOrderId) {
+      toast({
+        variant: "destructive",
+        title: "ID ausente",
+        description: "Não foi possível identificar a OS.",
+      });
+      return;
+    }
+    if (!inProgressFiles || inProgressFiles.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Nenhuma imagem selecionada",
+        description: "Selecione ao menos uma imagem para enviar.",
+      });
+      return;
+    }
+
+    try {
+      const form = new FormData();
+      form.append("serviceOrderId", serviceOrderId);
+      form.append("observation", inProgressObs || "");
+
+      // aceita várias fotos
+      for (const f of inProgressFiles) {
+        form.append("photos", f);
+      }
+
+      await api.post("/service-orders/in-progress/photos", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      toast({ title: "Fotos de andamento adicionadas com sucesso!" });
+      setInProgressFiles([]);
+      setInProgressObs("");
+      setIsAddPhotoModalOpen(false);
+
+      setTimeout(() => window.location.reload(), 600);
+    } catch (err) {
+      console.error(err);
+      toast({
+        variant: "destructive",
+        title: "Falha ao enviar imagens",
+        description:
+          err?.response?.data?.message || err?.message || "Tente novamente.",
+      });
+    }
+  };
 
   // Inicia a ocorrencia
   const handleStartExecution = async () => {
@@ -204,18 +262,16 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       return;
     }
 
-    // Só exige foto se NÃO for Limpa Fossa
+    // Só exige foto se não for Limpa Fossa
     if (!selectedPhoto && !isLimpaFossa) {
       alert("É necessário anexar a foto final para finalizar esta OS.");
       return;
     }
 
     try {
-      // 1) Envia a imagem final (se houver) e finaliza a OS
       const formData = new FormData();
       formData.append("serviceOrderId", serviceOrderId);
 
-      // Só anexa foto se ela existir
       if (selectedPhoto) {
         formData.append("photos", selectedPhoto);
       }
@@ -281,7 +337,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
             ? res.data.sectors
             : [];
 
-          const desobId = getDrainSectorId(list); // agora acha "Desobstrução"
+          const desobId = getDrainSectorId(list);
           if (desobId) {
             setDrainSectorId(desobId);
           } else {
@@ -433,7 +489,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       }
 
       const body = {
-        type: formTipoDrain, // por padrão DESOBSTRUCAO
+        type: formTipoDrain,
         description: formDescricaoDrain,
         street: address.street,
         number: address.number,
@@ -493,9 +549,45 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     LIMPA_FOSSA: "Limpa fossa",
   };
 
+  //Monta as imagens
+  const BUCKET = "https://mapsync-media.s3.sa-east-1.amazonaws.com/";
+
+  const initialArr = Array.isArray(occurrence?.occurrence?.photos?.initial)
+    ? occurrence.occurrence.photos.initial.filter(Boolean).map((key, i) => ({
+        label: `Inicial ${
+          occurrence.occurrence.photos.initial.length > 1 ? i + 1 : ""
+        }`.trim(),
+        url: `${BUCKET}${key}`,
+      }))
+    : [];
+
+  const progressArr = Array.isArray(occurrence?.occurrence?.photos?.progress)
+    ? occurrence.occurrence.photos.progress
+        .filter((p) => p?.filename)
+        .map((p, i) => ({
+          label: `Andamento ${i + 1}${p?.notes ? ` — ${p.notes}` : ""}`,
+          url: `${BUCKET}${p.filename}`,
+        }))
+    : [];
+
+  const finalArr = Array.isArray(occurrence?.occurrence?.photos?.final)
+    ? occurrence.occurrence.photos.final.filter(Boolean).map((key, i) => ({
+        label: `Final ${
+          occurrence.occurrence.photos.final.length > 1 ? i + 1 : ""
+        }`.trim(),
+        url: `${BUCKET}${key}`,
+      }))
+    : [];
+
+  const allPhotos = [...initialArr, ...progressArr, ...finalArr];
+  // fallback para o componente não quebrar quando não houver nenhuma foto
+  const photoUrlsForSection = allPhotos.length
+    ? allPhotos
+    : [{ label: "", url: null }];
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6  p-4  text-sm items-stretch">
-      {/* Coluna 1 - Informações */}
+      {/* Informações */}
       <div className="col-span-1 self-stretch h-full flex flex-col">
         <div className="flex-1 flex flex-col space-y-4 pr-2">
           {/* bloco de informações */}
@@ -523,7 +615,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 <strong>Companhia:</strong>{" "}
                 {occurrence.occurrence?.externalCompany || "EMURB"}
               </p>
-              {/* Data e Ocorrência lado a lado */}
+              {/* Data e Ocorrência */}
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <p>
                   <strong>Data:</strong>{" "}
@@ -586,7 +678,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 </p>
               </div>
 
-              {/* CEP e Região lado a lado */}
+              {/* CEP e Região */}
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <p>
                   <strong>CEP:</strong>{" "}
@@ -597,7 +689,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 </p>
               </div>
 
-              {/* Latitude e Longitude lado a lado */}
+              {/* Latitude e Longitude */}
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <p>
                   <strong>Latitude:</strong>{" "}
@@ -613,7 +705,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         </div>
       </div>
 
-      {/* Coluna 2 - Ações e botão final */}
+      {/* Ações e botão final */}
       <div className="col-span-1 self-stretch h-full flex flex-col justify-between">
         <div className="space-y-4">
           <h3 className="font-semibold text-[#787891] mb-2">Ações</h3>
@@ -670,12 +762,12 @@ export function ExpandedRowServiceOrder({ occurrence }) {
             </Button>
 
             <Button
+              onClick={() => setIsAddPhotoModalOpen(true)}
               variant="ghost"
-              disabled
               className="flex flex-col items-center justify-center gap-1 h-[60px] hover:bg-[#DCDCDC] rounded-md"
             >
-              <CloudShare className="w-5 h-5" />
-              <span className="text-[#787891] text-xs">Compartilhar</span>
+              <Image className="w-5 h-5" />
+              <span className="text-[#787891] text-xs">+ imagens</span>
             </Button>
           </div>
 
@@ -704,24 +796,11 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         )}
       </div>
 
-      {/* Coluna 3 - Imagem e mapa com modal */}
+      {/* Imagem e mapa com modal */}
       <div className="col-span-1 h-full">
         <MediaMapSection
           className="h-full"
-          photoUrls={[
-            {
-              label: "Inicial",
-              url:
-                occurrence?.occurrence?.photos?.initial?.[0] &&
-                `https://mapsync-media.s3.sa-east-1.amazonaws.com/${occurrence.occurrence.photos.initial[0]}`,
-            },
-            {
-              label: "Finalizada",
-              url:
-                occurrence?.occurrence?.photos?.final?.[0] &&
-                `https://mapsync-media.s3.sa-east-1.amazonaws.com/${occurrence.occurrence.photos.final[0]}`,
-            },
-          ]}
+          photoUrls={photoUrlsForSection}
           lat={parseFloat(occurrence.occurrence?.address?.latitude ?? 0)}
           lng={parseFloat(occurrence.occurrence?.address?.longitude ?? 0)}
         />
@@ -761,6 +840,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         </div>
       )}
 
+      {/* Modal de finalização */}
       {isFinalizeModalOpen && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
           <div className="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-lg space-y-5 text-center">
@@ -820,16 +900,14 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         </div>
       )}
 
+      {/* Modal para criar ocorrência de Pavimentação ao finaliza pavimentação */}
       {isCreatePavingModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
           <div className="bg-white rounded-[2rem] w-full max-w-md p-6 shadow-lg space-y-5 text-left">
             <h2 className="text-xl font-semibold text-gray-900">
               Criar ocorrência de pavimentação
             </h2>
-
-            {/* Formulário (sem select) */}
             <div className="flex flex-col gap-4">
-              {/* Tipo */}
               <div>
                 <label className="text-sm font-medium text-gray-700">
                   Tipo
@@ -847,7 +925,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 </select>
               </div>
 
-              {/* Info: setor destino fixo */}
               <div className="rounded-lg border p-3 bg-[#F8F8F8]">
                 <p className="text-sm text-gray-700">
                   <strong>Setor de destino:</strong> Pavimentação
@@ -862,7 +939,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 )}
               </div>
 
-              {/* Descrição */}
               <div>
                 <label className="text-sm font-medium text-gray-700">
                   Descrição
@@ -875,7 +951,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 />
               </div>
 
-              {/* Emergencial */}
               <div className="flex items-center gap-2">
                 <input
                   id="emergencial"
@@ -889,7 +964,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
               </div>
             </div>
 
-            {/* Ações */}
             <div className="flex flex-col gap-3 pt-4">
               <button
                 onClick={handleCreatePavingOccurrence}
@@ -922,7 +996,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
           </div>
         </div>
       )}
-      {/* Modal para criar ocorrência de Drenagem (pós Limpa Fossa) */}
+      {/* Modal para criar ocorrência de Drenagem ao finalizar limpa fossa */}
       {isCreateDrainModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
           <div className="bg-white rounded-[2rem] w-full max-w-md p-6 shadow-lg space-y-5 text-left">
@@ -930,9 +1004,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
               Criar ocorrência de desobstrução
             </h2>
 
-            {/* Formulário (sem select de setor) */}
             <div className="flex flex-col gap-4">
-              {/* Tipo */}
               <div>
                 <label className="text-sm font-medium text-gray-700">
                   Tipo
@@ -950,7 +1022,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 </select>
               </div>
 
-              {/* Info: setor destino fixo */}
               <div className="rounded-lg border p-3 bg-[#F8F8F8]">
                 <p className="text-sm text-gray-700">
                   <strong>Setor de destino:</strong> Desobstrução
@@ -967,7 +1038,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 )}
               </div>
 
-              {/* Descrição */}
               <div>
                 <label className="text-sm font-medium text-gray-700">
                   Descrição
@@ -980,7 +1050,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 />
               </div>
 
-              {/* Emergencial */}
               <div className="flex items-center gap-2">
                 <input
                   id="emergencialDrain"
@@ -997,7 +1066,6 @@ export function ExpandedRowServiceOrder({ occurrence }) {
               </div>
             </div>
 
-            {/* Ações */}
             <div className="flex flex-col gap-3 pt-4">
               <button
                 onClick={handleCreateDrainOccurrence}
@@ -1029,6 +1097,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         </div>
       )}
 
+      {/* Modal de reagendamento */}
       {isRescheduleModalOpen && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
           <div className="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-lg space-y-5 text-center">
@@ -1085,6 +1154,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
         </div>
       )}
 
+      {/* Modal do histórico de reagendamento */}
       {isRescheduleHistoryModalOpen && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
           <div className="bg-white rounded-[2rem] w-full max-w-md p-6 shadow-lg space-y-5 text-left">
@@ -1137,6 +1207,75 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                 className="text-sm text-gray-500 underline hover:text-gray-700 transition w-full"
               >
                 Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal de adicionar fotos de andamento */}
+      {isAddPhotoModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
+          <div className="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-lg space-y-5 text-center">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Adicionar imagem (andamento)
+            </h2>
+
+            <p className="text-xs text-gray-600 -mt-2">
+              Selecione uma ou mais imagens e, se quiser, adicione uma
+              observação.
+            </p>
+
+            <input
+              type="file"
+              multiple
+              accept="image/png, image/jpeg"
+              onChange={(e) => {
+                const files = Array.from(e.target.files || []);
+                setInProgressFiles(files);
+              }}
+              className="w-full rounded-xl border border-gray-300 p-3 text-sm text-gray-800
+                   file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
+                   file:text-sm file:font-semibold file:bg-black file:text-white"
+            />
+
+            <textarea
+              placeholder="Observação (opcional)"
+              value={inProgressObs}
+              onChange={(e) => setInProgressObs(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg p-3 text-sm text-gray-800"
+              rows={3}
+            />
+
+            <div className="text-xs text-gray-500">
+              {inProgressFiles.length > 0
+                ? `${inProgressFiles.length} arquivo(s) selecionado(s)`
+                : "Nenhum arquivo selecionado"}
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleAddInProgressPhotos}
+                className={`flex items-center justify-center gap-2 w-full rounded-2xl
+            ${
+              inProgressFiles.length > 0
+                ? "bg-black hover:bg-gray-900"
+                : "bg-gray-300 cursor-not-allowed"
+            }
+            text-white py-3 font-medium text-sm transition`}
+                disabled={inProgressFiles.length === 0}
+              >
+                Enviar
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsAddPhotoModalOpen(false);
+                  setInProgressFiles([]);
+                  setInProgressObs("");
+                }}
+                className="text-sm text-gray-500 underline hover:text-gray-700 transition"
+              >
+                Cancelar
               </button>
             </div>
           </div>
