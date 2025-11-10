@@ -10,7 +10,8 @@ import { pdf, PDFDownloadLink } from "@react-pdf/renderer";
 // Componentes globais
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
-import { Filters } from "@/components/filters";
+
+import { PlanningFilters } from "./PlanningFilters"; 
 
 // Lista travada p/ planejamento
 import { PlaninList } from "./PlaninList";
@@ -33,12 +34,13 @@ export function ServicePlanning() {
   // data diária
   const [date, setDate] = useState(new Date());
 
-  // filtros suportados pela rota
+  // filtros 
   const [street, setStreet] = useState("");
   const [neighborhoodId, setNeighborhoodId] = useState(null);
   const [occurrenceType, setOccurrenceType] = useState(null);
   const [status, setStatus] = useState(null);
   const [sectorId, setSectorId] = useState(null);
+  const [foremanId, setForemanId] = useState(null); 
 
   const debouncedStreet = useDebouncedValue(street, 350);
 
@@ -58,6 +60,7 @@ export function ServicePlanning() {
     if (occurrenceType) params.set("occurrenceType", occurrenceType);
     if (status) params.set("status", status);
     if (sectorId) params.set("sectorId", sectorId);
+    if (foremanId) params.set("foremanId", foremanId); 
     return params.toString();
   };
 
@@ -126,9 +129,9 @@ export function ServicePlanning() {
     occurrenceType,
     status,
     sectorId,
+    foremanId, 
   ]);
 
-  // ref para pegar ordem/seleção no print
   const planinRef = useRef(null);
 
   const handlePrint = async () => {
@@ -157,21 +160,17 @@ export function ServicePlanning() {
           Planejamento diário
         </h1>
 
-        <Filters
+        <PlanningFilters
           title="Planejamento"
           subtitle="diário"
-          contextType="padrao"
-          showRecent={false}
-          showDate={true}
-          showCompany={false}
           onSearch={(txt) => setStreet(txt)}
           onFilterNeighborhood={(id) => setNeighborhoodId(id || null)}
           onFilterType={(t) => setOccurrenceType(t || null)}
           onFilterStatus={(s) => setStatus(s || null)}
           onFilterDateRange={({ startDate }) => {
-            if (startDate instanceof Date && !isNaN(startDate))
-              setDate(startDate);
+            if (startDate instanceof Date && !isNaN(startDate)) setDate(startDate);
           }}
+          onFilterForeman={(id) => setForemanId(id || null)} // <- NOVO
         />
       </div>
 

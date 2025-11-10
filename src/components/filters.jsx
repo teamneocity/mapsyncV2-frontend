@@ -28,6 +28,7 @@ export function Filters({
   onFilterNeighborhood = () => {},
   onFilterStatus = () => {},
   onFilterCompany = () => {},
+  onFilterForeman = () => {},       
   handleApplyFilters,
   onSearch = () => {},
   title = "Análises de ocorrências",
@@ -40,14 +41,20 @@ export function Filters({
   showNeighborhood = true,
   showStatus = true,
   showCompany = true,
+  showForeman = false,             
+  foremanEndpoint = "/users?role=FOREMAN", 
 }) {
   const [selectedRecent, setSelectedRecent] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [selectedNeighborhood, setSelectedNeighborhood] = useState(null);
-  const [selectedCompany, setSelectedCompany] = useState(null); // <-- NOVO
+  const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedRange, setSelectedRange] = useState({ from: null, to: null });
   const [neighborhoods, setNeighborhoods] = useState([]);
+
+  // NOVO: encarregados
+  const [foremen, setForemen] = useState([]);
+  const [selectedForeman, setSelectedForeman] = useState(null);
 
   // Busca e abertura do popover de Bairros
   const [neighborhoodQuery, setNeighborhoodQuery] = useState("");
@@ -64,6 +71,43 @@ export function Filters({
     }
     fetchNeighborhoods();
   }, []);
+
+  useEffect(() => {
+    if (!showForeman) return;
+
+    async function fetchForemen() {
+      try {
+        const { data } = await api.get(foremanEndpoint);
+
+        const raw =
+          data?.foremen ??
+          data?.users ??
+          data ??
+          [];
+
+        const normalized = Array.isArray(raw)
+          ? raw.map((u) => ({
+              id: u.id || u.userId || u.uuid,
+              name:
+                u.name ||
+                u.fullName ||
+                u.displayName ||
+                u.username ||
+                u.email ||
+                "Sem nome",
+            }))
+          : [];
+
+        setForemen(
+          normalized.filter((f) => f?.id && f?.name)
+        );
+      } catch (error) {
+        console.error("Erro ao buscar encarregados:", error);
+      }
+    }
+
+    fetchForemen();
+  }, [showForeman, foremanEndpoint]);
 
   const handleRecentFilter = (filter) => {
     setSelectedRecent(filter);
@@ -88,7 +132,7 @@ export function Filters({
 
   const handleCompanyFilter = (company) => {
     setSelectedCompany(company);
-    onFilterCompany(company); // manda null para "Todas"
+    onFilterCompany(company); 
   };
 
   const handleDateRangeChange = (range) => {
@@ -99,6 +143,11 @@ export function Filters({
     }
   };
 
+  const handleForemanFilter = (id) => {
+    setSelectedForeman(id);
+    onFilterForeman(id || null);
+  };
+
   // filtro local dos bairros pela busca
   const filteredNeighborhoods = useMemo(() => {
     const q = (neighborhoodQuery || "").trim().toLowerCase();
@@ -106,7 +155,6 @@ export function Filters({
     return neighborhoods.filter((n) => n.name?.toLowerCase().includes(q));
   }, [neighborhoods, neighborhoodQuery]);
 
-  // Enter = seleciona o primeiro item
   const handleNeighborhoodQueryKeyDown = (e) => {
     if (e.key === "Enter") {
       const first = filteredNeighborhoods?.[0];
@@ -226,6 +274,38 @@ export function Filters({
           )}
         </div>
 
+        {/* Encarregado */}
+        {showForeman && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm text-[#4B4B62]"
+              >
+                {selectedForeman
+                  ? `Encarregado: ${
+                      foremen.find((f) => f.id === selectedForeman)?.name ||
+                      "—"
+                    }`
+                  : "Encarregado"}
+                <ChevronDown className="ml-1 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent className="max-h-[320px] overflow-y-auto">
+              <DropdownMenuItem onClick={() => handleForemanFilter(null)}>
+                Todos
+              </DropdownMenuItem>
+
+              {foremen.map((f) => (
+                <DropdownMenuItem key={f.id} onClick={() => handleForemanFilter(f.id)}>
+                  {f.name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
         {/* Recentes */}
         {showRecent && (
           <DropdownMenu>
@@ -300,7 +380,7 @@ export function Filters({
           </DropdownMenu>
         )}
 
-        {/* Companhia (NOVO) */}
+        {/* Companhia */}
         {showCompany && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
