@@ -296,6 +296,7 @@ export default function UserManagementContent() {
               { value: "INSPECTOR", label: "Inspetor" },
               { value: "PILOT", label: "Piloto" },
               { value: "DRONE_OPERATOR", label: "Operador de Drone" },
+              { value:"TRUCK_DRIVER", label: "Motorista de caminhão"}
             ]}
             onChange={(val) => setNewRole(val)}
             className="rounded-xl h-full border border-gray-300 px-4 text-sm"

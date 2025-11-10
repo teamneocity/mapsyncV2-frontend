@@ -11,6 +11,8 @@ import PrintableDashboardReport from "./PrintableDashboardReport";
 import CustomPrintableSOReport from "./CustomPrintableSOReport";
 import SectorStatusCoverageReport from "./SectorStatusCoverageReport";
 
+import { ChevronRight } from "lucide-react";
+
 export default function ReportsOverview({
   title = "Relatórios",
   selectedSector = "Escolha o painél de exibição do setor",
@@ -280,6 +282,10 @@ export default function ReportsOverview({
     }, 0);
   }, [dashboardNeighborhoods]);
 
+  const streetNames = useMemo(() => {
+    return getStreetNamesForPeriod(selectedPeriod);
+  }, [coverage, stats, selectedPeriod]);
+
   function goToBuilder() {
     setBuilderOpen(true);
   }
@@ -311,6 +317,34 @@ export default function ReportsOverview({
       name: n?.name ?? n?.neighborhood_name ?? n?.neighborhood ?? "-",
       count: n?.count ?? n?.total ?? null,
     }));
+  }
+
+  function getStreetNamesForPeriod(period) {
+    const fromCoverage = coverage?.streetNamesByWindow?.[period];
+    if (Array.isArray(fromCoverage) && fromCoverage.length) {
+      return fromCoverage;
+    }
+
+    const key =
+      period === "day"
+        ? "streetNamesToday"
+        : period === "week"
+        ? "streetNamesWeek"
+        : "streetNamesMonth";
+
+    const fromStatsWindow = stats?.[key];
+    if (Array.isArray(fromStatsWindow) && fromStatsWindow.length) {
+      return fromStatsWindow;
+    }
+
+    if (Array.isArray(coverage?.streetNames) && coverage.streetNames.length) {
+      return coverage.streetNames;
+    }
+    if (Array.isArray(stats?.streetNames) && stats.streetNames.length) {
+      return stats.streetNames;
+    }
+
+    return [];
   }
 
   const neighborhoods = useMemo(() => {
@@ -852,7 +886,32 @@ export default function ReportsOverview({
               <h3 className="text-lg font-semibold mt-6">
                 Endereços co-relacionados
               </h3>
-              <div className="text-gray-400 text-sm mt-2"></div>
+              <div className="mt-2">
+                {streetNames && streetNames.length > 0 ? (
+                  <div className="space-y-3">
+                    {streetNames.map((street, idx) => (
+                      <button
+                        key={`${street}-${idx}`}
+                        type="button"
+                        className="w-full h-[64px] flex items-center justify-between px-4 py-3 rounded-xl bg-white border border-neutral-200 text-neutral-800 hover:bg-neutral-50 transition"
+                        title={street}
+                      >
+                        <ChevronRight
+                          className="shrink-0 opacity-60"
+                          size={18}
+                        />
+                        <span className="truncate text-[15px]">{street}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="h-[120px] flex items-center justify-center text-gray-400 text-sm">
+                    {anyLoading
+                      ? "Carregando endereços…"
+                      : "Sem endereços para este período."}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </>

@@ -48,6 +48,12 @@ export function Sidebar() {
     paused: isOnAnalysis,
   });
 
+  // depois do isOnAnalysis
+  const isOnRequests = pathname.startsWith("/requests");
+
+  // mostra vermelho somente quando REALMENTE quer (tem new) E não está em /requests
+  const showAnalysisAlert = !!hasNew && !isOnRequests;
+
   const [email] = useState(user.email);
   const [name] = useState(user.name);
   const userInitials = getInicials(user.name);
@@ -150,7 +156,7 @@ export function Sidebar() {
                 <NavLink
                   to="/analysis"
                   className={({ isActive }) =>
-                    hasNew
+                    showAnalysisAlert
                       ? `${baseItem} ${
                           isActive
                             ? "bg-[#FFC3C3]"
@@ -161,22 +167,22 @@ export function Sidebar() {
                 >
                   <span
                     className={`flex items-center gap-2 ${
-                      hasNew ? "text-[#CC1C35]" : ""
+                      showAnalysisAlert ? "text-[#CC1C35]" : ""
                     }`}
                   >
                     <AlertIcon
                       className={`w-5 h-5 shrink-0 ${
-                        hasNew ? "text-[#CC1C35]" : ""
+                        showAnalysisAlert ? "text-[#CC1C35]" : ""
                       }`}
                     />
-                    <span className={hasNew ? "font-semibold" : ""}>
+                    <span className={showAnalysisAlert ? "font-semibold" : ""}>
                       Análises
                     </span>
                   </span>
                 </NavLink>
               )}
-              
-              {(isAdmin || isChief ) && (
+
+              {(isAdmin || isChief) && (
                 <NavLink to="/requests" className={linkClass}>
                   <NewsIcon className="w-5 h-5 shrink-0" /> Solicitações
                 </NavLink>
@@ -388,13 +394,15 @@ export function Sidebar() {
                     <NavLink to="/analysis" className={linkClassMobile}>
                       <span
                         className={`flex items-center gap-2 ${
-                          hasNew ? "!text-red-600" : ""
+                          showAnalysisAlert ? "!text-red-600" : ""
                         }`}
                       >
                         <AlertIcon className="w-5 h-5 shrink-0" />
                         <span
                           className={
-                            hasNew ? "!text-red-600 font-semibold" : ""
+                            showAnalysisAlert
+                              ? "!text-red-600 font-semibold"
+                              : ""
                           }
                         >
                           Análises
@@ -403,7 +411,7 @@ export function Sidebar() {
                     </NavLink>
                   )}
 
-                  {(isAdmin || isChief ) && (
+                  {(isAdmin || isChief) && (
                     <NavLink to="/requests" className={linkClassMobile}>
                       <NewsIcon className="w-5 h-5 shrink-0" /> Solicitações
                     </NavLink>
