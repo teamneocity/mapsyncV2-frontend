@@ -175,6 +175,12 @@ export function Sidebar() {
                   </span>
                 </NavLink>
               )}
+              
+              {(isAdmin || isChief ) && (
+                <NavLink to="/requests" className={linkClass}>
+                  <NewsIcon className="w-5 h-5 shrink-0" /> Solicitações
+                </NavLink>
+              )}
 
               {(canSeeAll || isInspector || isChief || isDroneOperator) && (
                 <>
@@ -394,6 +400,12 @@ export function Sidebar() {
                           Análises
                         </span>
                       </span>
+                    </NavLink>
+                  )}
+
+                  {(isAdmin || isChief ) && (
+                    <NavLink to="/requests" className={linkClassMobile}>
+                      <NewsIcon className="w-5 h-5 shrink-0" /> Solicitações
                     </NavLink>
                   )}
 

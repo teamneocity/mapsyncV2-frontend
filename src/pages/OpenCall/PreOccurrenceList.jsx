@@ -27,14 +27,16 @@ export function PreOccurrenceList({ embedded = false }) {
         setLoading(true);
         setErr(null);
 
-        const { data } = await api.get("/pre-occurrences");
+        const { data } = await api.get("/pre-occurrences?createdByMe=true");
         const list = Array.isArray(data?.items) ? data.items : [];
 
         const normalized = list.map((r) => ({
           id: r.id,
           createdAt: r.createdAt,
-          senderName: null,
+          senderName: r.createdByName || r.createdByEmail || null,
           senderId: r.createdById,
+          createdByEmail: r.createdByEmail || null,
+
           neighborhoodId: r.neighborhoodId,
           neighborhood: r.neighborhoodName || "—",
           address: {
@@ -64,24 +66,25 @@ export function PreOccurrenceList({ embedded = false }) {
 
   const toggle = (id) => setExpanded((prev) => (prev === id ? null : id));
 
-const StatusBadge = ({ status }) => (
-  <span
-    className={`
+  const StatusBadge = ({ status }) => (
+    <span
+      className={`
       inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
       border
-      ${status === "aguardando"
-        ? "border-[#9D0000] text-[#9D0000]"
-        : status === "verificado"
-        ? "border-green-500 text-green-600"
-        : status === "recusado"
-        ? "border-red-500 text-red-600"
-        : "border-gray-400 text-gray-600"}
+      ${
+        status === "aguardando"
+          ? "border-[#9D0000] text-[#9D0000]"
+          : status === "verificado"
+          ? "border-green-500 text-green-600"
+          : status === "recusado"
+          ? "border-red-500 text-red-600"
+          : "border-gray-400 text-gray-600"
+      }
     `}
-  >
-    {status || "—"}
-  </span>
-);
-
+    >
+      {status || "—"}
+    </span>
+  );
 
   const containerCls = embedded ? "w-full" : "w-full mx-auto px-6";
   const headerWrapCls = embedded
@@ -275,7 +278,6 @@ const StatusBadge = ({ status }) => (
               {/* === EXPANDIDO === */}
               {expanded === occ.id && (
                 <div className="px-4 py-4 bg-[#FFE8E8] text-sm text-gray-700">
-                
                   <div className="flex flex-col space-y-1">
                     <InfoItem label="Tipo">
                       {typeLabels[occ.type] || occ.type || "—"}
@@ -286,17 +288,18 @@ const StatusBadge = ({ status }) => (
                         : "—"}
                     </InfoItem>
                     <InfoItem label="Enviado por">
-                      {occ.senderId || "—"}
+                      {occ.senderName ||
+                        occ.createdByEmail ||
+                        (occ.senderId ? `${occ.senderId.slice(0, 6)}…` : "—")}
                     </InfoItem>
-                     <InfoItem label="Cidade">
+
+                    <InfoItem label="Cidade">
                       {occ.address.city || "—"}
                     </InfoItem>
                     <InfoItem label="Bairro">
                       {occ.neighborhood || "—"}
                     </InfoItem>
-                    <InfoItem label="Rua">
-                      {occ.address.street || "—"}
-                    </InfoItem>         
+                    <InfoItem label="Rua">{occ.address.street || "—"}</InfoItem>
                     <InfoItem label="CEP">{occ.address.cep || "—"}</InfoItem>
                     <InfoItem label="Número">
                       {occ.address.number || "—"}
@@ -305,15 +308,15 @@ const StatusBadge = ({ status }) => (
                       {occ.address.complement || "—"}
                     </InfoItem>
                     {occ.description && (
-                    <div className="mb-4 border border-gray-300 rounded-lg p-3 bg-white">
-                      <div className="text-xs font-medium text-gray-500 mb-1">
-                        Descrição : 
+                      <div className="mb-4 border border-gray-300 rounded-lg p-3 bg-white">
+                        <div className="text-xs font-medium text-gray-500 mb-1">
+                          Descrição :
+                        </div>
+                        <div className="whitespace-pre-wrap">
+                          {occ.description}
+                        </div>
                       </div>
-                      <div className="whitespace-pre-wrap">
-                        {occ.description}
-                      </div>
-                    </div>
-                  )}
+                    )}
                   </div>
                 </div>
               )}

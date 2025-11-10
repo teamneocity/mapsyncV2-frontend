@@ -22,14 +22,22 @@ import { ServiceOrderPrint } from "@/pages/ServiceOrder/ServiceOrderPrint";
 import PilotsDashboard from "@/pages/Dashboard/PilotsDashboard";
 import { Warranty } from "@/pages/Warranty";
 import { OpenCall } from "@/pages/OpenCall";
+import { Requests } from "@/pages/Requests";
 
 import { useAuth } from "@/hooks/auth";
 import { usePermissions } from "@/hooks/usePermissions";
 
 export function AppRoutes() {
   const { user } = useAuth();
-  const { isAdmin, isSupervisor, isAnalyst, isInspector, isChief, isPilot, isDroneOperator } =
-    usePermissions();
+  const {
+    isAdmin,
+    isSupervisor,
+    isAnalyst,
+    isInspector,
+    isChief,
+    isPilot,
+    isDroneOperator,
+  } = usePermissions();
   const canSeeAll = isAdmin || isSupervisor;
 
   if (user.role === "pilotoa") {
@@ -118,6 +126,13 @@ export function AppRoutes() {
         path="/inspection"
         element={canSeeAll || isChief ? <Inspection /> : <Navigate to="/" />}
       />
+      <Route
+        path="/requests"
+        element={
+          canSeeAll || isChief || isAnalyst ? <Requests /> : <Navigate to="/" />
+        }
+      />
+
       {/* <Route
         path="/PilotMap"
         element={canSeeAll || isChief ? <PilotMap /> : <Navigate to="/" />}
@@ -137,7 +152,7 @@ export function AppRoutes() {
         element={isAdmin ? <PanelAdm /> : <Navigate to="/" />}
       /> */}
       <Route path="/pilots/dashboard" element={<PilotsDashboard />} />
-      
+
       {/* Rota: /feedback */}
       {/* <Route
         path="/feedback"
@@ -181,8 +196,18 @@ export function AppRoutes() {
           <Route path="/liveaction" element={<Navigate to="/" />} />
         </>
       )}
+
       {/* Rota fora do sidebar */}
-      <Route path="/open-call" element={<OpenCall />} />
+      <Route
+        path="/open-call"
+        element={
+          isAdmin || isChief || isSupervisor ? (
+            <OpenCall />
+          ) : (
+            <Navigate to="/" />
+          )
+        }
+      />
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" />} />
