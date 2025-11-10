@@ -357,7 +357,7 @@ export default function CustomPrintableSOReport() {
           <div className="flex items-center justify-between">
             <div className="text-left">
               <h1 className="text-3xl font-bold text-gray-800">
-                Relatório fotográfico
+                Relatório Personalizado
               </h1>
               <p className="text-sm text-gray-500 mt-1">
                 Relatório — Ordens de Serviço

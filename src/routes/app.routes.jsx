@@ -21,6 +21,7 @@ import NeighborhoodOccurrences from "@/pages/LiveAction"; // LiveAction
 import { ServiceOrderPrint } from "@/pages/ServiceOrder/ServiceOrderPrint";
 import PilotsDashboard from "@/pages/Dashboard/PilotsDashboard";
 import { Warranty } from "@/pages/Warranty";
+import { OpenCall } from "@/pages/OpenCall";
 
 import { useAuth } from "@/hooks/auth";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -122,10 +123,10 @@ export function AppRoutes() {
         element={canSeeAll || isChief ? <PilotMap /> : <Navigate to="/" />}
       /> */}
       {/* Rota: /reports */}
-      {/* <Route
+      <Route
         path="/reports"
         element={canSeeAll || isChief ? <Reports /> : <Navigate to="/" />}
-      /> */}
+      />
       {/* Rota: /userManagement */}
       {/* <Route
         path="/userManagement"
@@ -180,6 +181,9 @@ export function AppRoutes() {
           <Route path="/liveaction" element={<Navigate to="/" />} />
         </>
       )}
+      {/* Rota fora do sidebar */}
+      <Route path="/open-call" element={<OpenCall />} />
+
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" />} />
       <Route path="/service-orders/print/:id" element={<ServiceOrderPrint />} />

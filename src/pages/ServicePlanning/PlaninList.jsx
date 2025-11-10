@@ -29,13 +29,11 @@ export const PlaninList = forwardRef(function PlaninList(
     setSelectedIds([]);
   }, [occurrences]);
 
-  // expõe métodos para o pai
   useImperativeHandle(ref, () => ({
     getOrder: () => rows,
     getSelected: () => rows.filter((r) => selectedIds.includes(r.id)),
   }));
 
-  // util drag
   const reorder = (list, fromIdx, toIdx) => {
     const copy = list.slice();
     const [moved] = copy.splice(fromIdx, 1);
@@ -78,16 +76,36 @@ export const PlaninList = forwardRef(function PlaninList(
     );
   };
 
-  // estilo colunas
+  // helpers de período
+  const fmt = (d) => {
+    if (!d) return null;
+    try {
+      const date = d instanceof Date ? d : new Date(d);
+      if (Number.isNaN(+date)) return null;
+      return format(date, "dd/MM/yyyy");
+    } catch {
+      return null;
+    }
+  };
+  const formatPeriodo = (start, end) => {
+    const s = fmt(start);
+    const e = fmt(end);
+    if (s && e) return `${s} - ${e}`;
+    if (s) return s;
+    if (e) return e;
+    return "—";
+  };
+
+  // largura colunas
   const SPANS = {
-    data: 1,
     protocol: 2,
     inspector: 1,
     foreman: 1,
     company: 1,
     address: 2,
     neighborhood: 1,
-    type: 2,
+    type: 1,
+    period: 2,
     status: 1,
   };
   const spanClass = (k) => `col-span-${SPANS[k] ?? 1}`;
@@ -148,15 +166,15 @@ export const PlaninList = forwardRef(function PlaninList(
   }
 
   const columns = [
-    "data",
-    "protocol",
-    "inspector",
-    "foreman",
-    "company",
-    "address",
-    "neighborhood",
-    "type",
-    "status",
+    "protocol",     // OS
+    "inspector",    // Técnico
+    "foreman",      // Encarregado
+    "company",      // Companhia
+    "address",      // Endereço
+    "neighborhood", // Bairro
+    "type",         // Tipo
+    "period",       // Execução 
+    "status",       // Status
   ];
 
   const dataToRender = rows || [];
@@ -168,23 +186,24 @@ export const PlaninList = forwardRef(function PlaninList(
         <div className="grid grid-cols-12 gap-4 items-center">
           {columns.map((key) => (
             <div key={key} className={spanClass(key)}>
-              {key === "data" ? (
-                <div className="flex items-center gap-2">
-                  <DoubleArrow className="max-[1430px]:hidden inline" />
-                  Data
-                </div>
-              ) : (
+              {
                 {
-                  protocol: "Protocolo",
+                  protocol: (
+                    <div className="flex items-center gap-2">
+                      <ChevronRight />
+                      OS
+                    </div>
+                  ),
                   inspector: "Técnico",
                   foreman: "Encarregado",
                   company: "Companhia",
                   address: "Endereço",
                   neighborhood: "Bairro",
                   type: "Tipo",
+                  period: "Execução",
                   status: "Status",
                 }[key]
-              )}
+              }
             </div>
           ))}
         </div>
@@ -201,6 +220,7 @@ export const PlaninList = forwardRef(function PlaninList(
           const fore = occ?.foreman?.name || "—";
           const selected = selectedIds.includes(occ.id);
           const isDragOver = dragOverId === occ.id;
+          const periodo = formatPeriodo(occ?.scheduledStart, occ?.scheduledEnd);
 
           return (
             <div
@@ -224,8 +244,8 @@ export const PlaninList = forwardRef(function PlaninList(
                 {/* Desktop */}
                 <div className="hidden xl:block p-4">
                   <div className="grid grid-cols-12 gap-4 items-center text-[#787891]">
-                    {/* data + checkbox */}
-                    <div className={`${spanClass("data")} flex items-center gap-2`}>
+                    {/* OS  */}
+                    <div className={`${spanClass("protocol")} flex items-center gap-2`}>
                       <input
                         type="checkbox"
                         checked={selected}
@@ -238,19 +258,12 @@ export const PlaninList = forwardRef(function PlaninList(
                           expandedRow === occ.id ? "rotate-90" : ""
                         }`}
                       />
-                      <span className="text-sm">
-                        {occ.createdAt
-                          ? format(new Date(occ.createdAt), "dd/MM/yy")
-                          : "—"}
+                      <span className="text-sm truncate">
+                        {occ.protocol || occ.protocolNumber || "—"}
                       </span>
                     </div>
 
-                    {/* protocol */}
-                    <div className={`${spanClass("protocol")} text-sm truncate`}>
-                      {occ.protocol || occ.protocolNumber || "—"}
-                    </div>
-
-                    {/* inspector */}
+                    {/* Técnico */}
                     <div className={`${spanClass("inspector")} flex items-center gap-2`}>
                       <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-medium text-blue-600">
                         {getInicials(insp || "NA")}
@@ -260,7 +273,7 @@ export const PlaninList = forwardRef(function PlaninList(
                       </span>
                     </div>
 
-                    {/* foreman */}
+                    {/* Encarregado */}
                     <div className={`${spanClass("foreman")} flex items-center gap-2`}>
                       <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-xs font-medium text-emerald-700">
                         {getInicials(fore || "NA")}
@@ -268,31 +281,36 @@ export const PlaninList = forwardRef(function PlaninList(
                       <span className="text-sm truncate">{fore}</span>
                     </div>
 
-                    {/* company */}
+                    {/* Companhia */}
                     <div className={`${spanClass("company")} text-sm truncate`}>
                       {company}
                     </div>
 
-                    {/* address */}
+                    {/* Endereço */}
                     <div className={`${spanClass("address")} text-sm truncate`}>
                       {`${occ.address?.street || ""}, ${
                         occ.address?.number || ""
                       } - ${occ.address?.city || ""}`}
                     </div>
 
-                    {/* neighborhood */}
+                    {/* Bairro */}
                     <div className={`${spanClass("neighborhood")} text-sm truncate`}>
                       {occ?.address?.neighborhoodName ||
                         occ?.address?.neighborhood ||
                         "—"}
                     </div>
 
-                    {/* type */}
+                    {/* Tipo */}
                     <div className={`${spanClass("type")} text-sm truncate`}>
                       {typeLabels[occ.type] || occ.type || "—"}
                     </div>
 
-                    {/* status */}
+                    {/* Execução (Período) */}
+                    <div className={`${spanClass("period")} text-sm truncate`}>
+                      {periodo}
+                    </div>
+
+                    {/* Status */}
                     <div className={`${spanClass("status")} flex justify-center`}>
                       <StatusBadge
                         status={occ.status}

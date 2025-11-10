@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react"; // ⬅️ precisa do useEffect
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/auth";
 import NewEmurb from "@/assets/NewEmurb.svg";
 import Leave from "@/assets/icons/leave.svg?react";
 import Bell from "@/assets/icons/bell.svg?react";
+import RedChat from "@/assets/icons/RedChat.svg?react"; 
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
-import { api } from "@/services/api"; 
+import { api } from "@/services/api";
 
 export function TopHeader() {
   const { signOut } = useAuth();
@@ -18,7 +19,7 @@ export function TopHeader() {
     (async () => {
       try {
         const resp = await api.get("/notifications");
-        setNotifications(resp.data?.items ?? []); 
+        setNotifications(resp.data?.items ?? []);
       } catch (err) {
         console.error("Erro ao buscar notificações:", err);
       }
@@ -46,11 +47,20 @@ export function TopHeader() {
 
       {/* Botões do lado direito */}
       <div className="flex items-center gap-4">
+        {/* Botão Abrir Chamado */}
+        <button
+          onClick={() => navigate("/open-call")} 
+          className="flex items-center justify-center gap-2 w-[174px] h-[64px] rounded-xl bg-[#FFC3C3] hover:bg-[#ffb2b2] transition"
+        >
+          <RedChat className="w-5 h-5 text-[#96132C]" />
+          <span className="text-[#96132C] font-medium">Abrir chamado</span>
+        </button>
+
         {/* Botão de notificações + Dropdown */}
         <div className="relative">
           <button
             onClick={() => setOpenNotif((v) => !v)}
-            className="rounded-full bg-white p-2 hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+            className="flex rounded-full h-[48px] w-[48px] items-center justify-center bg-white  hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-300"
             aria-haspopup="dialog"
             aria-expanded={openNotif}
             aria-controls="notifications-dropdown"
@@ -74,7 +84,7 @@ export function TopHeader() {
             e.preventDefault();
             handleSignOut(e);
           }}
-          className="rounded-full bg-white p-2 hover:bg-zinc-100"
+          className="flex rounded-full h-[48px] w-[48px] items-center justify-center bg-white p-2 hover:bg-zinc-100"
         >
           <Leave className="w-5 h-5 shrink-0 text-zinc-600" />
         </Link>

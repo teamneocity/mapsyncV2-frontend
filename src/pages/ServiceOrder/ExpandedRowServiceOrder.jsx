@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { GoogleMaps } from "@/components/googleMaps";
@@ -8,6 +8,7 @@ import CloudShare from "@/assets/icons/cloudShare.svg?react";
 import FilePdf from "@/assets/icons/filePdf.svg?react";
 import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
 import Image from "@/assets/icons/Image.svg?react";
+import Notes from "@/assets/icons/Notes.svg?react";
 import { MediaMapSection } from "@/components/MediaMapSection";
 
 import { useToast } from "@/hooks/use-toast";
@@ -149,6 +150,19 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   );
   const [formEmergencialDrain, setFormEmergencialDrain] = useState(true);
 
+  const [noteContent, setNoteContent] = useState("");
+  const [noteLoading, setNoteLoading] = useState(false);
+
+  // Ver notas
+  const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
+
+  // Notas ordenadas pelo createdAt
+  const occurrenceNotes = Array.isArray(occurrence?.occurrence?.notes)
+    ? [...occurrence.occurrence.notes].sort(
+        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+      )
+    : [];
+
   // verifica se é de limpa fossa
   const isLimpaFossa =
     typeof occurrence?.sector?.name === "string" &&
@@ -156,6 +170,14 @@ export function ExpandedRowServiceOrder({ occurrence }) {
 
   const [isRescheduleHistoryModalOpen, setIsRescheduleHistoryModalOpen] =
     useState(false);
+
+  // auto-scroll no modal de notas
+  const notesScrollRef = useRef(null);
+  useEffect(() => {
+    if (isNotesModalOpen && notesScrollRef.current) {
+      notesScrollRef.current.scrollTop = notesScrollRef.current.scrollHeight;
+    }
+  }, [isNotesModalOpen, occurrenceNotes, noteLoading]);
 
   // copiar protocolo
   function handleCopyProtocol() {
@@ -367,6 +389,56 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       });
     }
   };
+
+  // criar nota
+  async function handleCreateNote() {
+    const occurrenceId = occurrence?.occurrence?.id;
+    if (!occurrenceId) {
+      toast({
+        variant: "destructive",
+        title: "ID ausente",
+        description: "Não foi possível identificar a ocorrência.",
+      });
+      return;
+    }
+    if (!noteContent.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Texto vazio",
+        description: "Escreva algo antes de enviar a nota.",
+      });
+      return;
+    }
+
+    try {
+      setNoteLoading(true);
+      await api.post(`/occurrences/${occurrenceId}/notes`, {
+        content: noteContent.trim(),
+      });
+      setNoteContent("");
+      toast({ title: "Nota adicionada com sucesso!" });
+      setIsNotesModalOpen(false);
+      setTimeout(() => window.location.reload(), 300);
+    } catch (err) {
+      console.error(err);
+      toast({
+        variant: "destructive",
+        title: "Falha ao criar nota",
+        description:
+          err?.response?.data?.message || err?.message || "Tente novamente.",
+      });
+    } finally {
+      setNoteLoading(false);
+    }
+  }
+
+  // enviar com Ctrl+Enter
+  function onNoteKeyDown(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      e.preventDefault();
+      if (!noteLoading) handleCreateNote();
+    }
+  }
 
   //Carrega os setores quando modal abre
   useEffect(() => {
@@ -711,13 +783,12 @@ export function ExpandedRowServiceOrder({ occurrence }) {
           <h3 className="font-semibold text-[#787891] mb-2">Ações</h3>
           <div className="bg-[#ECECEC] rounded-xl grid grid-cols-4 gap-2 p-2">
             <Button
-              onClick={() => setIsRescheduleModalOpen(true)}
+              onClick={() => setIsNotesModalOpen(true)}
               variant="ghost"
-              disabled
               className="flex flex-col items-center justify-center gap-1 h-[60px] hover:bg-[#DCDCDC] rounded-md"
             >
-              <Calendar className="w-5 h-5" />
-              <span className="text-[#787891] text-xs">Reagendar</span>
+              <Notes className="w-5 h-5" />
+              <span className="text-[#787891] text-xs">Ver notas</span>
             </Button>
 
             <Button
@@ -1212,6 +1283,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
           </div>
         </div>
       )}
+
       {/* Modal de adicionar fotos de andamento */}
       {isAddPhotoModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
@@ -1277,6 +1349,93 @@ export function ExpandedRowServiceOrder({ occurrence }) {
               >
                 Cancelar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* modal de ver notas */}
+      {isNotesModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
+          <div className="bg-white rounded-[2rem] w-full max-w-md p-0 shadow-lg flex flex-col">
+            {/* Cabeçalho */}
+            <div className="flex items-center justify-between px-6 py-4 ">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Notas da ocorrência
+              </h2>
+              <button
+                onClick={() => setIsNotesModalOpen(false)}
+                className="text-sm text-gray-500 underline hover:text-gray-700"
+              >
+                Fechar
+              </button>
+            </div>
+
+            {/* chat */}
+            <div
+              ref={notesScrollRef}
+              className="px-4 py-3 space-y-3 max-h-[56vh] overflow-y-auto bg-[#F7F7F7]"
+            >
+              {occurrenceNotes.length > 0 ? (
+                occurrenceNotes.map((n) => {
+                  const authorName = (
+                    n?.author?.name ||
+                    n?.author?.email ||
+                    "Usuário"
+                  ).trim();
+                  const created = n?.createdAt
+                    ? format(new Date(n.createdAt), "dd/MM/yyyy HH:mm")
+                    : "";
+
+                  return (
+                    <div key={n.id} className="flex items-start gap-2">
+                      <div className="shrink-0 mt-1 h-6 w-6 rounded-full bg-[#ECECEC] flex items-center justify-center text-[10px] text-gray-600">
+                        {authorName.slice(0, 1).toUpperCase()}
+                      </div>
+                      <div className="max-w-[80%] rounded-2xl bg-white border px-3 py-2 shadow-sm">
+                        <p className="text-[13px] text-gray-900">
+                          <span className="font-semibold">{authorName}:</span>{" "}
+                          {n?.content || ""}
+                        </p>
+                        {created && (
+                          <p className="text-[10px] text-gray-500 mt-1">
+                            {created}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-gray-600 text-sm px-2">
+                  Nenhuma nota registrada.
+                </p>
+              )}
+            </div>
+
+            <div className="p-3 rounded-[2rem] bg-white">
+              <div className="flex items-end gap-2">
+                <textarea
+                  value={noteContent}
+                  onChange={(e) => setNoteContent(e.target.value)}
+                  onKeyDown={onNoteKeyDown}
+                  placeholder="Escreva uma nota"
+                  rows={1}
+                  className="flex-1 rounded-2xl border border-gray-300 bg-white p-3 text-sm text-gray-800 outline-none focus:ring-2 focus:ring-gray-300 resize-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleCreateNote}
+                  disabled={noteLoading || !noteContent.trim()}
+                  className={`px-4 h-10 rounded-2xl text-sm font-medium ${
+                    noteLoading || !noteContent.trim()
+                      ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                      : "bg-[#D1F0FA] text-[#116B97] hover:bg-blue-300"
+                  }`}
+                  title="Enviar nota"
+                >
+                  {noteLoading ? "Enviando…" : "Enviar"}
+                </button>
+              </div>
             </div>
           </div>
         </div>

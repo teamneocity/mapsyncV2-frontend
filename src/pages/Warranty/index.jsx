@@ -26,60 +26,66 @@ export function Warranty() {
   const { toast } = useToast();
 
   const fetchWarrantyOccurrences = async () => {
-    try {
-      const queryParams = new URLSearchParams({
-        page: currentPage.toString(),
-        ...(street && { street }),
-        ...(neighborhoodId && { neighborhoodId }),
-        ...(order && { order }),
-        ...(type && { type }),
-        ...(status && { status }),
-        ...(startDate && { startDate: startDate.toISOString().split("T")[0] }),
-        ...(endDate && { endDate: endDate.toISOString().split("T")[0] }),
-      });
+  try {
+    const queryParams = new URLSearchParams({
+      page: currentPage.toString(),
+      ...(street && { street }),
+      ...(neighborhoodId && { neighborhoodId }),
+      ...(order && { order }),
+      ...(type && { type }),
+      ...(status && { status }),
+      ...(startDate && { startDate: startDate.toISOString().split("T")[0] }),
+      ...(endDate && { endDate: endDate.toISOString().split("T")[0] }),
+    });
 
-      const { data } = await api.get(
-        `/occurrences/warranty?${queryParams.toString()}`
+    const { data } = await api.get(
+      `/occurrences/warranty?${queryParams.toString()}`
+    );
+
+    // 👇 nomes corretos conforme sua resposta-exemplo
+    const {
+      occurrences = [],
+      totalCount,
+      pageSize,
+      totalPages: totalPagesFromApi,
+    } = data ?? {};
+
+    // Como o payload já vem "achatado", não precisa entrar em item.occurrence
+    const list = occurrences.map((occ) => ({
+      ...occ,
+      // Garantindo que campos-chave existam (sem depender de service order)
+      protocolNumber: occ?.protocolNumber ?? occ?.id ?? null,
+      status: occ?.status ?? null,
+      createdAt: occ?.createdAt ?? null,
+      acceptedAt: occ?.acceptedAt ?? null,
+      updatedAt: occ?.updatedAt ?? null,
+      startedAt: occ?.startedAt ?? null,
+      finishedAt: occ?.finishedAt ?? null,
+    }));
+
+    setOccurrences(list);
+
+    // Usa o totalPages da API quando disponível; senão calcula por totalCount/pageSize
+    const computedTotalPages =
+      Number(totalPagesFromApi) ||
+      Math.max(
+        1,
+        Math.ceil((Number(totalCount) || list.length) / (Number(pageSize) || 10))
       );
 
-      const { serviceorders = [], totalCount, pageSize } = data;
+    setTotalPages(computedTotalPages);
+  } catch (error) {
+    console.error("Erro ao buscar ocorrências de garantia:", error);
+    toast({
+      title: "Erro ao carregar",
+      description: "Não foi possível carregar as ocorrências de garantia.",
+      variant: "destructive",
+    });
+    setOccurrences([]);
+    setTotalPages(1);
+  }
+};
 
-      const list = serviceorders.map((item) => {
-        const occ = item?.occurrence ?? {};
-        return {
-          ...occ,
-
-          protocolNumber:
-            item?.protocolNumber ?? occ?.protocolNumber ?? occ?.id ?? null,
-          status: occ?.status ?? item?.status ?? null,
-          createdAt: occ?.createdAt ?? item?.createdAt ?? null,
-          acceptedAt: occ?.acceptedAt ?? item?.acceptedAt ?? null,
-          updatedAt: occ?.updatedAt ?? item?.updatedAt ?? null,
-          startedAt: occ?.startedAt ?? item?.startedAt ?? null,
-          finishedAt: occ?.finishedAt ?? item?.finishedAt ?? null,
-        };
-      });
-
-      setOccurrences(list);
-      setTotalPages(
-        Math.max(
-          1,
-          Math.ceil(
-            (Number(totalCount) || list.length) / (Number(pageSize) || 10)
-          )
-        )
-      );
-    } catch (error) {
-      console.error("Erro ao buscar ocorrências de garantia:", error);
-      toast({
-        title: "Erro ao carregar",
-        description: "Não foi possível carregar as ocorrências de garantia.",
-        variant: "destructive",
-      });
-      setOccurrences([]);
-      setTotalPages(1);
-    }
-  };
 
   useEffect(() => {
     fetchWarrantyOccurrences();

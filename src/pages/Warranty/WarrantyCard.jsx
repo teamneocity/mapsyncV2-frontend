@@ -2,6 +2,17 @@ import { useMemo, useState, useEffect } from "react";
 import { Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Timeline } from "./Timeline";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { format } from "date-fns";
+import { api } from "@/services/api";
 
 const BASE_MEDIA_URL = (
   import.meta.env.VITE_MEDIA_CDN ||
@@ -101,6 +112,54 @@ export function WarrantyCard({ occurrence, expanded, onToggle }) {
     setActiveIdx((i) => (photosCount ? Math.min(i, photosCount - 1) : 0));
   }, [photosCount]);
 
+  // modal duplicatas
+  const [isPossibleDuplicateOpen, setIsPossibleDuplicateOpen] = useState(false);
+  const [nearbyLoading, setNearbyLoading] = useState(false);
+  const [nearbyError, setNearbyError] = useState("");
+  const [nearbyBaseId, setNearbyBaseId] = useState(null);
+  const [nearbyItems, setNearbyItems] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchNearby() {
+      try {
+        setNearbyError("");
+        setNearbyLoading(true);
+
+        const { data } = await api.get(`/occurrences/${occurrence.id}/nearby`);
+        if (!mounted) return;
+
+        setNearbyBaseId(data?.baseId ?? null);
+        setNearbyItems(
+          Array.isArray(data?.occurrences) ? data.occurrences : []
+        );
+      } catch (err) {
+        if (!mounted) return;
+        console.error("Erro ao buscar duplicatas próximas:", err);
+        setNearbyError(
+          err?.response?.data?.message ||
+            "Não foi possível carregar possíveis duplicatas."
+        );
+      } finally {
+        if (mounted) setNearbyLoading(false);
+      }
+    }
+
+    if (isPossibleDuplicateOpen) {
+      fetchNearby();
+    } else {
+      setNearbyBaseId(null);
+      setNearbyItems([]);
+      setNearbyError("");
+      setNearbyLoading(false);
+    }
+
+    return () => {
+      mounted = false;
+    };
+  }, [isPossibleDuplicateOpen, occurrence.id]);
+
   const street = occurrence?.address?.street ?? "—";
   const number = occurrence?.address?.number ?? "—";
   const neighborhood =
@@ -126,10 +185,7 @@ export function WarrantyCard({ occurrence, expanded, onToggle }) {
 
   const timelineSteps = [
     { label: "Solicitação", date: occurrence?.createdAt },
-    { label: "Aceito", date: occurrence?.acceptedAt },
-    { label: "Verificado", date: occurrence?.updatedAt },
-    { label: "Iniciada", date: occurrence?.startedAt },
-    { label: "Finalizada", date: occurrence?.finishedAt },
+    { label: "Aceito", date: occurrence?.updatedAt },
   ];
 
   function handleCopyProtocol() {
@@ -195,14 +251,14 @@ export function WarrantyCard({ occurrence, expanded, onToggle }) {
       </div>
 
       {/* status */}
-      <div className="flex items-center gap-3 px-4 py-3 border-t border-zinc-200">
+      <div className="flex items-center gap-3 px-4 py-3 ">
         <div className="ml-auto">
           <StatusBadge status={status} />
         </div>
       </div>
 
       {/* info + timeline */}
-      <div className="p-4 sm:p-5 border-t border-zinc-200">
+      <div className="p-4 sm:p-5 border-t border-zinc-100">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Informações */}
           <div>
@@ -267,9 +323,135 @@ export function WarrantyCard({ occurrence, expanded, onToggle }) {
           {/* Timeline */}
           <div className="relative z-0">
             <Timeline timeline={timelineSteps} />
+
+            {/* Botão para abrir modal de duplicatas */}
+            <div className="mt-4">
+              <Button
+                onClick={() => setIsPossibleDuplicateOpen(true)}
+                className="w-full bg-yellow-50 border border-yellow-200 text-yellow-800 hover:bg-yellow-100"
+              >
+                Ver possíveis duplicatas
+              </Button>
+            </div>
           </div>
         </div>
       </div>
+      <Dialog
+        open={isPossibleDuplicateOpen}
+        onOpenChange={setIsPossibleDuplicateOpen}
+      >
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Possível duplicata</DialogTitle>
+            <DialogDescription>
+              Esta ocorrência pode ter registros muito próximos (mesmo
+              local/tempo).
+            </DialogDescription>
+          </DialogHeader>
+
+          {nearbyLoading && (
+            <p className="text-sm text-gray-600">
+              Carregando possíveis duplicatas...
+            </p>
+          )}
+
+          {!nearbyLoading && nearbyError && (
+            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">
+              {nearbyError}
+            </div>
+          )}
+
+          {!nearbyLoading && !nearbyError && (
+            <>
+              {Array.isArray(nearbyItems) && nearbyItems.length > 0 ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">
+                      ID:{" "}
+                      <span className="font-mono">{nearbyBaseId ?? "—"}</span>
+                    </span>
+                    <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">
+                      {nearbyItems.length} possível(is) duplicata(s)
+                    </span>
+                  </div>
+
+                  <ul className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                    {nearbyItems.map((o) => {
+                      const created = o?.createdAt
+                        ? format(new Date(o.createdAt), "dd/MM/yyyy HH:mm")
+                        : "—";
+                      const rua = o?.address?.street ?? "Rua não informada";
+                      const num = o?.address?.number ?? "s/n";
+                      const bairro = o?.address?.neighborhoodName ?? "—";
+                      const protocolo = o?.protocolNumber ?? "—";
+                      const status = o?.status ?? "—";
+
+                      return (
+                        <li
+                          key={o.id}
+                          className="border rounded-lg p-3 bg-[#F8F8F8] text-sm text-gray-800"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">
+                                {o.type ?? "Ocorrência"}
+                              </p>
+                              <p className="text-gray-700 truncate">
+                                {rua}, {num} — {bairro}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                Criada em: {created}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Protocolo:{" "}
+                                <span className="font-mono">{protocolo}</span>
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Status: {status}
+                              </p>
+                            </div>
+
+                            <div className="shrink-0 flex flex-col gap-2">
+                              <Button
+                                variant="outline"
+                                className="h-8 px-2 text-xs"
+                                onClick={() => {
+                                  if (
+                                    protocolo &&
+                                    typeof navigator !== "undefined"
+                                  ) {
+                                    navigator.clipboard?.writeText(protocolo);
+                                  }
+                                }}
+                                title="Copiar protocolo"
+                              >
+                                Copiar protocolo
+                              </Button>
+                            </div>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-600">
+                  Nenhuma possível duplicata encontrada para esta ocorrência.
+                </p>
+              )}
+            </>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsPossibleDuplicateOpen(false)}
+            >
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

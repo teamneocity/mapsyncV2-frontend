@@ -213,9 +213,9 @@ export function Sidebar() {
                   </NavLink>
                   */}
 
-                  {/* <NavLink to="/reports" className={linkClass}>
+                  <NavLink to="/reports" className={linkClass}>
                     <DataAnalytics className="w-5 h-5 shrink-0" /> Relatórios
-                  </NavLink> */}
+                  </NavLink>
                 </>
               )}
             </div>
@@ -446,10 +446,10 @@ export function Sidebar() {
                       </NavLink>
                       */}
 
-                      {/* <NavLink to="/reports" className={linkClassMobile}>
+                      <NavLink to="/reports" className={linkClassMobile}>
                         <DataAnalytics className="w-5 h-5 shrink-0" />{" "}
                         Relatórios
-                      </NavLink> */}
+                      </NavLink>
                     </>
                   )}
                 </div>

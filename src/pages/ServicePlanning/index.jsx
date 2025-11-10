@@ -71,6 +71,7 @@ export function ServicePlanning() {
         const occ = order.occurrence || {};
         const address = occ.address || {};
         return {
+          __raw: order,
           id: order.id,
           createdAt: order.createdAt,
           protocol: order.protocolNumber,
@@ -179,7 +180,9 @@ export function ServicePlanning() {
         ref={planinRef}
         occurrences={serviceOrders}
         statusLabelOverrides={{ aguardando_execucao: "Agendada" }}
-        renderExpandedRow={(occ) => <ExpandedRowPlanning occurrence={occ} />}
+        renderExpandedRow={(occ) => (
+          <ExpandedRowPlanning serviceorder={occ.__raw || occ} />
+        )}
       />
 
       {/* footer  */}

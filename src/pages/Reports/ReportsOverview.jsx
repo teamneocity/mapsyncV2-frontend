@@ -573,7 +573,6 @@ export default function ReportsOverview({
                 value: s.name,
                 label: s.name,
               })),
-              { value: "builder", label: "Chatbot" },
             ]}
           />
 

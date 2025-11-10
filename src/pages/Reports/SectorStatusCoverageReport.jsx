@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { api } from "@/services/api";
 import { useSearchParams } from "react-router-dom";
 
-
 const BASE_MEDIA_URL = (
   import.meta.env.VITE_MEDIA_CDN ||
   import.meta.env.VITE_FILES_CDN ||
@@ -218,15 +217,6 @@ export default function SectorStatusCoverageReport({ onClose }) {
             <div className="min-w-0">
               <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
                 Relatório de Ocorrências
-                {selectedStatus ? (
-                  <button
-                    onClick={handleClearStatus}
-                    className="text-xs h-7 px-2 rounded-md border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50 whitespace-nowrap"
-                    title="Remover filtro de status"
-                  >
-                    Remover status
-                  </button>
-                ) : null}
               </h1>
               <p className="text-sm text-gray-600 mt-1">
                 Status:{" "}
@@ -259,15 +249,6 @@ export default function SectorStatusCoverageReport({ onClose }) {
               <h3 className="text-base font-semibold mb-3">
                 Bairros com ocorrência ({periodLabel}):
               </h3>
-              {selectedStatus ? (
-                <button
-                  onClick={handleClearStatus}
-                  className="text-xs h-7 px-2 rounded-md border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50"
-                  title="Remover filtro de status"
-                >
-                  Remover status
-                </button>
-              ) : null}
             </div>
 
             {loading ? (
