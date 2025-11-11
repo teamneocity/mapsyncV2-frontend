@@ -49,7 +49,7 @@ function ExpandedCreateFromRequest({ item, onCreated }) {
     const { data } = await api.post("/occurrences/attachments", form, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    return data; 
+    return data;
   }
 
   async function handleUpload() {
@@ -130,8 +130,7 @@ function ExpandedCreateFromRequest({ item, onCreated }) {
         description: "A solicitação foi convertida e registrada com sucesso.",
       });
 
-
-      onCreated?.();    
+      onCreated?.();
       setTimeout(() => {
         if (typeof window !== "undefined") window.location.reload();
       }, 0);
@@ -344,31 +343,30 @@ export function Requests() {
   ]);
 
   const handleToggleDateOrder = (order) => {
-    setFilterRecent(order);
+    const normalized =
+      order === "oldest" || order === "asc"
+        ? "asc"
+        : order === "desc"
+        ? "desc"
+        : "recent";
+    setFilterRecent(normalized);
     setCurrentPage(1);
   };
 
   const fetchOccurrences = async (page = 1) => {
     try {
-      const { data } = await api.get(ENDPOINT, {
-        params: {
-          page,
-          street: searchTerm,
-          districtId: filterNeighborhood,
-          type: filterType,
-          orderBy: filterRecent || "recent",
-          startDate: filterDateRange.startDate
-            ? new Date(
-                new Date(filterDateRange.startDate).setHours(0, 0, 0, 0)
-              ).toISOString()
-            : undefined,
-          endDate: filterDateRange.endDate
-            ? new Date(
-                new Date(filterDateRange.endDate).setHours(23, 59, 59, 999)
-              ).toISOString()
-            : undefined,
-        },
-      });
+      const order =
+        filterRecent === "oldest" || filterRecent === "asc" ? "asc" : "desc";
+
+      const params = {
+        page,
+        street: searchTerm || undefined, // filtro por rua 
+        neighborhoodId: filterNeighborhood || undefined, // bairro
+        type: filterType || undefined, // tipo
+        order, // ordenação
+      };
+
+      const { data } = await api.get(ENDPOINT, { params });
 
       const raw = Array.isArray(data.items) ? data.items : [];
 
@@ -400,7 +398,7 @@ export function Requests() {
       setCurrentPage(data.page ?? page);
       setTotalPages(data.totalPages ?? data.total_pages ?? 1);
     } catch (error) {
-      console.error(" Erro ao buscar solicitações:", error);
+      console.error("Erro ao buscar solicitações:", error);
       toast({
         variant: "destructive",
         title: "Erro ao buscar solicitações",
@@ -475,7 +473,6 @@ export function Requests() {
     </div>
   );
 }
-
 
 export { Requests as RequestsNamed };
 export default Requests;

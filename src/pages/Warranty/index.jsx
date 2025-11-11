@@ -1,104 +1,143 @@
+// src/pages/Warranty/index.jsx
 "use client";
 
-import { useEffect, useState } from "react";
+// React e bibliotecas externas
+import React, { useEffect, useState } from "react";
+
+// Componentes globais
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
 import { Filters } from "@/components/filters";
 import { Pagination } from "@/components/pagination";
+
+// Hooks e serviços
 import { api } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
+
+// Componentes locais
 import { WarrantyCard } from "./WarrantyCard";
 
+function isoStartOfDay(d) {
+  if (!d) return undefined;
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x.toISOString();
+}
+function isoEndOfDay(d) {
+  if (!d) return undefined;
+  const x = new Date(d);
+  x.setHours(23, 59, 59, 999);
+  return x.toISOString();
+}
+
 export function Warranty() {
+  const { toast } = useToast();
+
   const [occurrences, setOccurrences] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState(null);
+  const [filterStatus, setFilterStatus] = useState(null);
+  const [filterRecent, setFilterRecent] = useState("recent");
+  const [filterNeighborhood, setFilterNeighborhood] = useState(null);
+  const [filterDateRange, setFilterDateRange] = useState({
+    startDate: null,
+    endDate: null,
+  });
+
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // filtros (padrão das outras páginas)
-  const [street, setStreet] = useState("");
-  const [neighborhoodId, setNeighborhoodId] = useState("");
-  const [order, setOrder] = useState(""); // "recent" | "oldest"
-  const [type, setType] = useState("");
-  const [status, setStatus] = useState("");
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-
-  const { toast } = useToast();
-
-  const fetchWarrantyOccurrences = async () => {
-  try {
-    const queryParams = new URLSearchParams({
-      page: currentPage.toString(),
-      ...(street && { street }),
-      ...(neighborhoodId && { neighborhoodId }),
-      ...(order && { order }),
-      ...(type && { type }),
-      ...(status && { status }),
-      ...(startDate && { startDate: startDate.toISOString().split("T")[0] }),
-      ...(endDate && { endDate: endDate.toISOString().split("T")[0] }),
-    });
-
-    const { data } = await api.get(
-      `/occurrences/warranty?${queryParams.toString()}`
-    );
-
-    // 👇 nomes corretos conforme sua resposta-exemplo
-    const {
-      occurrences = [],
-      totalCount,
-      pageSize,
-      totalPages: totalPagesFromApi,
-    } = data ?? {};
-
-    // Como o payload já vem "achatado", não precisa entrar em item.occurrence
-    const list = occurrences.map((occ) => ({
-      ...occ,
-      // Garantindo que campos-chave existam (sem depender de service order)
-      protocolNumber: occ?.protocolNumber ?? occ?.id ?? null,
-      status: occ?.status ?? null,
-      createdAt: occ?.createdAt ?? null,
-      acceptedAt: occ?.acceptedAt ?? null,
-      updatedAt: occ?.updatedAt ?? null,
-      startedAt: occ?.startedAt ?? null,
-      finishedAt: occ?.finishedAt ?? null,
-    }));
-
-    setOccurrences(list);
-
-    // Usa o totalPages da API quando disponível; senão calcula por totalCount/pageSize
-    const computedTotalPages =
-      Number(totalPagesFromApi) ||
-      Math.max(
-        1,
-        Math.ceil((Number(totalCount) || list.length) / (Number(pageSize) || 10))
-      );
-
-    setTotalPages(computedTotalPages);
-  } catch (error) {
-    console.error("Erro ao buscar ocorrências de garantia:", error);
-    toast({
-      title: "Erro ao carregar",
-      description: "Não foi possível carregar as ocorrências de garantia.",
-      variant: "destructive",
-    });
-    setOccurrences([]);
-    setTotalPages(1);
-  }
-};
-
-
+  //filtro muda, refaz a busca
   useEffect(() => {
-    fetchWarrantyOccurrences();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage]);
+    fetchWarranty(currentPage);
+  }, [
+    currentPage,
+    searchTerm,
+    filterType,
+    filterStatus,
+    filterRecent,
+    filterNeighborhood,
+    filterDateRange.startDate,
+    filterDateRange.endDate,
+  ]);
+
+  const handleToggleDateOrder = (order) => {
+    setFilterRecent(order);
+    setCurrentPage(1);
+  };
+
+  const fetchWarranty = async (page = 1) => {
+    try {
+      const { data } = await api.get("/occurrences/warranty", {
+        params: {
+          page,
+          street: searchTerm || undefined, // rua/protocolo
+          districtId: filterNeighborhood || undefined, // bairro -> districtId
+          type: filterType || undefined, // tipos
+          status: filterStatus || undefined, // status
+          orderBy: filterRecent || "recent", // 'recent' | 'oldest'
+          startDate: filterDateRange.startDate
+            ? isoStartOfDay(filterDateRange.startDate)
+            : undefined,
+          endDate: filterDateRange.endDate
+            ? isoEndOfDay(filterDateRange.endDate)
+            : undefined,
+        },
+      });
+
+      const {
+        occurrences: listRaw = [],
+        totalPages: apiTotalPages,
+        totalCount,
+        pageSize,
+        page: apiPage,
+      } = data ?? {};
+
+      const flattened = Array.isArray(listRaw)
+        ? listRaw.map((occ) => ({
+            ...occ,
+            protocolNumber: occ?.protocolNumber ?? occ?.id ?? "-",
+          }))
+        : [];
+
+      const computedTotalPages =
+        Number(apiTotalPages) ||
+        Math.max(
+          1,
+          Math.ceil(
+            (Number(totalCount) || flattened.length) / (Number(pageSize) || 10)
+          )
+        );
+
+      setOccurrences(flattened);
+      setCurrentPage(typeof apiPage === "number" ? apiPage : page);
+      setTotalPages(computedTotalPages);
+    } catch (error) {
+      console.error(
+        "❌ Erro ao buscar ocorrências de garantia:",
+        error?.response?.data || error
+      );
+      toast({
+        variant: "destructive",
+        title: "Erro ao buscar ocorrências (garantia)",
+        description: error.message,
+      });
+      setOccurrences([]);
+      setCurrentPage(1);
+      setTotalPages(1);
+    }
+  };
+
+  const handleApplyFilters = () => {
+    setCurrentPage(1);
+  };
 
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
       <TopHeader />
 
-      {/* Filtros: mesmo padrão das outras telas */}
-      <div className="px-6 py-4 sm:py-6">
+      <div className="px-4 py-4 sm:py-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:hidden">
           Ocorrências com Garantia (até 90 dias)
         </h1>
@@ -106,24 +145,36 @@ export function Warranty() {
         <Filters
           title="Garantia"
           subtitle="Até 90 dias"
-          contextType="garantia"
-          onSearch={(value) => setStreet(value)}
-          onFilterType={(value) => setType(value)}
-          onFilterRecent={(value) => setOrder(value)}
-          onFilterNeighborhood={(value) => setNeighborhoodId(value)}
-          onFilterDateRange={(range) => {
-            setStartDate(range?.startDate || null);
-            setEndDate(range?.endDate || null);
-          }}
-          onFilterStatus={(value) => setStatus(value)}
-          handleApplyFilters={() => {
+          contextType="garantia" // para exibir os status corretos no dropdown
+          onSearch={(input) => {
+            setSearchTerm(input);
             setCurrentPage(1);
-            fetchWarrantyOccurrences();
           }}
+          onFilterType={(type) => {
+            setFilterType(type);
+            setCurrentPage(1);
+          }}
+          onFilterRecent={(order) => {
+            setFilterRecent(order);
+            setCurrentPage(1);
+          }}
+          onFilterNeighborhood={(neighborhood /* districtId */) => {
+            setFilterNeighborhood(neighborhood);
+            setCurrentPage(1);
+          }}
+          onFilterDateRange={(range) => {
+            setFilterDateRange(range || { startDate: null, endDate: null });
+            setCurrentPage(1);
+          }}
+          onFilterStatus={(status) => {
+            setFilterStatus(status);
+            setCurrentPage(1);
+          }}
+          handleApplyFilters={handleApplyFilters}
         />
       </div>
 
-      {/* LISTA DE CARDS (padrão) */}
+      {/* LISTA DE CARDS */}
       <div className="px-6 pb-4 sm:pb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           {occurrences?.length === 0 && (
@@ -143,13 +194,13 @@ export function Warranty() {
         </div>
       </div>
 
-      {/* PAGINAÇÃO */}
+      {/* Paginação  */}
       <footer className="bg-[#EBEBEB] p-4 mt-auto">
         <div className="max-w-full mx-auto">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={setCurrentPage}
+            onPageChange={fetchWarranty}
           />
         </div>
       </footer>

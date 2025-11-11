@@ -23,7 +23,7 @@ export function Settings() {
       "Notificações",
       "Criar usuários",
       "Gestão de usuários",
-      "Criar setores",
+      "Gestão de setores",
       "LGPD",
     ],
     []
