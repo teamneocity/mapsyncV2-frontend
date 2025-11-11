@@ -178,17 +178,6 @@ function ExpandedCreateFromRequest({ item, onCreated }) {
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-xs text-zinc-500">Bairro (ID)</label>
-            <input
-              readOnly
-              value={
-                item?.address?.neighborhoodId || item?.neighborhoodId || ""
-              }
-              className="w-full rounded-lg border px-3 py-2 bg-zinc-50 text-sm"
-              placeholder="neighborhoodId"
-            />
-          </div>
-          <div>
             <label className="text-xs text-zinc-500">Bairro (nome)</label>
             <input
               readOnly
