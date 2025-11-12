@@ -114,7 +114,7 @@ export function Settings() {
         <UserManagementContent />
       </Suspense>
     ),
-    "Criar setores": () => (
+    "Gestão de setores": () => (
       <Suspense
         fallback={
           <div className="text-sm text-zinc-500">Carregando setor…</div>
