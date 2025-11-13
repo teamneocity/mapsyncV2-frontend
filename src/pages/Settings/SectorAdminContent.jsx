@@ -451,12 +451,6 @@ export default function SectorAdminContent() {
                   <Label className="text-sm font-medium">Nome do Setor</Label>
                   <p className="text-lg font-semibold">{sectorData.name}</p>
                 </div>
-                <div>
-                  <Label className="text-sm font-medium">ID do Setor</Label>
-                  <p className="text-sm text-gray-600 font-mono">
-                    {sectorData.id}
-                  </p>
-                </div>
               </div>
 
               <div className="space-y-3">

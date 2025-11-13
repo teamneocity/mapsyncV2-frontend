@@ -11,7 +11,7 @@ import { pdf, PDFDownloadLink } from "@react-pdf/renderer";
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
 
-import { PlanningFilters } from "./PlanningFilters"; 
+import { PlanningFilters } from "./PlanningFilters";
 
 // Lista travada p/ planejamento
 import { PlaninList } from "./PlaninList";
@@ -34,13 +34,13 @@ export function ServicePlanning() {
   // data diária
   const [date, setDate] = useState(new Date());
 
-  // filtros 
+  // filtros
   const [street, setStreet] = useState("");
   const [neighborhoodId, setNeighborhoodId] = useState(null);
   const [occurrenceType, setOccurrenceType] = useState(null);
   const [status, setStatus] = useState(null);
   const [sectorId, setSectorId] = useState(null);
-  const [foremanId, setForemanId] = useState(null); 
+  const [foremanId, setForemanId] = useState(null);
 
   const debouncedStreet = useDebouncedValue(street, 350);
 
@@ -60,7 +60,7 @@ export function ServicePlanning() {
     if (occurrenceType) params.set("occurrenceType", occurrenceType);
     if (status) params.set("status", status);
     if (sectorId) params.set("sectorId", sectorId);
-    if (foremanId) params.set("foremanId", foremanId); 
+    if (foremanId) params.set("foremanId", foremanId);
     return params.toString();
   };
 
@@ -129,7 +129,7 @@ export function ServicePlanning() {
     occurrenceType,
     status,
     sectorId,
-    foremanId, 
+    foremanId,
   ]);
 
   const planinRef = useRef(null);
@@ -159,7 +159,8 @@ export function ServicePlanning() {
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:hidden">
           Planejamento diário
         </h1>
-
+        
+        {/* Filtros */}
         <PlanningFilters
           title="Planejamento"
           subtitle="diário"
@@ -168,9 +169,11 @@ export function ServicePlanning() {
           onFilterType={(t) => setOccurrenceType(t || null)}
           onFilterStatus={(s) => setStatus(s || null)}
           onFilterDateRange={({ startDate }) => {
-            if (startDate instanceof Date && !isNaN(startDate)) setDate(startDate);
+            if (startDate instanceof Date && !isNaN(startDate))
+              setDate(startDate);
           }}
-          onFilterForeman={(id) => setForemanId(id || null)} // <- NOVO
+          onFilterForeman={(id) => setForemanId(id || null)}
+          onFilterSector={(id) => setSectorId(id || null)} // <- NOVO
         />
       </div>
 

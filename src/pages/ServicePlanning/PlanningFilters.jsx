@@ -12,9 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 
-/*
- serbe para mecher mais no componente Filters original, adicionando o filtro de Encarregado
- */
 export function PlanningFilters({
   title = "Planejamento",
   subtitle = "diário",
@@ -24,18 +21,25 @@ export function PlanningFilters({
   onFilterStatus,
   onFilterDateRange,
 
+  onFilterSector = () => {},
   onFilterForeman = () => {},
 }) {
+  // Encarregados
   const [foremen, setForemen] = useState([]);
   const [selectedForeman, setSelectedForeman] = useState(null);
 
+  // Setores
+  const [sectors, setSectors] = useState([]);
+  const [selectedSector, setSelectedSector] = useState(null);
+
+  // Busca encarregados
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
         const { data } = await api.get("/foremen");
 
-        const raw = Array.isArray(data) ? data : (data?.foremen ?? []);
+        const raw = Array.isArray(data) ? data : data?.foremen ?? [];
         const normalized = raw
           .map((u) => ({
             id: u?.id || u?.userId || u?.uuid,
@@ -59,14 +63,41 @@ export function PlanningFilters({
     };
   }, []);
 
+  // Busca setores 
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      try {
+        const { data } = await api.get("/sectors/names");
+
+        const normalized = Array.isArray(data?.sectors) ? data.sectors : [];
+
+        if (mounted) setSectors(normalized);
+      } catch (err) {
+        console.error("Erro ao buscar setores:", err);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const handleForeman = (id) => {
-    setSelectedForeman(id || null);
-    onFilterForeman(id || null);
+    const value = id || null;
+    setSelectedForeman(value);
+    onFilterForeman(value);
+  };
+
+  const handleSector = (id) => {
+    const value = id || null;
+    setSelectedSector(value);
+    onFilterSector(value);
   };
 
   return (
     <div className="flex flex-col gap-2">
-      {/* Seu Filters global, intacto */}
       <Filters
         title={title}
         subtitle={subtitle}
@@ -81,8 +112,10 @@ export function PlanningFilters({
         onFilterDateRange={onFilterDateRange}
       />
 
+      {/* Faixa extra só da tela de Planejamento (Encarregado + Setor) */}
       <div className="w-full bg-[#EBEBEB] px-1 pb-1 -mt-1">
-        <div className="w-full flex items-center gap-2 md:gap-3 rounded-xl">
+        <div className="w-full flex flex-wrap items-center gap-2 md:gap-3 rounded-xl">
+          {/* Encarregado */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -103,8 +136,39 @@ export function PlanningFilters({
                 Todos
               </DropdownMenuItem>
               {foremen.map((f) => (
-                <DropdownMenuItem key={f.id} onClick={() => handleForeman(f.id)}>
+                <DropdownMenuItem
+                  key={f.id}
+                  onClick={() => handleForeman(f.id)}
+                >
                   {f.name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Setor */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm text-[#4B4B62]"
+              >
+                {selectedSector
+                  ? `Setor: ${
+                      sectors.find((s) => s.id === selectedSector)?.name || "—"
+                    }`
+                  : "Setor"}
+                <ChevronDown className="ml-1 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent className="max-h-[320px] overflow-y-auto">
+              <DropdownMenuItem onClick={() => handleSector(null)}>
+                Todos
+              </DropdownMenuItem>
+              {sectors.map((s) => (
+                <DropdownMenuItem key={s.id} onClick={() => handleSector(s.id)}>
+                  {s.name}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
