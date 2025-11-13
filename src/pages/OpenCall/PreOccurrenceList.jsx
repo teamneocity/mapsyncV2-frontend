@@ -12,6 +12,8 @@ const typeLabels = {
   MEIO_FIO: "Meio fio",
   DESOBSTRUCAO: "Drenagem",
   LIMPA_FOSSA: "Limpa fossa",
+  LOGRADOURO: "Logradouro",
+  DESOBSTRUCAO_CAMINHAO: "Desobstrução"
 };
 
 export function PreOccurrenceList({ embedded = false }) {

@@ -352,13 +352,16 @@ export function Filters({
               <DropdownMenuItem onClick={() => handleTypeFilter("TAPA_BURACO")}>
                 Asfalto
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleTypeFilter("LIMPA_FOSSA")}>
-                Limpa Fossa
-              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => handleTypeFilter("DESOBSTRUCAO")}
               >
                 Drenagem
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleTypeFilter("DESOBSTRUCAO_CAMINHAO")}>
+                Desobstrução
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleTypeFilter("LIMPA_FOSSA")}>
+                Limpa Fossa
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => handleTypeFilter("TERRAPLANAGEM")}

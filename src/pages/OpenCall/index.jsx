@@ -232,8 +232,7 @@ export function OpenCall() {
     { value: "DESOBSTRUCAO", label: "Drenagem" },
     { value: "TERRAPLANAGEM", label: "Terraplanagem" },
     { value: "LOGRADOURO", label: "Logradouro" },
-    { value: "MEIO_FIO", label: "Meio fio" },
-    { value: "AUSENCIA_DE_MEIO_FIO", label: "Ausência de meio fio" },
+    { value: "DESOBSTRUCAO_CAMINHAO", label:"Desobstrução" }
   ];
 
   const terrestrialBtnClasses =

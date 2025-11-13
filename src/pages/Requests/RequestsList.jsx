@@ -73,11 +73,8 @@ const typeLabels = {
   TERRAPLANAGEM: "Terraplanagem",
   LOGRADOURO: "Logradouro",
   PAVIMENTACAO: "Pavimentação",
-  ILUMINACAO: "Iluminação pública",
-  LIMPEZA: "Limpeza urbana",
-  ESGOTO: "Esgoto",
-  GALERIA_PLUVIAL: "Galeria pluvial",
-  OUTRO: "Outro",
+  DESOBSTRUCAO_CAMINHAO : "Desobstrução"
+ 
 };
 
 export function RequestsList({

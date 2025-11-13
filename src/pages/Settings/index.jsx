@@ -150,7 +150,7 @@ export function Settings() {
               sessão você pode configurar seu perfil de visualização da
               dashboard, adaptar suas visualizações combinadas com suas rotinas,
               definir as notificações. Também conhecer nossos termos e os nível
-              de segurança aliadas as nossas regras do {" "}
+              de segurança aliadas as nossas regras do{" "}
               <span className="font-semibold">LGPD</span>.
             </p>
           </div>
