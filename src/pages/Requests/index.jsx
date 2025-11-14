@@ -17,6 +17,18 @@ import { Pagination } from "@/components/pagination";
 import { RequestsList } from "./RequestsList";
 import { api } from "@/services/api";
 
+const typeLabels = {
+  TAPA_BURACO: "Asfalto",
+  LIMPA_FOSSA: "Limpa fossa",
+  DESOBSTRUCAO: "Drenagem",
+  MEIO_FIO: "Meio fio",
+  AUSENCIA_DE_MEIO_FIO: "Ausência de meio fio",
+  TERRAPLANAGEM: "Terraplanagem",
+  LOGRADOURO: "Logradouro",
+  PAVIMENTACAO: "Pavimentação",
+  DESOBSTRUCAO_CAMINHAO: "Desobstrução",
+};
+
 const PAGE_TITLE = "Solicitações";
 const PAGE_SUBTITLE = "de serviços";
 const ENDPOINT = "/pre-occurrences";
@@ -31,7 +43,7 @@ function ExpandedCreateFromRequest({ item, onCreated }) {
   const [creating, setCreating] = useState(false);
 
   // campos editáveis (preenchidos com a solicitação)
-  const [type, setType] = useState(item?.type || "");
+
   const [description, setDescription] = useState(item?.description || "");
   const [latitude, setLatitude] = useState(item?.latitude ?? "");
   const [longitude, setLongitude] = useState(item?.longitude ?? "");
@@ -89,16 +101,22 @@ function ExpandedCreateFromRequest({ item, onCreated }) {
     try {
       setCreating(true);
 
+      if (latitude === "" || longitude === "") {
+        throw new Error("Latitude e longitude são obrigatórias.");
+      }
+
+      const rawType = item?.type || "";
+
       const payload = {
-        type: String(type || item?.type || "").trim(),
+        type: String(rawType).trim(), // tipo vem SEMPRE da solicitação
         description: String(description || item?.description || "").trim(),
         street: item?.address?.street || item?.street || "",
         number: item?.address?.number || item?.number || "",
         zipCode: item?.address?.cep || item?.cep || "",
         neighborhoodId:
           item?.address?.neighborhoodId || item?.neighborhoodId || "",
-        latitude: latitude === "" ? null : Number(latitude),
-        longitude: longitude === "" ? null : Number(longitude),
+        latitude: Number(latitude),
+        longitude: Number(longitude),
         isEmergencial: Boolean(isEmergencial),
         ...(photoIdStr ? { initialPhotosUrls: [photoIdStr] } : {}),
       };
@@ -190,17 +208,17 @@ function ExpandedCreateFromRequest({ item, onCreated }) {
         </div>
       </div>
 
-      {/* Coluna 2: Dados editáveis */}
+      {/* Coluna 2: */}
       <div className="space-y-2">
         <div>
           <label className="text-xs text-zinc-500">Tipo</label>
           <input
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            className="w-full rounded-lg border px-3 py-2 text-sm"
-            placeholder="Ex.: TAPA_BURACO"
+            readOnly
+            value={typeLabels[item?.type] || item?.type || ""}
+            className="w-full rounded-lg border px-3 py-2 bg-zinc-50 text-sm"
           />
         </div>
+        {/* Editáveis */}
 
         <div>
           <label className="text-xs text-zinc-500">Descrição</label>
@@ -220,7 +238,7 @@ function ExpandedCreateFromRequest({ item, onCreated }) {
               value={latitude}
               onChange={(e) => setLatitude(e.target.value)}
               className="w-full rounded-lg border px-3 py-2 text-sm"
-              placeholder="-10.94"
+              placeholder="Ex.: -10.94"
             />
           </div>
           <div>
@@ -229,7 +247,7 @@ function ExpandedCreateFromRequest({ item, onCreated }) {
               value={longitude}
               onChange={(e) => setLongitude(e.target.value)}
               className="w-full rounded-lg border px-3 py-2 text-sm"
-              placeholder="-37.07"
+              placeholder="Ex.: -37.07"
             />
           </div>
         </div>
@@ -349,7 +367,7 @@ export function Requests() {
 
       const params = {
         page,
-        street: searchTerm || undefined, // filtro por rua 
+        street: searchTerm || undefined, // filtro por rua
         neighborhoodId: filterNeighborhood || undefined, // bairro
         type: filterType || undefined, // tipo
         order, // ordenação
