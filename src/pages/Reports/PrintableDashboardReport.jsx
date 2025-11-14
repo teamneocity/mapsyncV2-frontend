@@ -98,6 +98,34 @@ function pickPhoto(photos = []) {
   return `${BASE_MEDIA_URL}/${String(chosen.url).replace(/^\/+/, "")}`;
 }
 
+// NOVO: pega antes e depois separadamente
+function pickBeforeAfterPhotos(photos = []) {
+  if (!Array.isArray(photos) || photos.length === 0) {
+    return { initialUrl: null, finalUrl: null };
+  }
+
+  const norm = (v) =>
+    String(v || "")
+      .trim()
+      .toUpperCase();
+
+  const toUrl = (p) => {
+    if (!p?.url) return null;
+    if (/^https?:\/\//i.test(p.url)) return p.url;
+    return `${BASE_MEDIA_URL}/${String(p.url).replace(/^\/+/, "")}`;
+  };
+
+  const finalPhoto = photos.find((p) => norm(p.stage) === "FINAL");
+  const initialPhoto = photos.find((p) =>
+    ["INICIAL", "INITIAL", "INICIO"].includes(norm(p.stage))
+  );
+
+  return {
+    initialUrl: toUrl(initialPhoto),
+    finalUrl: toUrl(finalPhoto),
+  };
+}
+
 // Quebra lista em blocos de 2
 function chunk2(arr = []) {
   const out = [];
@@ -341,7 +369,7 @@ export default function PrintableDashboardReport() {
             <p>Período: {period}</p>
             <p>
               Bairros com ocorrência:{" "}
-              <span className="font-semibold">{neighborhoodNames.length}</span>{" "}
+                <span className="font-semibold">{neighborhoodNames.length}</span>{" "}
               | Total : <span className="font-semibold">{totalStatus}</span>
             </p>
             {(neighborhoodFilter || statusFilter) && (
@@ -443,14 +471,34 @@ export default function PrintableDashboardReport() {
                 <div key={sheetIdx} className="sheet space-y-6">
                   {pair.map((so) => {
                     const photoUrl = pickPhoto(so.photos);
+                    const { initialUrl, finalUrl } = pickBeforeAfterPhotos(
+                      so.photos
+                    );
+                    const isFinalizada = so.status === "finalizada";
                     const addr = so.address || {};
+
                     return (
                       <article
                         key={so.id}
                         className="card rounded-xl border border-neutral-200 p-4"
                         style={{ breakInside: "avoid" }}
                       >
-                        <Photo src={photoUrl} alt={`OS ${so.id}`} />
+                        {/* Quando finalizada, tenta mostrar ANTES/DEPOIS lado a lado */}
+                        {isFinalizada && (initialUrl || finalUrl) ? (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <Photo
+                              src={initialUrl || finalUrl || photoUrl}
+                              alt={`OS ${so.id} - Antes`}
+                            />
+                            {/* se não tiver inicial, repete a final só pra não ficar vazio */}
+                            <Photo
+                              src={finalUrl || initialUrl || photoUrl}
+                              alt={`OS ${so.id} - Depois`}
+                            />
+                          </div>
+                        ) : (
+                          <Photo src={photoUrl} alt={`OS ${so.id}`} />
+                        )}
 
                         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                           <div className="text-sm text-gray-700">
