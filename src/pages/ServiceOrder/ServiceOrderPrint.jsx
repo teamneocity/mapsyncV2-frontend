@@ -55,13 +55,14 @@ export function ServiceOrderPrint() {
     verificada: "Verificada",
     rejeitada: "Rejeitada",
   };
+
   const maskStatus = (raw) => {
     if (!raw) return "—";
     const key = String(raw).toLowerCase();
     return statusLabels[key] ?? raw;
   };
 
-  // >>> ADD: formatador seguro de data/hora
+  // formatador seguro de data/hora
   const fmt = (d) => {
     if (!d) return "—";
     const dt = new Date(d);
@@ -78,10 +79,25 @@ export function ServiceOrderPrint() {
     const startedAt = o.startedAt ? new Date(o.startedAt) : null;
     const finishedAt = o.finishedAt ? new Date(o.finishedAt) : null;
 
+    // FOTO INICIAL
     const initialPath = occurrence?.photos?.initial?.[0];
     const photoUrl = initialPath
       ? `https://mapsync-media.s3.sa-east-1.amazonaws.com/${initialPath}`
       : null;
+
+
+    const isFinalized =
+      String(o?.status ?? "").toLowerCase() === "finalizada";
+
+    const finalPath =
+      isFinalized && occurrence?.photos?.final?.[0]
+        ? occurrence.photos.final[0]
+        : null;
+
+    const finalPhotoUrl = finalPath
+      ? `https://mapsync-media.s3.sa-east-1.amazonaws.com/${finalPath}`
+      : null;
+
 
     const rawArrays = [
       o.reschedules,
@@ -180,6 +196,7 @@ export function ServiceOrderPrint() {
       finishedAtStr: finishedAt ? finishedAt.toLocaleDateString("pt-BR") : "—",
 
       photoUrl,
+      finalPhotoUrl, // <<< NOVO CAMPO
 
       reschedules: normalizedReschedules,
     };
@@ -299,6 +316,14 @@ export function ServiceOrderPrint() {
               <img
                 src={data.photoUrl}
                 alt="Foto da OS"
+                className="block mx-auto w-auto h-auto max-w-full print:max-w-full max-h-[180mm] object-contain border border-neutral-300 rounded mb-2"
+              />
+            )}
+
+            {data.finalPhotoUrl && (
+              <img
+                src={data.finalPhotoUrl}
+                alt="Foto final da OS"
                 className="block mx-auto w-auto h-auto max-w-full print:max-w-full max-h-[180mm] object-contain border border-neutral-300 rounded mb-2"
               />
             )}
