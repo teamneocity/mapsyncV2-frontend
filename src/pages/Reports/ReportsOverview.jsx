@@ -85,6 +85,15 @@ export default function ReportsOverview({
 
   const [builderOpen, setBuilderOpen] = useState(false);
 
+  const [neighborhoodList, setNeighborhoodList] = useState([]);
+  const [loadingNeighborhoods, setLoadingNeighborhoods] = useState(false);
+
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
+  const [photoFilters, setPhotoFilters] = useState({
+    neighborhood: "",
+    status: "",
+  });
+
   const foundSector = useMemo(
     () => sectors.find((s) => s.name === selectedSector),
     [sectors, selectedSector]
@@ -104,6 +113,10 @@ export default function ReportsOverview({
 
       return p;
     });
+  }
+
+  function openPhotoModal() {
+    setPhotoModalOpen(true);
   }
 
   // pega o período
@@ -172,6 +185,7 @@ export default function ReportsOverview({
     };
   }, [isDashboard]);
 
+  // busca setores
   useEffect(() => {
     let mounted = true;
     async function fetchSectors() {
@@ -196,6 +210,41 @@ export default function ReportsOverview({
       }
     }
     fetchSectors();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // NOVO: busca bairros para o modal fotográfico
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchNeighborhoods() {
+      setLoadingNeighborhoods(true);
+      try {
+        const { data } = await api.get("/neighborhoods");
+        const list = Array.isArray(data?.neighborhoods)
+          ? data.neighborhoods
+          : [];
+        if (mounted) {
+          setNeighborhoodList(
+            list
+              .map((n) => ({
+                id: n.id,
+                name: n.name,
+              }))
+              .filter((n) => n.id && n.name)
+          );
+        }
+      } catch (e) {
+        console.error("Erro ao buscar bairros:", e);
+        if (mounted) setNeighborhoodList([]);
+      } finally {
+        if (mounted) setLoadingNeighborhoods(false);
+      }
+    }
+
+    fetchNeighborhoods();
     return () => {
       mounted = false;
     };
@@ -264,7 +313,7 @@ export default function ReportsOverview({
     fetchCoverage();
   }, [selectedSector, selectedStatus, sectors, isDashboard]);
 
-  //conta a quantidade de bairros
+  // conta a quantidade de bairros
   const neighborhoodsAttendedCount = useMemo(() => {
     if (!Array.isArray(dashboardNeighborhoods)) return 0;
     return dashboardNeighborhoods.reduce((acc, n) => {
@@ -273,7 +322,7 @@ export default function ReportsOverview({
     }, 0);
   }, [dashboardNeighborhoods]);
 
-  //conta a quantidade geral de ocorrencias
+  // conta a quantidade geral de ocorrencias
   const totalCurrentOccurrences = useMemo(() => {
     if (!Array.isArray(dashboardNeighborhoods)) return 0;
     return dashboardNeighborhoods.reduce((acc, n) => {
@@ -574,6 +623,133 @@ export default function ReportsOverview({
     );
   }
 
+  // modal para filtrar o relatório fotográfico
+  function PhotoFilterModal() {
+    const [local, setLocal] = useState({
+      neighborhood: photoFilters.neighborhood || "",
+      status: photoFilters.status || "",
+    });
+
+    function handleClose() {
+      setPhotoModalOpen(false);
+    }
+
+    function handleApply() {
+      // guarda o último filtro escolhido
+      setPhotoFilters(local);
+
+      // joga na URL e abre o relatório fotográfico
+      setParams((prev) => {
+        const p = new URLSearchParams(prev);
+        p.set("view", "printable_dashboard");
+
+        if (local.neighborhood && local.neighborhood !== "__all__") {
+          p.set("neighborhood", local.neighborhood.trim());
+        } else {
+          p.delete("neighborhood");
+        }
+
+        if (local.status && local.status !== "__all__") {
+          p.set("status", local.status);
+        } else {
+          p.delete("status");
+        }
+
+        return p;
+      });
+
+      setPhotoModalOpen(false);
+    }
+
+    const neighborhoodOptions = [
+      { value: "__all__", label: "Todos os bairros" },
+      ...neighborhoodList.map((n) => ({
+        value: n.name,
+        label: n.name,
+      })),
+    ];
+
+    const statusOptions = [
+      { value: "__all__", label: "Todos os status" },
+      { value: "aguardando_execucao", label: "Aguardando execução" },
+      { value: "em_execucao", label: "Em execução" },
+      { value: "finalizada", label: "Finalizada" },
+    ];
+
+    return (
+      <div
+        className="fixed inset-0 z-40 flex items-center justify-center p-4"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div
+          className="absolute inset-0 z-40 bg-black/30 backdrop-blur-sm"
+          onClick={handleClose}
+        />
+
+        {/* painel principal */}
+        <div className="relative z-50 w-full max-w-md rounded-2xl bg-white shadow-xl border border-neutral-200 p-6">
+          <h3 className="text-xl font-semibold text-neutral-900">
+            Gerar relatório fotográfico
+          </h3>
+          <p className="text-sm text-neutral-500 mt-1">
+            Se quiser, filtre as ordens de serviço por bairro e status. Deixe em
+            branco para incluir todos.
+          </p>
+
+          <div className="mt-5 space-y-4">
+            <SelectField
+              label="Bairro (opcional)"
+              value={local.neighborhood}
+              onChange={(v) =>
+                setLocal((old) => ({
+                  ...old,
+                  neighborhood: v || "",
+                }))
+              }
+              options={neighborhoodOptions}
+              placeholder="Selecione um bairro"
+            />
+
+            {loadingNeighborhoods && (
+              <p className="text-xs text-neutral-400 mt-1">
+                Carregando bairros…
+              </p>
+            )}
+
+            <SelectField
+              label="Status (opcional)"
+              value={local.status}
+              onChange={(v) =>
+                setLocal((old) => ({
+                  ...old,
+                  status: v || "",
+                }))
+              }
+              options={statusOptions}
+            />
+          </div>
+
+          <div className="mt-6 flex items-center justify-end gap-3">
+            <button
+              onClick={handleClose}
+              className="h-10 px-4 rounded-lg border border-neutral-200 bg-white text-neutral-700 text-sm hover:bg-neutral-50"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleApply}
+              className="h-10 px-4 rounded-lg bg-neutral-900 text-white text-sm hover:bg-neutral-800"
+              disabled={loadingNeighborhoods}
+            >
+              Gerar relatório
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <section className="max-w-[1500px] w-full mx-auto bg-white rounded-xl p-6 mt-4">
       {/* Cabeçalho */}
@@ -685,15 +861,9 @@ export default function ReportsOverview({
           {/*  Botões do dashboard  */}
           <div className="mt-6 flex items-center gap-3">
             <button
-              onClick={() =>
-                setParams((prev) => {
-                  const p = new URLSearchParams(prev);
-                  p.set("view", "printable_dashboard"); // muda para a view do relatório
-                  return p;
-                })
-              }
+              onClick={openPhotoModal}
               className="h-12 px-4 rounded-lg border border-neutral-200 bg-white text-gray-700 text-sm hover:bg-neutral-50 transition-colors"
-              title="Gerar relatório imprimível do dashboard geral"
+              title="Gerar relatório fotográfico com filtros opcionais"
             >
               Gere um relatório fotográfico
             </button>
@@ -917,6 +1087,7 @@ export default function ReportsOverview({
         </>
       )}
       {builderOpen ? <BuilderModal /> : null}
+      {photoModalOpen ? <PhotoFilterModal /> : null}
     </section>
   );
 }

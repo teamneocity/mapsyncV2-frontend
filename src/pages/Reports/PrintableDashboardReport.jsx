@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { api } from "@/services/api";
-
+import { useSearchParams } from "react-router-dom";
 
 // Cores por status
 const STATUS_COLOR_MAP = {
@@ -48,7 +48,7 @@ const FALLBACK_COLORS = [
   },
 ];
 
-//Base URL do bucket
+// Base URL do bucket
 const BASE_MEDIA_URL = (
   import.meta.env.VITE_MEDIA_CDN ||
   import.meta.env.VITE_FILES_CDN ||
@@ -56,7 +56,7 @@ const BASE_MEDIA_URL = (
   "https://mapsync-media.s3.sa-east-1.amazonaws.com"
 ).replace(/\/$/, "");
 
-//Helpers
+// Helpers
 function humanize(str = "") {
   return String(str)
     .toLowerCase()
@@ -180,11 +180,16 @@ function PieSVG({ items, size = 260 }) {
   );
 }
 
-//  Página principal
+// Página principal
 export default function PrintableDashboardReport() {
   const [stats, setStats] = useState({ byNeighborhood: [], byStatus: [] });
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // lê filtros da URL (vindos lá do ReportsOverview)
+  const [params] = useSearchParams();
+  const neighborhoodFilter = (params.get("neighborhood") || "").trim();
+  const statusFilter = (params.get("status") || "").trim();
 
   // busca dados
   useEffect(() => {
@@ -229,21 +234,74 @@ export default function PrintableDashboardReport() {
     };
   }, []);
 
+  // aplica filtros no front-end
+  const filteredOrders = useMemo(() => {
+    let list = [...orders];
+
+    if (neighborhoodFilter) {
+      const nf = neighborhoodFilter.toLowerCase();
+      list = list.filter(
+        (o) => (o.address?.neighborhoodName || "").toLowerCase() === nf
+      );
+    }
+
+    if (statusFilter) {
+      list = list.filter((o) => o.status === statusFilter);
+    }
+
+    return list;
+  }, [orders, neighborhoodFilter, statusFilter]);
+
   const statusItems = useMemo(() => {
+    // agrupa por status com base nas ordens filtradas
+    const map = new Map();
+
+    filteredOrders.forEach((o) => {
+      if (!o.status) return;
+      map.set(o.status, (map.get(o.status) || 0) + 1);
+    });
+
     let fb = 0;
-    return (stats.byStatus || []).map((s) => {
-      const key = s.status;
+
+    // se não houver ordens filtradas e stats.byStatus existir,
+    // usa o agrupamento original.
+    if (
+      map.size === 0 &&
+      filteredOrders.length === 0 &&
+      stats.byStatus?.length
+    ) {
+      return stats.byStatus.map((s) => {
+        const key = s.status;
+        const color =
+          STATUS_COLOR_MAP[key] ||
+          FALLBACK_COLORS[fb++ % FALLBACK_COLORS.length];
+        return { label: humanize(key), value: s.count, colorHex: color.hex };
+      });
+    }
+
+    return Array.from(map.entries()).map(([key, count]) => {
       const color =
         STATUS_COLOR_MAP[key] || FALLBACK_COLORS[fb++ % FALLBACK_COLORS.length];
-      return { label: humanize(key), value: s.count, colorHex: color.hex };
+      return { label: humanize(key), value: count, colorHex: color.hex };
     });
-  }, [stats]);
+  }, [filteredOrders, stats]);
 
   const totalStatus = statusItems.reduce((s, it) => s + it.value, 0);
   const now = new Date().toLocaleString("pt-BR");
   const period = monthLabel();
-  const neighborhoodNames = stats.byNeighborhood.map((n) => n.neighborhood);
-  const sheets = useMemo(() => chunk2(orders), [orders]);
+
+  // bairros distintos a partir das ordens filtradas
+  const neighborhoodNames = useMemo(() => {
+    const set = new Set();
+    filteredOrders.forEach((o) => {
+      const name = o.address?.neighborhoodName;
+      if (name) set.add(name);
+    });
+    return Array.from(set);
+  }, [filteredOrders]);
+
+  // usa as ordens filtradas para montar as páginas de 2 em 2
+  const sheets = useMemo(() => chunk2(filteredOrders), [filteredOrders]);
 
   return (
     <div className="min-h-screen bg-white text-black">
@@ -266,7 +324,6 @@ export default function PrintableDashboardReport() {
       {/* Conteúdo */}
       <main className="mx-auto max-w-[900px] px-6 py-6">
         {/* Cabeçalho */}
-        {/* Cabeçalho */}
         <header className="relative mb-8 mt-10">
           <div className="flex items-center justify-between">
             <div className="text-left">
@@ -277,7 +334,6 @@ export default function PrintableDashboardReport() {
                 Relatório — Ordens de Serviço
               </p>
             </div>
-            
           </div>
 
           <div className="mt-6 flex flex-col items-center text-sm text-gray-600 text-center">
@@ -288,6 +344,28 @@ export default function PrintableDashboardReport() {
               <span className="font-semibold">{neighborhoodNames.length}</span>{" "}
               | Total : <span className="font-semibold">{totalStatus}</span>
             </p>
+            {(neighborhoodFilter || statusFilter) && (
+              <p className="mt-1 text-xs text-gray-500">
+                Filtros aplicados:
+                {neighborhoodFilter && (
+                  <>
+                    {" "}
+                    Bairro ={" "}
+                    <span className="font-semibold">{neighborhoodFilter}</span>
+                  </>
+                )}
+                {neighborhoodFilter && statusFilter && " |"}
+                {statusFilter && (
+                  <>
+                    {" "}
+                    Status ={" "}
+                    <span className="font-semibold">
+                      {humanize(statusFilter)}
+                    </span>
+                  </>
+                )}
+              </p>
+            )}
           </div>
         </header>
 
@@ -357,7 +435,7 @@ export default function PrintableDashboardReport() {
             </div>
           ) : sheets.length === 0 ? (
             <div className="h-[120px] flex items-center justify-center text-gray-400">
-              Nenhuma ocorrência neste mês.
+              Nenhuma ocorrência neste mês com os filtros aplicados.
             </div>
           ) : (
             <div className="space-y-10">
