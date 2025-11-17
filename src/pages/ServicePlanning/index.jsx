@@ -80,6 +80,11 @@ export function ServicePlanning() {
           protocol: order.protocolNumber,
           scheduledStart: order.scheduledStart,
           scheduledEnd: order.scheduledEnd,
+          
+          // flags
+          isDelayed: order.isDelayed ?? false,
+          isEmergencial: occ.isEmergencial ?? false,
+
           externalCompany: occ.externalCompany || "Emurb",
           neighborhood: address.neighborhoodName || "—",
           origin: "Plataforma",
@@ -159,7 +164,7 @@ export function ServicePlanning() {
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:hidden">
           Planejamento diário
         </h1>
-        
+
         {/* Filtros */}
         <PlanningFilters
           title="Planejamento"

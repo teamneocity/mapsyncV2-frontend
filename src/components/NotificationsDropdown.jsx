@@ -1,5 +1,5 @@
 // src/components/NotificationsDropdown.jsx
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 
@@ -33,9 +33,19 @@ export function NotificationsDropdown({
     allRead: allReadHook,
   } = useNotifications({ open });
 
+  const notificationsSource = notificationsProp ?? notificationsHook;
+
+  const [localNotifications, setLocalNotifications] = useState(
+    notificationsSource ?? []
+  );
+
+  useEffect(() => {
+    setLocalNotifications(notificationsSource ?? []);
+  }, [notificationsSource]);
+
   if (!open) return null;
 
-  const notifications = notificationsProp ?? notificationsHook;
+  const notifications = localNotifications;
   const loading = loadingProp ?? loadingHook;
   const error = errorProp ?? errorHook;
   const page = pageProp ?? pageHook;
@@ -53,13 +63,34 @@ export function NotificationsDropdown({
 
   const handleToggleAllRead = (e) => {
     if (!e.target.checked) return;
+
     if (onMarkAllReadProp) onMarkAllReadProp();
     else markAllRead();
+
+    setLocalNotifications((prev) =>
+      prev.map((n) => ({
+        ...n,
+        read: true,
+        readAt: n.readAt ?? new Date().toISOString(),
+      }))
+    );
   };
 
-  const handleToggleOne = (id) => {
+  const handleToggleOne = (notification) => {
+    const id = notification.id;
+
+    if (isRead(notification)) return;
+
     if (onToggleReadProp) onToggleReadProp(id);
     else markAsRead(id);
+
+    setLocalNotifications((prev) =>
+      prev.map((n) =>
+        n.id === id
+          ? { ...n, read: true, readAt: n.readAt ?? new Date().toISOString() }
+          : n
+      )
+    );
   };
 
   const handlePrev = () => {
@@ -159,7 +190,7 @@ export function NotificationsDropdown({
                             className="appearance-none w-3 h-3 rounded-full border border-zinc-400
                                        checked:bg-red-600 checked:border-red-700 transition"
                             checked={isRead(n)}
-                            onChange={() => handleToggleOne(n.id)}
+                            onChange={() => handleToggleOne(n)}
                             aria-checked={isRead(n)}
                             aria-label={isRead(n) ? "Já lida" : "Marcar como lida"}
                           />

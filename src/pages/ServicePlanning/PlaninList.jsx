@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { ChevronDown, ChevronRight, GripVertical } from "lucide-react";
 import { getInicials } from "@/lib/utils";
 import { format } from "date-fns";
@@ -151,30 +157,38 @@ export const PlaninList = forwardRef(function PlaninList(
       rejeitada: "Rejeitada",
       encaminhada_externa: "Arquivada",
     };
-    const label =
-      (labelOverrides && labelOverrides[status]) ?? labels[status] ?? status;
-    const base = isEmergencial
+
+    //  Se estiver atrasada, o label é sempre "Atrasado"
+    const label = isDelayed
+      ? "Atrasada"
+      : (labelOverrides && labelOverrides[status]) ?? labels[status] ?? status;
+
+    //  Se estiver atrasada, ignora emergencial/status normal e usa SEMPRE essas cores
+    const base = isDelayed
+      ? "bg-[#E9E4FC] text-[#4F26F0]"
+      : isEmergencial
       ? "bg-[#FFE8E8] text-[#FF2222]"
       : getStatusClasses(status);
+
     return (
       <span
         className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${base}`}
       >
-        {isDelayed ? "Atrasada" : label}
+        {label}
       </span>
     );
   }
 
   const columns = [
-    "protocol",     // OS
-    "inspector",    // Técnico
-    "foreman",      // Encarregado
-    "company",      // Companhia
-    "address",      // Endereço
+    "protocol", // OS
+    "inspector", // Técnico
+    "foreman", // Encarregado
+    "company", // Companhia
+    "address", // Endereço
     "neighborhood", // Bairro
-    "type",         // Tipo
-    "period",       // Execução 
-    "status",       // Status
+    "type", // Tipo
+    "period", // Execução
+    "status", // Status
   ];
 
   const dataToRender = rows || [];
@@ -213,9 +227,7 @@ export const PlaninList = forwardRef(function PlaninList(
       <div className="space-y-1">
         {dataToRender.map((occ) => {
           const company =
-            occ.externalCompany ||
-            occ?.occurrence?.externalCompany ||
-            "EMURB";
+            occ.externalCompany || occ?.occurrence?.externalCompany || "EMURB";
           const insp = occ?.inspector?.name || occ?.pilot?.name || "—";
           const fore = occ?.foreman?.name || "—";
           const selected = selectedIds.includes(occ.id);
@@ -245,7 +257,11 @@ export const PlaninList = forwardRef(function PlaninList(
                 <div className="hidden xl:block p-4">
                   <div className="grid grid-cols-12 gap-4 items-center text-[#787891]">
                     {/* OS  */}
-                    <div className={`${spanClass("protocol")} flex items-center gap-2`}>
+                    <div
+                      className={`${spanClass(
+                        "protocol"
+                      )} flex items-center gap-2`}
+                    >
                       <input
                         type="checkbox"
                         checked={selected}
@@ -264,7 +280,11 @@ export const PlaninList = forwardRef(function PlaninList(
                     </div>
 
                     {/* Técnico */}
-                    <div className={`${spanClass("inspector")} flex items-center gap-2`}>
+                    <div
+                      className={`${spanClass(
+                        "inspector"
+                      )} flex items-center gap-2`}
+                    >
                       <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-medium text-blue-600">
                         {getInicials(insp || "NA")}
                       </span>
@@ -274,7 +294,11 @@ export const PlaninList = forwardRef(function PlaninList(
                     </div>
 
                     {/* Encarregado */}
-                    <div className={`${spanClass("foreman")} flex items-center gap-2`}>
+                    <div
+                      className={`${spanClass(
+                        "foreman"
+                      )} flex items-center gap-2`}
+                    >
                       <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-xs font-medium text-emerald-700">
                         {getInicials(fore || "NA")}
                       </span>
@@ -294,7 +318,11 @@ export const PlaninList = forwardRef(function PlaninList(
                     </div>
 
                     {/* Bairro */}
-                    <div className={`${spanClass("neighborhood")} text-sm truncate`}>
+                    <div
+                      className={`${spanClass(
+                        "neighborhood"
+                      )} text-sm truncate`}
+                    >
                       {occ?.address?.neighborhoodName ||
                         occ?.address?.neighborhood ||
                         "—"}
@@ -311,7 +339,9 @@ export const PlaninList = forwardRef(function PlaninList(
                     </div>
 
                     {/* Status */}
-                    <div className={`${spanClass("status")} flex justify-center`}>
+                    <div
+                      className={`${spanClass("status")} flex justify-center`}
+                    >
                       <StatusBadge
                         status={occ.status}
                         isEmergencial={occ.isEmergencial}

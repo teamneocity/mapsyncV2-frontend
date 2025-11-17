@@ -66,6 +66,30 @@ export function OpenCall() {
     observation: "",
   });
 
+  // Helpers de CEP
+  function formatCep(value) {
+    const digits = (value || "").replace(/\D/g, "").slice(0, 8);
+    if (digits.length <= 5) return digits;
+    return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+  }
+
+  function handleCepChange(field, rawValue) {
+    const digits = (rawValue || "").replace(/\D/g, "").slice(0, 8);
+    setField(field, digits);
+  }
+
+  function getCepOrDefault(raw) {
+    const digits = (raw || "").replace(/\D/g, "");
+    // se vazio ou só zeros usa CEP geral de Aracaju
+    if (!digits || /^0+$/.test(digits)) {
+      return { digits: "49025330", usedDefault: true };
+    }
+    if (digits.length !== 8) {
+      return { digits: null, usedDefault: false };
+    }
+    return { digits, usedDefault: false };
+  }
+
   const setField = (k, v) => setForm((s) => ({ ...s, [k]: v }));
 
   useEffect(() => {
@@ -153,6 +177,28 @@ export function OpenCall() {
       setIsSubmitting(true);
 
       if (mode === "terrestre") {
+        const { digits: cepDigits, usedDefault } = getCepOrDefault(form.cep);
+
+        if (!cepDigits) {
+          toast({
+            title: "CEP inválido",
+            description: "O CEP deve conter exatamente 8 dígitos.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+
+        if (usedDefault) {
+          // atualiza o formulário com o CEP geral, só pra refletir na tela
+          setField("cep", cepDigits);
+          toast({
+            title: "CEP ajustado",
+            description:
+              "CEP não informado ou inválido. Usando o CEP geral de Aracaju: 49025-330.",
+          });
+        }
+
         const body = {
           description: form.description.trim(),
           type: form.type,
@@ -160,7 +206,8 @@ export function OpenCall() {
           number: form.number.trim(),
           complement: form.complement.trim(),
           neighborhoodId: form.neighborhoodId,
-          cep: form.cep.trim(),
+          // envia só dígitos para o backend
+          cep: cepDigits,
         };
 
         await api.post("/pre-occurrences", body);
@@ -169,6 +216,29 @@ export function OpenCall() {
           description: "Terrestre enviada ",
         });
       } else {
+        const { digits: zipDigits, usedDefault } = getCepOrDefault(
+          form.zipCode
+        );
+
+        if (!zipDigits) {
+          toast({
+            title: "CEP inválido",
+            description: "O CEP deve conter exatamente 8 dígitos.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+
+        if (usedDefault) {
+          setField("zipCode", zipDigits);
+          toast({
+            title: "CEP ajustado",
+            description:
+              "CEP não informado ou inválido. Usando o CEP geral de Aracaju: 49025-330.",
+          });
+        }
+
         const timeToBeVerified =
           form.type === "comunicacao"
             ? buildISO(form.verificationDate, form.verificationTime)
@@ -177,7 +247,7 @@ export function OpenCall() {
         const body = {
           type: form.type,
           street: form.street.trim(),
-          zipCode: form.zipCode.trim(),
+          zipCode: zipDigits,
           isEmergency: !!form.isEmergency,
           timeToBeVerified,
           latitude: form.latitude ? Number(form.latitude) : null,
@@ -232,7 +302,7 @@ export function OpenCall() {
     { value: "DESOBSTRUCAO", label: "Drenagem" },
     { value: "TERRAPLANAGEM", label: "Terraplanagem" },
     { value: "LOGRADOURO", label: "Logradouro" },
-    { value: "DESOBSTRUCAO_CAMINHAO", label:"Desobstrução" }
+    { value: "DESOBSTRUCAO_CAMINHAO", label: "Desobstrução" },
   ];
 
   const terrestrialBtnClasses =
@@ -489,8 +559,10 @@ export function OpenCall() {
                       <div>
                         <label className="text-sm text-zinc-600">CEP</label>
                         <Input
-                          value={form.cep}
-                          onChange={(e) => setField("cep", e.target.value)}
+                          value={formatCep(form.cep)}
+                          onChange={(e) =>
+                            handleCepChange("cep", e.target.value)
+                          }
                         />
                       </div>
                     </div>
@@ -552,10 +624,13 @@ export function OpenCall() {
                       <div>
                         <label className="text-sm text-zinc-600">CEP</label>
                         <Input
-                          value={form.zipCode}
-                          onChange={(e) => setField("zipCode", e.target.value)}
+                          value={formatCep(form.zipCode)}
+                          onChange={(e) =>
+                            handleCepChange("zipCode", e.target.value)
+                          }
                         />
                       </div>
+
                       <div>
                         <label className="text-sm text-zinc-600">
                           Emergencial
