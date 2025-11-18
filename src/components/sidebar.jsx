@@ -19,6 +19,7 @@ import PurpleCheck from "@/assets/icons/PurpleCheck.svg?react";
 import DesktopIcon from "@/assets/icons/desktop.svg?react";
 import Ninety from "@/assets/icons/Ninety.svg?react";
 import DataAnalytics from "@/assets/icons/DataAnalytics.svg?react";
+import AlertP from "@/assets/icons/AlertP.svg?react";
 import { useAnalysisNotification } from "@/hooks/useAnalysisNotification";
 
 import {
@@ -120,13 +121,7 @@ export function Sidebar() {
     <div className="flex">
       {/* Sidebar Desktop */}
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-[250px] sm:flex bg-[#EBEBEB] text-[#787891] flex-col font-inter max-h-screen overflow-y-auto">
-        <div className="px-4 py-5">
-          <NavLink to="/" end>
-            <NewAju className="w-[192px] h-auto" />
-          </NavLink>
-        </div>
-
-        <nav className="flex flex-col px-4 py-1">
+        <nav className="flex flex-col px-4 py-6">
           <div>
             <p className="text-base font-normal mb-2 text-[#4B4B62]">
               Workspace
@@ -151,6 +146,12 @@ export function Sidebar() {
                 <PeopleLine className="w-5 h-5 shrink-0" /> Setor
               </NavLink>
               */}
+
+              {(isAdmin || isChief) && (
+                <NavLink to="/requests" className={linkClass}>
+                  <AlertP className="w-5 h-5 shrink-0" /> Solicitações
+                </NavLink>
+              )}
 
               {(isAdmin || isAnalyst) && (
                 <NavLink
@@ -179,12 +180,6 @@ export function Sidebar() {
                       Análises
                     </span>
                   </span>
-                </NavLink>
-              )}
-
-              {(isAdmin || isChief) && (
-                <NavLink to="/requests" className={linkClass}>
-                  <NewsIcon className="w-5 h-5 shrink-0" /> Solicitações
                 </NavLink>
               )}
 
@@ -390,6 +385,12 @@ export function Sidebar() {
                   </NavLink>
                   */}
 
+                  {(isAdmin || isChief) && (
+                    <NavLink to="/requests" className={linkClassMobile}>
+                      <AlertP className="w-5 h-5 shrink-0" /> Solicitações
+                    </NavLink>
+                  )}
+
                   {(isAdmin || isAnalyst) && (
                     <NavLink to="/analysis" className={linkClassMobile}>
                       <span
@@ -408,12 +409,6 @@ export function Sidebar() {
                           Análises
                         </span>
                       </span>
-                    </NavLink>
-                  )}
-
-                  {(isAdmin || isChief) && (
-                    <NavLink to="/requests" className={linkClassMobile}>
-                      <NewsIcon className="w-5 h-5 shrink-0" /> Solicitações
                     </NavLink>
                   )}
 

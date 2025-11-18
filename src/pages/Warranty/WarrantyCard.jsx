@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { api } from "@/services/api";
+import AlertPColor from "@/assets/icons/AlertPColor.svg?react";
 
 const BASE_MEDIA_URL = (
   import.meta.env.VITE_MEDIA_CDN ||
@@ -250,10 +251,16 @@ export function WarrantyCard({ occurrence, expanded, onToggle }) {
         )}
       </div>
 
-      {/* status */}
-      <div className="flex items-center gap-3 px-4 py-3 ">
-        <div className="ml-auto">
-          <StatusBadge status={status} />
+      {/* alerta duplicata */}
+      <div className="flex items-center gap-3 px-4 py-3 w-full">
+        <div className="w-full">
+          <Button
+            onClick={() => setIsPossibleDuplicateOpen(true)}
+            className="w-full h-[44px] bg-yellow-50 border border-yellow-300 text-yellow-800 hover:bg-yellow-100 flex items-center justify-between"
+          >
+            Ocorrência para verificação de garantia
+            <AlertPColor />
+          </Button>
         </div>
       </div>
 
@@ -266,7 +273,7 @@ export function WarrantyCard({ occurrence, expanded, onToggle }) {
               <button
                 type="button"
                 onClick={handleCopyProtocol}
-                className="w-full h-[58px] text-left text-black flex items-center justify-between gap-1 rounded-lg border px-3 py-2 bg-[#D9DCE2] hover:bg-gray-300 "
+                className="w-full h-[60px] text-left text-black flex items-center justify-between gap-1 rounded-lg border px-3 py-2 bg-[#D9DCE2] hover:bg-gray-300 "
                 aria-label="Copiar protocolo"
               >
                 <span className="truncate ">O.S.: {osCode}</span>
@@ -323,16 +330,6 @@ export function WarrantyCard({ occurrence, expanded, onToggle }) {
           {/* Timeline */}
           <div className="relative z-0">
             <Timeline timeline={timelineSteps} />
-
-            {/* Botão para abrir modal de duplicatas */}
-            <div className="mt-4">
-              <Button
-                onClick={() => setIsPossibleDuplicateOpen(true)}
-                className="w-full bg-yellow-50 border border-yellow-200 text-yellow-800 hover:bg-yellow-100"
-              >
-                Ver possíveis duplicatas
-              </Button>
-            </div>
           </div>
         </div>
       </div>

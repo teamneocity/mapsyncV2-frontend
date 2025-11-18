@@ -177,87 +177,108 @@ export function TutorialCard({ labelColors }) {
   const hasData =
     Array.isArray(statusRows) && statusRows.some((r) => (r.count || 0) > 0);
 
-  const { parts, labels, palette, labelPalette, legendNames, counts } =
-    useMemo(() => {
-      if (!Array.isArray(statusRows) || statusRows.length === 0) {
-        return {
-          parts: [],
-          labels: [],
-          palette: [],
-          labelPalette: [],
-          legendNames: [],
-          counts: [],
-        };
-      }
-
-      const ordered = [...statusRows].sort((a, b) => b.count - a.count);
-
-      const availableWidthPx = Math.max(1, w - 16);
-
-      const percents = computePercentsIntWithMinPx(
-        ordered,
-        availableWidthPx,
-        MIN_LABEL_PX
-      );
-
-      const lbls = percents.map((p) => (p > 0 ? `${p}%` : ""));
-
-      const baseColors = [
-        "#E8F2FF",
-        "#F6FFC6",
-        "#FFE8E8",
-        "#EBD4EA",
-        "#E9E4FC",
-        "#FFF1CB",
-        "#FFE8DC",
-        "#C9F2E9",
-        "#EDEDED",
-      ];
-      const baseLabelColorsDefault = [
-        "#4593F5",
-        "#79811C",
-        "#96132C",
-        "#5D2A61",
-        "#4F26F0",
-        "#845B00",
-        "#824F24",
-        "#1C7551",
-        "#5F5F5F",
-      ];
-
-      const pal = ordered.map(
-        (it, i) => STATUS_FILL[it.status] ?? baseColors[i % baseColors.length]
-      );
-
-      const labelBase =
-        Array.isArray(labelColors) && labelColors.length
-          ? labelColors
-          : ordered.map(
-              (it, i) =>
-                STATUS_TEXT[it.status] ??
-                baseLabelColorsDefault[i % baseLabelColorsDefault.length]
-            );
-
-      const labelPal =
-        Array.isArray(labelColors) && labelColors.length
-          ? ordered.map((_, i) => labelColors[i % labelColors.length])
-          : labelBase;
-
+  // 🌟 AQUI: separei percentuais de layout (parts) e percentuais reais (displayPercents)
+  const {
+    parts,
+    labels,
+    palette,
+    labelPalette,
+    legendNames,
+    counts,
+    displayPercents,
+  } = useMemo(() => {
+    if (!Array.isArray(statusRows) || statusRows.length === 0) {
       return {
-        parts: percents,
-        labels: lbls,
-        palette: pal,
-        labelPalette: labelPal,
-        legendNames: ordered.map((it) => statusLabels[it.status] || it.status),
-        counts: ordered.map((it) => it.count),
+        parts: [],
+        labels: [],
+        palette: [],
+        labelPalette: [],
+        legendNames: [],
+        counts: [],
+        displayPercents: [],
       };
-    }, [statusRows, labelColors, w]);
+    }
 
+    const ordered = [...statusRows].sort((a, b) => b.count - a.count);
+
+    const availableWidthPx = Math.max(1, w - 16);
+
+    // usado só para LARGURA (continua igual ao seu cálculo original)
+    const percents = computePercentsIntWithMinPx(
+      ordered,
+      availableWidthPx,
+      MIN_LABEL_PX
+    );
+
+    // percentual REAL (baseado nos counts)
+    const totalCount = ordered.reduce((sum, it) => sum + (it.count || 0), 0);
+    const realPercents =
+      totalCount > 0
+        ? ordered.map((it) =>
+            Math.round(((it.count || 0) / totalCount) * 100)
+          )
+        : ordered.map(() => 0);
+
+    const lbls = realPercents.map((p) => (p > 0 ? `${p}%` : ""));
+
+    const baseColors = [
+      "#E8F2FF",
+      "#F6FFC6",
+      "#FFE8E8",
+      "#EBD4EA",
+      "#E9E4FC",
+      "#FFF1CB",
+      "#FFE8DC",
+      "#C9F2E9",
+      "#EDEDED",
+    ];
+    const baseLabelColorsDefault = [
+      "#4593F5",
+      "#79811C",
+      "#96132C",
+      "#5D2A61",
+      "#4F26F0",
+      "#845B00",
+      "#824F24",
+      "#1C7551",
+      "#5F5F5F",
+    ];
+
+    const pal = ordered.map(
+      (it, i) => STATUS_FILL[it.status] ?? baseColors[i % baseColors.length]
+    );
+
+    const labelBase =
+      Array.isArray(labelColors) && labelColors.length
+        ? labelColors
+        : ordered.map(
+            (it, i) =>
+              STATUS_TEXT[it.status] ??
+              baseLabelColorsDefault[i % baseLabelColorsDefault.length]
+          );
+
+    const labelPal =
+      Array.isArray(labelColors) && labelColors.length
+        ? ordered.map((_, i) => labelColors[i % labelColors.length])
+        : labelBase;
+
+    return {
+      parts: percents, // layout
+      labels: lbls, // texto pronto, se quiser usar
+      displayPercents: realPercents, // percentual REAL
+      palette: pal,
+      labelPalette: labelPal,
+      legendNames: ordered.map((it) => statusLabels[it.status] || it.status),
+      counts: ordered.map((it) => it.count),
+    };
+  }, [statusRows, labelColors, w]);
+
+  // séries: largura usa parts, texto usa displayPercents
   const series = parts.map((p, idx) => ({
     name: legendNames[idx],
     type: "bar",
     stack: "total",
-    data: [p],
+    data: [p], // continua usando o percentual "fake" pra largura
     barWidth: "100%",
     zlevel: 10,
     label: {
@@ -266,7 +287,7 @@ export function TutorialCard({ labelColors }) {
       align: "center",
       verticalAlign: "middle",
       distance: 0,
-      formatter: `${p}%`,
+      formatter: `${displayPercents?.[idx] ?? 0}%`, // 👈 percentual REAL
       color: labelPalette[idx],
       fontSize: FONT_PX,
       fontWeight: 700,
@@ -304,7 +325,7 @@ export function TutorialCard({ labelColors }) {
       formatter: (params) => {
         const idx = params.seriesIndex;
         const name = legendNames?.[idx] ?? "";
-        const percent = parts?.[idx] ?? 0;
+        const percent = displayPercents?.[idx] ?? 0; // 👈 percentual REAL
         const count = counts?.[idx];
         const marker = params.marker || "•";
         return count != null

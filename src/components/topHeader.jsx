@@ -4,9 +4,11 @@ import { useAuth } from "@/hooks/auth";
 import NewEmurb from "@/assets/NewEmurb.svg";
 import Leave from "@/assets/icons/leave.svg?react";
 import Bell from "@/assets/icons/bell.svg?react";
-import RedChat from "@/assets/icons/RedChat.svg?react"; 
+import RedChat from "@/assets/icons/RedChat.svg?react";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 import { api } from "@/services/api";
+import NewAju from "@/assets/NewAju.svg";
+import Bar from "@/assets/Bar.svg";
 
 export function TopHeader() {
   const { signOut } = useAuth();
@@ -35,7 +37,17 @@ export function TopHeader() {
   return (
     <header className="flex justify-between items-center py-3 px-4 sm:px-8 bg-[#EBEBEB] sticky top-0 z-10">
       {/* Logo */}
-      <div className="px-2 py-4">
+      <div className="flex px-2 py-4 gap-5">
+        <Link to="/">
+          <img
+            src={NewAju}
+            alt="Logo Aju"
+            className="h-[45px] w-auto rounded-md"
+          />
+        </Link>
+        <Link to="/">
+          <img src={Bar} alt="Barra" className="h-[30px] w-auto rounded-md" />
+        </Link>
         <Link to="/">
           <img
             src={NewEmurb}
@@ -49,8 +61,8 @@ export function TopHeader() {
       <div className="flex items-center gap-4">
         {/* Botão Abrir Chamado */}
         <button
-          onClick={() => navigate("/open-call")} 
-          className="flex items-center justify-center gap-2 w-[174px] h-[64px] rounded-xl bg-[#FFC3C3] hover:bg-[#ffb2b2] transition"
+          onClick={() => navigate("/open-call")}
+          className="flex items-center justify-center gap-2 w-[174px] h-[48px] rounded-3xl bg-[#FFC3C3] hover:bg-[#ffb2b2] transition"
         >
           <RedChat className="w-5 h-5 text-[#96132C]" />
           <span className="text-[#96132C] font-medium">Abrir chamado</span>
