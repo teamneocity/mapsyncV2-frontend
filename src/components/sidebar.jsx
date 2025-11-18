@@ -149,7 +149,7 @@ export function Sidebar() {
 
               {(isAdmin || isChief) && (
                 <NavLink to="/requests" className={linkClass}>
-                  <AlertP className="w-5 h-5 shrink-0" /> Solicitações
+                  <AlertP className="w-5 h-5 shrink-0" /> Pré-Análise
                 </NavLink>
               )}
 
@@ -387,7 +387,7 @@ export function Sidebar() {
 
                   {(isAdmin || isChief) && (
                     <NavLink to="/requests" className={linkClassMobile}>
-                      <AlertP className="w-5 h-5 shrink-0" /> Solicitações
+                      <AlertP className="w-5 h-5 shrink-0" /> Pré-Análise
                     </NavLink>
                   )}
 
