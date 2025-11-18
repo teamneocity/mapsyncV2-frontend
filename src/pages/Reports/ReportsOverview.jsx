@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import ReportsPieCard from "./ReportsPieCard";
-import ReportsNeighborhoodNightingale from "./ReportsNeighborhoodNightingale";
+import ReportsSLAChart from "./ReportsSLAChart";
 import { api } from "@/services/api";
 import { useSearchParams } from "react-router-dom";
 import { SelectField } from "@/components/selectField";
@@ -215,7 +215,7 @@ export default function ReportsOverview({
     };
   }, []);
 
-  // NOVO: busca bairros para o modal fotográfico
+  // busca bairros para o modal fotográfico
   useEffect(() => {
     let mounted = true;
 
@@ -844,17 +844,13 @@ export default function ReportsOverview({
           </div>
 
           <div className="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-4">
-            <div className="lg:col-span-7 h-[388px] rounded-xl border border-neutral-200/70 bg-white shadow-sm flex items-center justify-center">
+            <div className="lg:col-span-5 ] rounded-xl border border-neutral-200/70 bg-white shadow-sm flex items-center justify-center">
               <p className="text-gray-400 text-sm">
                 Gráfico ou conteúdo futuro
               </p>
             </div>
-            <div className="lg:col-span-5 h-[388px] rounded-xl border border-neutral-200/70 bg-white shadow-sm">
-              <ReportsNeighborhoodNightingale
-                mobileHeight="h-full"
-                height="md:h-full xl:h-full"
-                className="h-full"
-              />
+            <div className="lg:col-span-7 rounded-xl border border-neutral-200/70 bg-white shadow-sm p-4">
+              <ReportsSLAChart />
             </div>
           </div>
 
