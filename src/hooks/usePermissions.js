@@ -1,5 +1,4 @@
 import { useAuth } from "@/hooks/auth";
-import { is } from "date-fns/locale";
 
 export const usePermissions = () => {
   const { user } = useAuth();
