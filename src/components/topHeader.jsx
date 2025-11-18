@@ -37,7 +37,7 @@ export function TopHeader() {
   return (
     <header className="flex justify-between items-center py-3 px-4 sm:px-8 bg-[#EBEBEB] sticky top-0 z-10">
       {/* Logo */}
-      <div className="flex px-2 py-4 gap-5">
+      <div className="flex items-center px-2 py-4 gap-5">
         <Link to="/">
           <img
             src={NewAju}
@@ -52,7 +52,7 @@ export function TopHeader() {
           <img
             src={NewEmurb}
             alt="Logo EMURB"
-            className="h-[45px] w-auto rounded-md"
+            className="h-[35px] w-auto rounded-md"
           />
         </Link>
       </div>

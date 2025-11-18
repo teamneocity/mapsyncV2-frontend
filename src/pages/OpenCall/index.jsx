@@ -12,6 +12,13 @@ import { PreOccurrenceList } from "./PreOccurrenceList";
 import { api } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 
+import { Bar, BarChart, XAxis, YAxis, Cell } from "recharts";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+
 import CallDrone from "@/assets/icons/CallDrone.svg?react";
 import CallTerra from "@/assets/icons/CallTerra.svg?react";
 
@@ -30,7 +37,7 @@ import { he } from "date-fns/locale";
 
 export function OpenCall() {
   const { toast } = useToast();
-  const [mode, setMode] = useState("terrestre"); // "terrestre" | "aereo"
+  const [mode, setMode] = useState("terrestre");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [neighborhoods, setNeighborhoods] = useState([]);
@@ -48,7 +55,7 @@ export function OpenCall() {
   const labelCls = "text-sm text-[#7A7F99]";
 
   const [form, setForm] = useState({
-    // TERRESTRE
+    // terrestre
     description: "",
     type: "",
     street: "",
@@ -56,7 +63,7 @@ export function OpenCall() {
     complement: "",
     neighborhoodId: "",
     cep: "",
-    // AÉREO
+    // aéreo
     zipCode: "",
     isEmergency: false,
     verificationDate: "",
@@ -66,7 +73,7 @@ export function OpenCall() {
     observation: "",
   });
 
-  // Helpers de CEP
+  // CEP
   function formatCep(value) {
     const digits = (value || "").replace(/\D/g, "").slice(0, 8);
     if (digits.length <= 5) return digits;
@@ -120,7 +127,7 @@ export function OpenCall() {
           counts[t] = (counts[t] || 0) + 1;
         }
 
-        // garante TODOS os tipos (com 0 se não veio)
+        // garante todos os tipos (com 0 se não veio)
         const allTypes = Object.keys(TYPE_LABELS);
         const rows = allTypes
           .filter((t) => !EXCLUDED_TYPES.has(t))
@@ -129,7 +136,6 @@ export function OpenCall() {
             label: TYPE_LABELS[type] || type,
             count: counts[type] || 0,
           }))
-          // ordena por quantidade desc, mas mantém zeros no fim naturalmente
           .sort((a, b) => b.count - a.count);
 
         if (alive) setTypeStats(rows);
@@ -151,7 +157,6 @@ export function OpenCall() {
     return neighborhoods.filter((n) => n.name?.toLowerCase().includes(q));
   }, [neighborhoods, neighborhoodQuery]);
 
-  // rótulos legíveis
   const TYPE_LABELS = {
     TAPA_BURACO: "Asfalto",
     LIMPA_FOSSA: "Limpa fossa",
@@ -163,8 +168,24 @@ export function OpenCall() {
   // remover do gráfico
   const EXCLUDED_TYPES = new Set(["MEIO_FIO", "AUSENCIA_DE_MEIO_FIO"]);
 
-  // paleta: um tom de azul por barra (como no print)
   const BAR_COLORS = ["#8CC2FF", "#2E6EFF", "#4B66FF", "#1138FF", "#15299B"];
+
+  const chartConfig = {
+    count: {
+      label: "Solicitações",
+    },
+  };
+
+  const chartData = useMemo(
+    () =>
+      typeStats.map((item, idx) => ({
+        label: item.label,
+        count: item.count,
+        fill:
+          item.count === 0 ? "#E4E4E7" : BAR_COLORS[idx % BAR_COLORS.length],
+      })),
+    [typeStats]
+  );
 
   function buildISO(dateStr, timeStr) {
     if (!dateStr || !timeStr) return null;
@@ -190,7 +211,6 @@ export function OpenCall() {
         }
 
         if (usedDefault) {
-          // atualiza o formulário com o CEP geral, só pra refletir na tela
           setField("cep", cepDigits);
           toast({
             title: "CEP ajustado",
@@ -206,7 +226,6 @@ export function OpenCall() {
           number: form.number.trim(),
           complement: form.complement.trim(),
           neighborhoodId: form.neighborhoodId,
-          // envia só dígitos para o backend
           cep: cepDigits,
         };
 
@@ -305,16 +324,6 @@ export function OpenCall() {
     { value: "DESOBSTRUCAO_CAMINHAO", label: "Desobstrução" },
   ];
 
-  const terrestrialBtnClasses =
-    mode === "terrestre"
-      ? "h-24 rounded-xl border-2 border-[#96132C] bg-[#FFF5F5] text-sm text-[#96132C] font-medium"
-      : "h-24 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-100 text-sm text-zinc-700";
-
-  const aerialBtnClasses =
-    mode === "aereo"
-      ? "h-24 rounded-xl border-2 border-[#96132C] bg-[#FFF5F5] text-sm text-[#96132C] font-medium"
-      : "h-24 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-100 text-sm text-zinc-700";
-
   return (
     <div className="bg-[#EBEBEB] min-h-screen font-inter">
       <Sidebar />
@@ -346,7 +355,7 @@ export function OpenCall() {
           <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* esquerda */}
-              <div className="bg-[#F8F8F8] rounded-2xl p-4 flex flex-col gap-4">
+              <div className="bg-white rounded-2xl border p-4 flex flex-col gap-4">
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
@@ -382,52 +391,78 @@ export function OpenCall() {
                       </span>
                     </div>
 
-                    <div className="flex flex-col gap-2">
-                      {(() => {
-                        const max = Math.max(
-                          ...typeStats.map((r) => r.count),
-                          1
-                        ); // evita divisão por 0
-                        return typeStats.map((r, idx) => {
-                          const pct = Math.max(4, (r.count / max) * 100); // largura mínima de 4%
-                          const color = BAR_COLORS[idx % BAR_COLORS.length];
-
-                          return (
-                            <div
-                              key={r.type}
-                              className="flex items-center gap-3"
+                    <ChartContainer
+                      config={chartConfig}
+                      className="h-[260px] w-full"
+                    >
+                      <BarChart
+                        accessibilityLayer
+                        data={chartData}
+                        layout="vertical"
+                        margin={{ left: 40, right: 0 }}
+                      >
+                        <YAxis
+                          dataKey="label"
+                          type="category"
+                          tickLine={false}
+                          axisLine={false}
+                          tickMargin={0}
+                          tick={({ x, y, payload }) => (
+                            <text
+                              x={x - 8}
+                              y={y + 6}
+                              textAnchor="end"
+                              fill="#475569"
+                              fontSize={12}
+                              fontWeight={500}
                             >
-                              {/* nome do tipo à esquerda */}
-                              <span className="w-32 text-sm text-zinc-700 font-medium truncate">
-                                {r.label}
-                              </span>
+                              {payload.value}
+                            </text>
+                          )}
+                        />
 
-                              {/* barra à direita */}
-                              <div className="flex-1 h-[55px] bg-zinc-100 rounded-xl overflow-hidden">
-                                <div
-                                  className="h-full rounded-xl flex items-center justify-end px-3 text-white text-sm font-semibold transition-[width]"
-                                  style={{
-                                    width: `${pct}%`,
-                                    backgroundColor: color,
-                                  }}
-                                >
-                                  {r.count}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        });
-                      })()}
-                    </div>
+                        <XAxis dataKey="count" type="number" hide />
+                        <ChartTooltip
+                          cursor={false}
+                          content={<ChartTooltipContent />}
+                        />
+                        <Bar
+                          dataKey="count"
+                          radius={5}
+                          background={(props) => {
+                            const { x, y, width, height, payload } = props;
+
+                            // se não for zero fica sem barra de fundo
+                            if (payload.count !== 0) return null;
+
+                            // se for 0 aparece uma barra cinza
+                            return (
+                              <rect
+                                x={x}
+                                y={y}
+                                width={props.background?.width ?? props.width}
+                                height={height}
+                                fill="#E4E4E7"
+                                rx={5}
+                              />
+                            );
+                          }}
+                        >
+                          {chartData.map((entry, idx) => (
+                            <Cell key={idx} fill={entry.fill} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ChartContainer>
                   </div>
                 )}
               </div>
 
-              {/* direita: FORM */}
+              {/* formulário */}
               <div className="lg:col-span-2 bg-white rounded-2xl border p-4 md:p-6 flex flex-col gap-4">
                 {mode === "terrestre" ? (
                   <>
-                    {/* TERRESTRE */}
+                    {/* terrestre */}
                     <div>
                       <label className="text-sm text-zinc-600">Descrição</label>
                       <Textarea
@@ -569,7 +604,7 @@ export function OpenCall() {
                   </>
                 ) : (
                   <>
-                    {/* AÉREO */}
+                    {/* aéreo */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label className="text-sm text-zinc-600">Tipo</label>
