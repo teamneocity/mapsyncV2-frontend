@@ -201,7 +201,7 @@ export function Dashboard() {
             <div className="flex items-center justify-start mb-2 gap-2">
               <Airplane className="w-5 h-5 text-gray-700" />
               <h3 className="text-lg md:text-xl ">
-                Ocorrências dinâmica por bairro
+                Bairros com Mais Ocorrências no Mês
               </h3>
             </div>
 
