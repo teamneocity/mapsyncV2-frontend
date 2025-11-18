@@ -114,6 +114,7 @@ export function Settings() {
         <UserManagementContent />
       </Suspense>
     ),
+
     "Gestão de setores": () => (
       <Suspense
         fallback={
@@ -137,20 +138,20 @@ export function Settings() {
   const ActiveContent = ContentByTab[activeTab];
 
   return (
-    <div className="bg-[#EBEBEB] min-h-screen font-inter">
+    <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
-      <main className="w-full px-6 sm:pl-[250px] max-w-full space-y-2 pt-2">
-        <TopHeader />
+      <TopHeader />
 
+      <div className="px-4 py-4 sm:py-6 space-y-4">
         {/* Introdução */}
-        <section className="max-w-[1500px] w-full bg-white rounded-xl p-2 justify-between items-center mx-auto flex flex-col xl:flex-row items-start gap-6">
+        <section className="max-w-[1500px] w-full bg-white rounded-xl p-4 sm:p-6 mx-auto flex flex-col xl:flex-row justify-between items-center gap-6">
           <div className="flex-1">
             <p className="text-sm text-zinc-800">
-              <span className="font-semibold">Configurações.</span>Aqui nessa
-              sessão você pode configurar seu perfil de visualização da
-              dashboard, adaptar suas visualizações combinadas com suas rotinas,
-              definir as notificações. Também conhecer nossos termos e os nível
-              de segurança aliadas as nossas regras do{" "}
+              <span className="font-semibold">Configurações. </span>
+              Aqui nessa sessão você pode configurar seu perfil de visualização
+              da dashboard, adaptar suas visualizações combinadas com suas
+              rotinas, definir as notificações. Também conhecer nossos termos e
+              os nível de segurança aliadas as nossas regras do{" "}
               <span className="font-semibold">LGPD</span>.
             </p>
           </div>
@@ -166,11 +167,11 @@ export function Settings() {
         <section className="max-w-[1500px] w-full mx-auto flex flex-col xl:flex-row gap-6">
           <aside
             className="
-     w-full xl:w-[250px] bg-white rounded-xl p-2 shadow-sm
-     self-start
-     xl:sticky xl:top-24               
-     max-h-[calc(100vh-8rem)]         
-     overflow-auto"
+              w-full xl:w-[250px] bg-white rounded-xl p-2 shadow-sm
+              self-start
+              xl:sticky xl:top-24
+              max-h-[calc(100vh-8rem)]
+              overflow-auto"
           >
             <ul>
               {tabs.map((tab, index) => (
@@ -194,6 +195,7 @@ export function Settings() {
               ))}
             </ul>
           </aside>
+
           {/* Bloco branco onde as páginas aparecem */}
           <div className="flex-1 bg-white rounded-xl p-4 shadow-sm">
             {ActiveContent ? (
@@ -203,7 +205,7 @@ export function Settings() {
             )}
           </div>
         </section>
-      </main>
+      </div>
     </div>
   );
 }

@@ -69,17 +69,13 @@ export function Reports() {
   }
 
   return (
-    <div className="bg-[#EBEBEB] min-h-screen font-inter">
-      {/* Sidebar */}
+    <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
+      <TopHeader />
 
-      {/* Conteúdo principal */}
-      <main className="w-full px-6 sm:pl-[250px] max-w-full space-y-4 pt-6">
-        {/* TopHeader */}
-        <TopHeader />
-
+      <div className="px-4 py-4 sm:py-6 space-y-4">
         {/* Título + Imagem */}
-        <section className="max-w-[1500px] w-full mx-auto bg-white rounded-xl p-2 flex flex-col xl:flex-row justify-between items-center gap-6 mt-4">
+        <section className="max-w-[1500px] w-full mx-auto bg-white rounded-xl p-4 sm:p-6 flex flex-col xl:flex-row justify-between items-center gap-6">
           <div className="flex-1">
             <p className="text-sm text-zinc-800">
               <span className="font-semibold">Relatórios. </span>
@@ -112,7 +108,7 @@ export function Reports() {
         )}
 
         <div aria-hidden className="h-8 md:h-3" />
-      </main>
+      </div>
     </div>
   );
 }

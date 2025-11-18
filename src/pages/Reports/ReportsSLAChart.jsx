@@ -33,22 +33,21 @@ const SectorDropdown = ({ sectors, selectedId, onSelect }) => {
     sectors.find((s) => s.id === selectedId)?.name || "Escolha por setor";
 
   return (
-    <div className="relative inline-block text-left w-full sm:w-auto">
+    <div className="relative inline-block text-left w-full h-[89px] sm:w-auto">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex justify-between sm:justify-center w-full sm:w-auto rounded-md border border-gray-300 bg-white px-3 py-2 text-xs md:text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100"
-        id="menu-button"
+        className="inline-flex h-[64px] items-center justify-between sm:justify-center w-full sm:w-auto rounded-md border border-gray-300 bg-white px-3 text-xs md:text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100"
       >
         <span className="truncate max-w-[180px] sm:max-w-[220px]">
           {selectedName}
         </span>
+
         <svg
           className="-mr-1 ml-2 h-5 w-5 hidden sm:block"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
-          aria-hidden="true"
         >
           <path
             fillRule="evenodd"
@@ -59,13 +58,13 @@ const SectorDropdown = ({ sectors, selectedId, onSelect }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+        <div className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
           <div className="py-1 max-h-60 overflow-y-auto">
             {sectors.map((sector) => (
               <button
                 key={sector.id}
                 type="button"
-                className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 onClick={() => {
                   onSelect(sector.id);
                   setIsOpen(false);
@@ -88,6 +87,7 @@ export default function ReportsSLAChart({ className = "" }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Buscar setores
   useEffect(() => {
     async function fetchSectors() {
       try {
@@ -105,13 +105,16 @@ export default function ReportsSLAChart({ className = "" }) {
     fetchSectors();
   }, []);
 
+  // Buscar métricas
   useEffect(() => {
     let ignore = false;
+
     async function fetchSlaMetrics() {
       if (!selectedSectorId) {
         setSlaData(null);
         return;
       }
+
       try {
         setLoading(true);
         setError(null);
@@ -120,9 +123,7 @@ export default function ReportsSLAChart({ className = "" }) {
           `/metrics/sectors/${selectedSectorId}/sla-by-service-nature`
         );
 
-        if (ignore) return;
-
-        setSlaData(response.data?.metrics || []);
+        if (!ignore) setSlaData(response.data?.metrics || []);
       } catch (e) {
         setError("Erro ao carregar métricas de SLA.");
         setSlaData([]);
@@ -130,10 +131,9 @@ export default function ReportsSLAChart({ className = "" }) {
         setLoading(false);
       }
     }
+
     fetchSlaMetrics();
-    return () => {
-      ignore = true;
-    };
+    return () => (ignore = true);
   }, [selectedSectorId]);
 
   const { chartData, cardMetrics } = useMemo(() => {
@@ -146,12 +146,11 @@ export default function ReportsSLAChart({ className = "" }) {
     slaData.forEach((item) => {
       const key = item.serviceNatureId || item.serviceNatureName;
       const current = natureMap.get(key);
-
       const totalOsItem = item.totalOs || 0;
 
       if (!current) {
         natureMap.set(key, {
-          name: item.serviceNatureName || "Outro",
+          name: item.serviceNatureName,
           totalOs: totalOsItem,
         });
       } else {
@@ -162,14 +161,13 @@ export default function ReportsSLAChart({ className = "" }) {
     const chartData = Array.from(natureMap.values()).map((nature, index) => ({
       name: nature.name,
       value: nature.totalOs,
-      itemStyle: {
-        color: BASE_COLORS[index % BASE_COLORS.length],
-      },
+      itemStyle: { color: BASE_COLORS[index % BASE_COLORS.length] },
     }));
 
+    // Cálculos ponderados
     const totalOs = slaData.reduce((sum, item) => sum + (item.totalOs || 0), 0);
 
-    const safeTotalOs = totalOs || 1; 
+    const safeTotalOs = totalOs || 1;
 
     const avg =
       slaData.reduce(
@@ -189,6 +187,7 @@ export default function ReportsSLAChart({ className = "" }) {
         0
       ) / safeTotalOs;
 
+    // Cards
     const cardMetrics = [
       {
         title: "Tempo médio de atendimento",
@@ -196,23 +195,21 @@ export default function ReportsSLAChart({ className = "" }) {
         ...formatHours(avg),
         color: BASE_COLORS[0],
         description:
-          "Tempo médio que as ordens de serviço desse setor levam para serem concluídas, considerando todas as OS.",
+          "Tempo médio que as ordens de serviço levam para serem concluídas.",
       },
       {
         title: "Metade das OS concluídas até",
         label: "Mediana (P50)",
         ...formatHours(p50),
         color: BASE_COLORS[1],
-        description:
-          "P50 (mediana): 50% das ordens de serviço são concluídas em até esse tempo.",
+        description: "P50: 50% das OS são concluídas em até esse tempo.",
       },
       {
         title: "90% das OS concluídas até",
         label: "Percentil 90 (P90)",
         ...formatHours(p90),
         color: BASE_COLORS[2],
-        description:
-          "P90: 90% das ordens de serviço são concluídas em até esse tempo. Apenas 10% passam desse valor.",
+        description: "P90: 90% das OS são concluídas até esse tempo.",
       },
       {
         title: "Total de ordens",
@@ -220,92 +217,64 @@ export default function ReportsSLAChart({ className = "" }) {
         value: totalOs,
         unit: "",
         color: BASE_COLORS[3],
-        isCount: true,
-        description:
-          "Quantidade total de ordens de serviço consideradas nos cálculos destas métricas.",
+        description: "Quantidade total de ordens incluídas nessas métricas.",
       },
     ];
 
     return { chartData, cardMetrics };
   }, [slaData]);
 
+  // Config do gráfico
   const option = useMemo(() => {
     const centerPosition = ["40%", "50%"];
-
-    const backgroundData = [
-      {
-        value: 1,
-        itemStyle: {
-          color: "#EBF3FE",
-        },
-      },
-    ];
 
     return {
       tooltip: {
         trigger: "item",
         formatter: "{b}: {c} OS ({d}%)",
       },
-      legend: {
-        show: false,
-      },
+      legend: { show: false },
       series: [
         {
           type: "pie",
           radius: ["50%", "80%"],
           center: centerPosition,
           silent: true,
-          data: backgroundData,
+          data: [{ value: 1, itemStyle: { color: "#EBF3FE" } }],
           label: { show: false },
-          labelLine: { show: false },
         },
         {
           name: "Tipos de serviços",
           type: "pie",
           radius: ["45%", "70%"],
           center: centerPosition,
-          avoidLabelOverlap: false,
           data: chartData,
-          label: {
-            show: false,
-          },
-          labelLine: {
-            show: false,
-          },
+          label: { show: false },
         },
       ],
     };
   }, [chartData]);
 
-  // Renderização de estados
-  if (loading) {
+  // Estados
+  if (loading)
     return (
       <div className="flex items-center justify-center h-full min-h-[388px]">
         Carregando dados de SLA...
       </div>
     );
-  }
 
-  if (error) {
+  if (error)
     return (
       <div className="flex items-center justify-center h-full min-h-[388px] text-red-600">
         {error}
       </div>
     );
-  }
-
-  if (!selectedSectorId && sectors.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-full min-h-[388px] text-gray-500">
-        Carregando lista de setores...
-      </div>
-    );
-  }
 
   return (
     <div className={`w-full h-full min-h-[388px] ${className}`}>
-      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between mb-4">
-        <h3 className="text-lg md:text-xl font-semibold text-gray-900">SLA</h3>
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between mb-3">
+        <h3 className="text-2xl md:text-2xl font-bold text-gray-900">SLA</h3>
+
         <SectorDropdown
           sectors={sectors}
           selectedId={selectedSectorId}
@@ -313,24 +282,21 @@ export default function ReportsSLAChart({ className = "" }) {
         />
       </div>
 
+      <div className="border-t border-neutral-200/70 mb-4" />
+
+      {/* conteúdo */}
       <div className="flex flex-col md:flex-row gap-6 md:gap-4 items-stretch w-full h-auto">
-        {/* Gráfico de pizza */}
+        {/* gráfico */}
         <div className="w-full md:w-1/2 lg:w-5/12 h-64 md:h-72 lg:h-80">
-          {chartData.length > 0 ? (
-            <ReactECharts
-              option={option}
-              style={{ height: "100%", width: "100%" }}
-              notMerge
-              lazyUpdate
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-500 text-sm text-center px-4">
-              Sem dados de serviços para exibir neste setor.
-            </div>
-          )}
+          <ReactECharts
+            option={option}
+            style={{ height: "100%", width: "100%" }}
+            notMerge
+            lazyUpdate
+          />
         </div>
 
-        {/* Cards de Métricas */}
+        {/* cards */}
         <div className="w-full md:w-1/2 lg:w-7/12 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4 px-1 md:px-2">
           {cardMetrics.map((metric, index) => (
             <div
@@ -340,10 +306,11 @@ export default function ReportsSLAChart({ className = "" }) {
             >
               <div className="flex items-center mb-1">
                 <div
-                  className="w-2 h-4 mr-2 rounded-sm flex-shrink-0"
+                  className="w-[7px] h-8 mr-2 rounded-full flex-shrink-0"
                   style={{ backgroundColor: metric.color }}
                 ></div>
-                <span className="text-xs text-gray-500 leading-snug break-words">
+
+                <span className="text-xs text-gray-500 leading-snug">
                   <span className="font-medium">{metric.label}</span>
                   {metric.title && (
                     <span className="ml-1 text-[11px] text-gray-400">
@@ -352,14 +319,13 @@ export default function ReportsSLAChart({ className = "" }) {
                   )}
                 </span>
               </div>
+
               <div className="ml-4">
                 <p className="text-xl md:text-2xl font-bold text-gray-900 leading-none">
                   {metric.value}
                 </p>
                 {metric.unit && (
-                  <span className="text-xs text-gray-600 leading-none">
-                    {metric.unit}
-                  </span>
+                  <span className="text-xs text-gray-600">{metric.unit}</span>
                 )}
               </div>
             </div>
