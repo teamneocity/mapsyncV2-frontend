@@ -52,11 +52,9 @@ export function Filters({
   const [selectedRange, setSelectedRange] = useState({ from: null, to: null });
   const [neighborhoods, setNeighborhoods] = useState([]);
 
-  // NOVO: encarregados
   const [foremen, setForemen] = useState([]);
   const [selectedForeman, setSelectedForeman] = useState(null);
 
-  // Busca e abertura do popover de Bairros
   const [neighborhoodQuery, setNeighborhoodQuery] = useState("");
   const [neighborhoodOpen, setNeighborhoodOpen] = useState(false);
 

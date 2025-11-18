@@ -264,8 +264,8 @@ export function TutorialCard({ labelColors }) {
 
     return {
       parts: percents, // layout
-      labels: lbls, // texto pronto, se quiser usar
-      displayPercents: realPercents, // percentual REAL
+      labels: lbls, // texto pronto
+      displayPercents: realPercents, // percentual real
       palette: pal,
       labelPalette: labelPal,
       legendNames: ordered.map((it) => statusLabels[it.status] || it.status),
@@ -273,7 +273,6 @@ export function TutorialCard({ labelColors }) {
     };
   }, [statusRows, labelColors, w]);
 
-  // séries: largura usa parts, texto usa displayPercents
   const series = parts.map((p, idx) => ({
     name: legendNames[idx],
     type: "bar",
@@ -287,7 +286,7 @@ export function TutorialCard({ labelColors }) {
       align: "center",
       verticalAlign: "middle",
       distance: 0,
-      formatter: `${displayPercents?.[idx] ?? 0}%`, // 👈 percentual REAL
+      formatter: `${displayPercents?.[idx] ?? 0}%`,
       color: labelPalette[idx],
       fontSize: FONT_PX,
       fontWeight: 700,
@@ -325,7 +324,7 @@ export function TutorialCard({ labelColors }) {
       formatter: (params) => {
         const idx = params.seriesIndex;
         const name = legendNames?.[idx] ?? "";
-        const percent = displayPercents?.[idx] ?? 0; // 👈 percentual REAL
+        const percent = displayPercents?.[idx] ?? 0; 
         const count = counts?.[idx];
         const marker = params.marker || "•";
         return count != null

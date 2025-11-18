@@ -256,10 +256,17 @@ export function WarrantyCard({ occurrence, expanded, onToggle }) {
         <div className="w-full">
           <Button
             onClick={() => setIsPossibleDuplicateOpen(true)}
-            className="w-full h-[44px] bg-yellow-50 border border-yellow-300 text-yellow-800 hover:bg-yellow-100 flex items-center justify-between"
+            className="w-full h-[44px] sm:h-auto bg-yellow-50 border border-yellow-300 text-yellow-800 hover:bg-yellow-100 flex items-center justify-between"
           >
-            Ocorrência para verificação de garantia
-            <AlertPColor />
+            <div className="flex-1 min-w-0 flex items-center justify-center sm:justify-between text-center sm:text-left">
+              <span className="whitespace-normal break-words">
+                Ocorrência para verificação de garantia
+              </span>
+
+              <div className="hidden sm:block">
+                <AlertPColor />
+              </div>
+            </div>
           </Button>
         </div>
       </div>

@@ -44,13 +44,12 @@ export function SelectField({
         <SelectContent>
           {safeOptions.map((opt) => (
             <SelectItem
-  key={opt.key}
-  value={opt.value}
-  className="text-left justify-start"
->
-  {opt.label}
-</SelectItem>
-
+              key={opt.key}
+              value={opt.value}
+              className="text-left justify-start"
+            >
+              {opt.label}
+            </SelectItem>
           ))}
         </SelectContent>
       </Select>

@@ -143,7 +143,6 @@ export function NotificationsDropdown({
         role="dialog"
         aria-label="Notificações"
       >
-        {/* corpo scrollável */}
         <div className="flex-1 overflow-y-auto p-3">
           {loading && (
             <ul className="space-y-3 animate-pulse">
@@ -192,7 +191,9 @@ export function NotificationsDropdown({
                             checked={isRead(n)}
                             onChange={() => handleToggleOne(n)}
                             aria-checked={isRead(n)}
-                            aria-label={isRead(n) ? "Já lida" : "Marcar como lida"}
+                            aria-label={
+                              isRead(n) ? "Já lida" : "Marcar como lida"
+                            }
                           />
                         </label>
 
@@ -213,7 +214,7 @@ export function NotificationsDropdown({
           )}
         </div>
 
-        {/* paginação sempre no final */}
+        {/* paginação */}
         <div className="mt-auto p-3 border-t bg-white flex items-center justify-between">
           <button
             onClick={handlePrev}

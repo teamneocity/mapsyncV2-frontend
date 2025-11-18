@@ -102,10 +102,10 @@ export function OccurrenceList({
   }
 
   // garante que o total nunca passe de 12
-  let sumDyn = protocolSpanNum + addressSpanNum + typeSpanNum + neighborhoodSpanNum;
+  let sumDyn =
+    protocolSpanNum + addressSpanNum + typeSpanNum + neighborhoodSpanNum;
   if (sumDyn > 12) {
     const extra = sumDyn - 12;
-    // tira primeiro de type, depois de address, mantendo protocolo largo
     if (typeSpanNum >= extra) typeSpanNum -= extra;
     else {
       const rest = extra - typeSpanNum;
@@ -119,7 +119,7 @@ export function OccurrenceList({
     }
   }
 
-  // utilitários para ordem
+  // ordem
   const ALL_KEYS = [
     "data",
     "origin",
