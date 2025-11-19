@@ -162,8 +162,7 @@ export const PlaninList = forwardRef(function PlaninList(
     const label = isDelayed
       ? "Atrasada"
       : (labelOverrides && labelOverrides[status]) ?? labels[status] ?? status;
-
-    //  Se estiver atrasada, ignora emergencial/status normal e usa SEMPRE essas cores
+   
     const base = isDelayed
       ? "bg-[#E9E4FC] text-[#4F26F0]"
       : isEmergencial

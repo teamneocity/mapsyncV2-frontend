@@ -85,8 +85,8 @@ export function ExpandedRowPlanning(props) {
 
   const startDate = serviceorder?.scheduledStart || serviceorder?.scheduledDate;
   const endDate = serviceorder?.scheduledEnd;
-  const createdAt = serviceorder?.createdAt;
-  const acceptedAt = serviceorder?.acceptedAt;
+  const createdAt = serviceorder?.acceptedAt;
+  const acceptedAt = serviceorder?.createdAt;
   const startedAt = serviceorder?.startedAt;
   const finishedAt = serviceorder?.finishedAt;
 
@@ -184,11 +184,9 @@ export function ExpandedRowPlanning(props) {
           {finishedAt ? <Line label="Finalizada em">{fmt(finishedAt)}</Line> : null}
         </div>
 
-        {/* Coluna direita */}
         <div className="min-h-[360px]">
           <div className="relative m-0 rounded-md border border-gray-200 bg-white overflow-hidden">
             <div className="h-[360px] md:h-[420px] w-full bg-gray-100 flex items-center justify-center relative">
-              {/* Legenda da etapa */}
               <div className="absolute top-2 left-2 bg-white text-xs px-2 py-1 rounded shadow">
                 {currentPhoto.label}
               </div>

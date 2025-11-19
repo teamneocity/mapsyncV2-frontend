@@ -178,11 +178,10 @@ export function ServicePlanning() {
               setDate(startDate);
           }}
           onFilterForeman={(id) => setForemanId(id || null)}
-          onFilterSector={(id) => setSectorId(id || null)} // <- NOVO
+          onFilterSector={(id) => setSectorId(id || null)} 
         />
       </div>
 
-      {/* lista diretamente após os filtros  */}
       <PlaninList
         ref={planinRef}
         occurrences={serviceOrders}

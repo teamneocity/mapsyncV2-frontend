@@ -3,7 +3,6 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import ReactECharts from "echarts-for-react";
 import { ArrowLeft } from "lucide-react";
 
 import { Sidebar } from "@/components/sidebar";
@@ -11,6 +10,24 @@ import { TopHeader } from "@/components/topHeader";
 import { api } from "@/services/api";
 
 import Airplane from "@/assets/icons/Airplane.svg?react";
+
+import {
+  Bar,
+  BarChart,
+  XAxis,
+  YAxis,
+  Cell,
+  PieChart,
+  Pie,
+  Sector,
+  Label,
+} from "recharts";
+
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
 function nameToInitials(full = "") {
   const parts = full.trim().split(/\s+/).filter(Boolean);
@@ -29,55 +46,6 @@ const MOCK_NEIGHBORHOODS = {
   ],
   byPilot: {},
 };
-
-const DECALS = [
-  {
-    symbol: "rect",
-    dashArrayX: [4, 2],
-    dashArrayY: [2, 2],
-    symbolSize: 1,
-    rotation: 0,
-    color: "rgba(0,0,0,0.12)",
-  },
-  {
-    symbol: "circle",
-    dashArrayX: [1, 0],
-    dashArrayY: [2, 2],
-    symbolSize: 0.9,
-    color: "rgba(0,0,0,0.14)",
-  },
-  {
-    symbol: "triangle",
-    dashArrayX: [1, 0],
-    dashArrayY: [2, 4],
-    symbolSize: 1,
-    rotation: Math.PI / 4,
-    color: "rgba(0,0,0,0.12)",
-  },
-  {
-    symbol: "diamond",
-    dashArrayX: [1, 0],
-    dashArrayY: [2, 3],
-    symbolSize: 1,
-    rotation: Math.PI / 6,
-    color: "rgba(0,0,0,0.12)",
-  },
-  {
-    symbol: "rect",
-    dashArrayX: [8, 4],
-    dashArrayY: [6, 0],
-    symbolSize: 1,
-    rotation: Math.PI / 3,
-    color: "rgba(0,0,0,0.10)",
-  },
-  {
-    symbol: "circle",
-    dashArrayX: [2, 2],
-    dashArrayY: [2, 2],
-    symbolSize: 0.8,
-    color: "rgba(0,0,0,0.12)",
-  },
-];
 
 function adaptPilotTotals(raw) {
   const arr = Array.isArray(raw?.metrics)
@@ -108,6 +76,13 @@ function adaptPilotTotals(raw) {
     return { id, name, count, pct, isNeg };
   });
 }
+
+const chartConfig = {
+  occurrences: {
+    label: "Ocorrências",
+    color: "var(--chart-1)",
+  },
+};
 
 export default function PilotsDashboard() {
   const [searchParams] = useSearchParams();
@@ -177,93 +152,40 @@ export default function PilotsDashboard() {
     setSelectedPilotTotal(p?.count ?? 0);
   }, [selectedPilotId, pilotTotals]);
 
-  // Bar pilotos
-  const barOptions = useMemo(() => {
+  const barChartData = useMemo(() => {
+    if (!pilotTotals.length) return [];
     const sorted = [...pilotTotals].sort((a, b) => b.count - a.count);
-    const yData = sorted.map((p) => nameToInitials(p.name));
 
-    const maxValue = Math.max(...sorted.map((p) => p.count), 0);
-
-    const seriesData = sorted.map((p) => {
-      const isSelected = p.id === selectedPilotId;
-      return {
-        value: p.count,
-        itemStyle: {
-          color: isSelected ? "#001A80" : "#003DF6",
-        },
-        label: { show: true, position: "right", formatter: "{c}" },
-      };
-    });
-
-    return {
-      tooltip: { trigger: "item" },
-      grid: { left: 8, right: 8, top: 24, bottom: 8, containLabel: true },
-      xAxis: {
-        type: "value",
-        axisLine: { show: false },
-        axisTick: { show: false },
-        axisLabel: { show: false },
-        splitLine: {
-          show: true,
-          interval: (index, value) => value === Math.round(maxValue / 2),
-          lineStyle: {
-            color: "#E5E7EB",
-            type: "solid",
-          },
-        },
-      },
-      yAxis: {
-        type: "category",
-        inverse: true,
-        data: yData,
-        axisLine: { show: false },
-        axisTick: { show: false },
-      },
-      series: [
-        {
-          type: "bar",
-          data: seriesData,
-          animationDuration: 400,
-        },
-      ],
-    };
+    return sorted.map((p) => ({
+      pilotId: p.id,
+      label: nameToInitials(p.name),
+      occurrences: p.count,
+      isSelected: p.id === selectedPilotId,
+    }));
   }, [pilotTotals, selectedPilotId]);
 
-  // Pie pilotos
-  const pieOptions = useMemo(() => {
-    const seriesData = pilotTotals.map((p, idx) => ({
-      name: p.name,
-      value: p.count,
-      itemStyle: { decal: DECALS[idx % DECALS.length] },
-    }));
+  // cores do gráfico de pizza
+  const PIE_COLORS = ["#003DF6", "#4B84FF", "#00A3FF", "#0094C6", "#006C8E"];
 
-    return {
-      tooltip: {
-        trigger: "item",
-        formatter: (p) => {
-          const { name, value } = p;
-          return `
-            <div style="min-width:140px">
-              <div><strong>${name}</strong></div>
-              <div>Total: <strong>${value}</strong></div>
-            </div>
-          `;
-        },
-      },
-      series: [
-        {
-          type: "pie",
-          radius: ["20%", "90%"],
-          center: ["50%", "52%"],
-          roseType: "radius",
-          itemStyle: { borderRadius: 8 },
-          label: { show: false },
-          labelLine: { show: false },
-          data: seriesData,
-        },
-      ],
-    };
-  }, [pilotTotals]);
+  const pieChartData = useMemo(() => {
+    if (!pilotTotals.length) return [];
+    const sorted = [...pilotTotals].sort((a, b) => b.count - a.count);
+
+    return sorted.map((p, idx) => ({
+      pilotId: p.id,
+      name: p.name,
+      occurrences: p.count,
+      fill: PIE_COLORS[idx % PIE_COLORS.length],
+    }));
+  }, [pilotTotals]); 
+
+  const activePieIndex = useMemo(() => {
+    if (!pieChartData.length) return 0;
+    const idx = pieChartData.findIndex(
+      (item) => item.pilotId === selectedPilotId
+    );
+    return idx === -1 ? 0 : idx;
+  }, [pieChartData, selectedPilotId]);
 
   const handleSelectPilot = (p) => {
     setSelectedPilotId(p.id);
@@ -296,7 +218,7 @@ export default function PilotsDashboard() {
         </div>
 
         <div className="grid grid-cols-12 gap-4">
-          {/* Coluna 1 */}
+          {/* cards dos pilotos */}
           <div className="col-span-12 xl:col-span-3">
             <div className="p-3 flex flex-col items-center justify-center h-auto xl:h-[calc(100vh-200px)]">
               <div className="flex-1 min-h-0 w-full flex flex-col items-center justify-center pr-1 overflow-visible xl:overflow-y-auto">
@@ -368,7 +290,7 @@ export default function PilotsDashboard() {
             </div>
           </div>
 
-          {/* Coluna 2 */}
+          {/* Gráfico de barra */}
           <div className="col-span-12 md:col-span-6 xl:col-span-5">
             <div
               className="rounded-2xl bg-white shadow p-3 flex flex-col"
@@ -387,22 +309,61 @@ export default function PilotsDashboard() {
                     Sem dados
                   </div>
                 ) : (
-                  <ReactECharts
-                    option={barOptions}
-                    style={{ width: "100%", height: "100%" }}
-                  />
+                  <ChartContainer
+                    config={chartConfig}
+                    className="w-full h-full"
+                  >
+                    <BarChart
+                      accessibilityLayer
+                      data={barChartData}
+                      layout="vertical"
+                      margin={{
+                        left: -20,
+                      }}
+                    >
+                      <XAxis type="number" dataKey="occurrences" hide />
+                      <YAxis
+                        dataKey="label"
+                        type="category"
+                        tickLine={false}
+                        tickMargin={10}
+                        axisLine={false}
+                      />
+                      <ChartTooltip
+                        cursor={false}
+                        content={<ChartTooltipContent hideLabel />}
+                      />
+                      <Bar
+                        dataKey="occurrences"
+                        radius={5}
+                        onClick={(_, index) => {
+                          const item = barChartData[index];
+                          if (item) {
+                            setSelectedPilotId(item.pilotId);
+                            setSelectedPilotTotal(item.occurrences);
+                          }
+                        }}
+                      >
+                        {barChartData.map((entry) => (
+                          <Cell
+                            key={entry.pilotId}
+                            fill={entry.isSelected ? "#001A80" : "#003DF6"}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ChartContainer>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Coluna 3 */}
+          {/* Gráfico de pizza */}
           <div className="col-span-12 md:col-span-6 xl:col-span-4">
             <div
               className="rounded-2xl bg-white shadow p-3 flex flex-col"
               style={{ height: COL_H }}
             >
-              {/* título + pizza */}
               <div className="flex-1 min-h-0 flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
                   <Airplane className="w-5 h-5 text-gray-700" />
@@ -412,22 +373,100 @@ export default function PilotsDashboard() {
                 </div>
 
                 <div className="flex-1 min-h-0">
-                  {!pilotTotals.length ? (
+                  {!pilotTotals.length || !pieChartData.length ? (
                     <div className="w-full h-full flex items-center justify-center text-gray-500">
                       Sem dados
                     </div>
                   ) : (
-                    <ReactECharts
-                      option={pieOptions}
-                      style={{ width: "100%", height: "100%" }}
-                    />
+                    <ChartContainer
+                      config={chartConfig}
+                      className="w-full h-full flex items-center justify-center"
+                    >
+                      <PieChart>
+                        <ChartTooltip
+                          cursor={false}
+                          content={<ChartTooltipContent hideLabel />}
+                        />
+                        <Pie
+                          data={pieChartData}
+                          dataKey="occurrences"
+                          nameKey="name"
+                          innerRadius={60}
+                          strokeWidth={5}
+                          activeIndex={activePieIndex}
+                          activeShape={(props) => {
+                            const outerRadius = props.outerRadius || 0;
+                            return (
+                              <g>
+                                <Sector
+                                  {...props}
+                                  outerRadius={outerRadius + 10}
+                                />
+                                <Sector
+                                  {...props}
+                                  outerRadius={outerRadius + 25}
+                                  innerRadius={outerRadius + 12}
+                                />
+                              </g>
+                            );
+                          }}
+                          onClick={(_, index) => {
+                            const item = pieChartData[index];
+                            if (item) {
+                              setSelectedPilotId(item.pilotId);
+                              setSelectedPilotTotal(item.occurrences);
+                            }
+                          }}
+                        >
+                          <Label
+                            content={({ viewBox }) => {
+                              if (
+                                !viewBox ||
+                                !("cx" in viewBox) ||
+                                !("cy" in viewBox) ||
+                                !pieChartData[activePieIndex]
+                              ) {
+                                return null;
+                              }
+
+                              const { cx, cy } = viewBox;
+                              const active = pieChartData[activePieIndex];
+
+                              return (
+                                <text
+                                  x={cx}
+                                  y={cy}
+                                  textAnchor="middle"
+                                  dominantBaseline="middle"
+                                >
+                                  <tspan
+                                    x={cx}
+                                    y={cy}
+                                    className="fill-foreground text-3xl font-bold"
+                                  >
+                                    {active.occurrences.toLocaleString("pt-BR")}
+                                  </tspan>
+                                  <tspan
+                                    x={cx}
+                                    y={(cy || 0) + 24}
+                                    className="fill-muted-foreground text-xs"
+                                  >
+                                    {active.name}
+                                  </tspan>
+                                </text>
+                              );
+                            }}
+                          />
+                        </Pie>
+                      </PieChart>
+                    </ChartContainer>
                   )}
                 </div>
               </div>
 
               <div className="my-3 " />
 
-              {/* título + total */}
+              {/* total */}
               <div className="flex-1 min-h-0 flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
                   <Airplane className="w-5 h-5 text-gray-700" />

@@ -1,6 +1,13 @@
 // src/components/NeighborhoodNightingale.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
-import ReactECharts from "echarts-for-react";
+import {
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Label,
+  Tooltip,
+} from "recharts";
 import { api } from "@/services/api";
 
 const DECALS = [
@@ -41,7 +48,7 @@ const DECALS = [
     dashArrayY: [6, 0],
     symbolSize: 1,
     rotation: Math.PI / 3,
-    color: "rgba(0,0,0,0.10)",
+    color: "rgba(0,0,0,0.1)",
   },
   {
     symbol: "circle",
@@ -50,6 +57,16 @@ const DECALS = [
     symbolSize: 0.8,
     color: "rgba(0,0,0,0.12)",
   },
+];
+
+// Cores
+const COLORS = [
+  "#cbe0fcff",
+  "#eaf7a2ff",
+  "#fec7c7ff",
+  "#f4aaf0ff",
+  "#af9df6ff",
+  "#fce39eff",
 ];
 
 export function NeighborhoodNightingale({ className = "" }) {
@@ -70,6 +87,7 @@ export function NeighborhoodNightingale({ className = "" }) {
     return () => ro.disconnect();
   }, []);
 
+  // Busca os dados
   useEffect(() => {
     let ignore = false;
     async function fetchStats() {
@@ -87,8 +105,9 @@ export function NeighborhoodNightingale({ className = "" }) {
             value: n.current,
             previous: n.previous ?? 0,
             difference: n.difference ?? 0,
-            itemStyle: { decal: DECALS[idx % DECALS.length] },
+            decal: DECALS[idx % DECALS.length],
           }));
+
         setData(top6);
       } catch (e) {
         setErr(e?.message || "Erro ao carregar estatísticas");
@@ -102,92 +121,13 @@ export function NeighborhoodNightingale({ className = "" }) {
     };
   }, []);
 
-  const option = useMemo(() => {
-    const seriesData = data.map((d, idx) => ({
-      ...d,
-      itemStyle: { decal: DECALS[idx % DECALS.length] },
-    }));
-    const total = seriesData.reduce((sum, it) => sum + (it.value || 0), 0);
+  // total para mostrar no centro
+  const total = useMemo(
+    () => data.reduce((sum, it) => sum + (it.value || 0), 0),
+    [data]
+  );
 
-    const isCompact = width > 0 && width < 520;
-    const showLegend = !isCompact;
-    const showTitle = !isCompact;
-
-    const center = showLegend ? ["32%", "50%"] : ["50%", "50%"];
-    const radius = showLegend
-      ? [20, 120]
-      : [24, Math.min(120, Math.floor((width || 300) * 0.36))];
-
-    const maxLength = seriesData.reduce(
-      (acc, cur) => Math.max(acc, cur.name.length),
-      0
-    );
-
-    return {
-      title: showTitle
-        ? {
-            right: 135,
-            top: 20,
-            text: "Total",
-            subtext: String(total),
-            textAlign: "left",
-            textStyle: { fontSize: 14, fontWeight: 400, color: "#000000" },
-            subtextStyle: {
-              fontSize: 40,
-              fontWeight: 700,
-              color: "#111",
-              lineHeight: 28,
-            },
-          }
-        : undefined,
-
-      tooltip: {
-        trigger: "item",
-        formatter: (p) => {
-          const { name, value, data } = p;
-          const diff = data?.difference ?? 0;
-          const prev = data?.previous ?? 0;
-          const sign = diff > 0 ? "+" : diff < 0 ? "−" : "";
-          return `
-            <div style="min-width:180px">
-              <div><strong>${name}</strong></div>
-              <div>Ocorrências (atual): <strong>${value}</strong></div>
-              <div>Período anterior: ${prev}</div>
-              <div>Variação: ${sign}${Math.abs(diff)}</div>
-            </div>`;
-        },
-      },
-
-      legend: showLegend
-        ? {
-            orient: "vertical",
-            right: 50,
-            top: "center",
-            textStyle: { color: "#444" },
-            itemWidth: 12,
-            itemHeight: 12,
-            formatter: (name) => {
-              const item = seriesData.find((d) => d.name === name);
-              const value = item ? item.value : 0;
-              return name.padEnd(maxLength + 2, " ") + value;
-            },
-          }
-        : undefined,
-
-      series: [
-        {
-          type: "pie",
-          roseType: "radius",
-          center,
-          radius,
-          itemStyle: { borderRadius: 6 },
-          label: { show: false },
-          labelLine: { show: false },
-          data: seriesData,
-        },
-      ],
-    };
-  }, [data, width]);
+  const isCompact = width > 0 && width < 520;
 
   if (loading) {
     return (
@@ -224,12 +164,118 @@ export function NeighborhoodNightingale({ className = "" }) {
 
   return (
     <div ref={containerRef} className={`w-full h-full ${className}`}>
-      <ReactECharts
-        option={option}
-        style={{ height: "100%", width: "100%" }}
-        notMerge
-        lazyUpdate
-      />
+      <div
+        className={`flex h-full w-full ${
+          isCompact ? "flex-col items-center" : "flex-row items-center"
+        } gap-4`}
+      >
+        {/* Gráfico */}
+        <div className="flex-1 h-full min-h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (!active || !payload?.length) return null;
+                  const item = payload[0].payload;
+                  const diff = item.difference ?? 0;
+                  const prev = item.previous ?? 0;
+                  const sign = diff > 0 ? "+" : diff < 0 ? "−" : "";
+
+                  return (
+                    <div className="rounded-md border bg-white px-3 py-2 text-xs shadow-md">
+                      <div className="font-medium">{item.name}</div>
+                      <div className="mt-1 space-y-0.5">
+                        <div>
+                          Ocorrências (atual):{" "}
+                          <span className="font-semibold">{item.value}</span>
+                        </div>
+                        <div>Período anterior: {prev}</div>
+                        <div>
+                          Variação: {sign}
+                          {Math.abs(diff)}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }}
+              />
+              <Pie
+                data={data}
+                dataKey="value"
+                nameKey="name"
+                innerRadius="55%" 
+                outerRadius="88%"
+                paddingAngle={0} 
+                strokeWidth={0}
+                isAnimationActive
+              >
+                {data.map((entry, index) => (
+                  <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
+                ))}
+
+                {/* tetxo no meio */}
+                <Label
+                  content={({ viewBox }) => {
+                    if (
+                      !viewBox ||
+                      typeof viewBox.cx !== "number" ||
+                      typeof viewBox.cy !== "number"
+                    ) {
+                      return null;
+                    }
+                    const { cx, cy } = viewBox;
+                    return (
+                      <g>
+                        <text
+                          x={cx}
+                          y={cy - 8}
+                          textAnchor="middle"
+                          className="fill-gray-500 text-xs"
+                        >
+                          Total
+                        </text>
+                        <text
+                          x={cx}
+                          y={cy + 12}
+                          textAnchor="middle"
+                          className="fill-gray-900 text-2xl font-bold"
+                        >
+                          {total}
+                        </text>
+                      </g>
+                    );
+                  }}
+                />
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Legendas  */}
+        {!isCompact && (
+          <div className="flex flex-col justify-center w-44 pl-2">
+            <ul className="space-y-1.5 text-xs">
+              {data.map((item, index) => (
+                <li
+                  key={item.name}
+                  className="flex items-center justify-between gap-2"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+                      style={{
+                        backgroundColor: COLORS[index % COLORS.length],
+                      }}
+                    />
+                    <span className="truncate">{item.name}</span>
+                  </div>
+                  <span className="font-medium tabular-nums">{item.value}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
