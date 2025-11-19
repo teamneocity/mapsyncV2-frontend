@@ -7,10 +7,10 @@ export const usePermissions = () => {
   const isAnalyst = user?.role === "ANALYST";
   const isOperator = user?.role === "FIELD_AGENT";
   const isSupervisor = user?.role === "SECTOR_CHIEF";
-  const isInspector = user?.role == "INSPECTOR";
-  const isChief = user?.role == "CHIEF";
-  const isPilot = user?.role == "PILOT";
-  const isDroneOperator = user?.role == "DRONE_OPERATOR";
+  const isInspector = user?.role === "INSPECTOR";
+  const isChief = user?.role === "CHIEF";
+  const isPilot = user?.role === "PILOT";
+  const isDroneOperator = user?.role === "DRONE_OPERATOR";
 
   return {
     isAdmin,

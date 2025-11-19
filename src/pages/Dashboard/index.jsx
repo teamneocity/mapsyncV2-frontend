@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowUp, ArrowDown } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 // Componentes globais
 import { Sidebar } from "@/components/sidebar";
@@ -21,62 +22,45 @@ import { useAuth } from "@/hooks/auth";
 
 import Airplane from "@/assets/icons/Airplane.svg?react";
 
+// Funções para busca de dados
+const fetchUsers = async () => {
+  const res = await api.get("/employees");
+  return res.data.employees || [];
+};
+
+const fetchPilots = async () => {
+  const { data } = await api.get("/metrics/pilots/occurrences");
+  return data?.metrics ?? [];
+};
+
+const fetchChiefs = async () => {
+  const res = await api.get("/employees?role=SECTOR_CHIEF");
+  return res.data.employees.slice(0, 5);
+};
+
+export function useDashboard() {
+  const users = useQuery({ queryKey: ["users"], queryFn: fetchUsers });
+  const pilots = useQuery({ queryKey: ["pilots"], queryFn: fetchPilots });
+  const chiefs = useQuery({ queryKey: ["chiefs"], queryFn: fetchChiefs });
+
+  return {
+    users: users.data ?? [],
+    pilots: pilots.data ?? [],
+    chiefs: chiefs.data ?? [],
+    isLoading: users.isLoading || pilots.isLoading || chiefs.isLoading,
+  };
+}
+
 export function Dashboard() {
-  const [users, setUsers] = useState([]);
   const { user } = useAuth();
   const [name] = useState(user.name);
   const navigate = useNavigate();
 
-  const [pilotMetrics, setPilotMetrics] = useState([]);
-  const [loadingPilots, setLoadingPilots] = useState(true);
-  const [errPilots, setErrPilots] = useState(null);
-
-  useEffect(() => {
-    async function fetchUsers() {
-      try {
-        const res = await api.get("/employees");
-        setUsers(res.data.employees || []);
-      } catch (err) {
-        console.error("Erro ao buscar usuários:", err);
-      }
-    }
-    fetchUsers();
-  }, []);
-
-  useEffect(() => {
-    let ignore = false;
-    async function fetchPilotMetrics() {
-      try {
-        setLoadingPilots(true);
-        setErrPilots(null);
-        const { data } = await api.get("/metrics/pilots/occurrences");
-        if (ignore) return;
-        setPilotMetrics(data?.metrics ?? []);
-      } catch (e) {
-        setErrPilots(e?.message || "Erro ao carregar métricas de pilotos");
-      } finally {
-        setLoadingPilots(false);
-      }
-    }
-    fetchPilotMetrics();
-    return () => {
-      ignore = true;
-    };
-  }, []);
-
-  const [chiefs, setChiefs] = useState([]);
-
-  useEffect(() => {
-    async function fetchChiefs() {
-      try {
-        const res = await api.get("/employees?role=SECTOR_CHIEF");
-        setChiefs(res.data.employees.slice(0, 5));
-      } catch (err) {
-        console.error("Erro ao buscar chefes:", err);
-      }
-    }
-    fetchChiefs();
-  }, []);
+  const {
+    pilots: pilotMetrics,
+    isLoading: loadingPilots,
+    error: errPilots,
+  } = useDashboard();
 
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
