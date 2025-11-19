@@ -18,7 +18,7 @@ export const PlaninList = forwardRef(function PlaninList(
     renderExpandedRow,
     statusLabelOverrides = {},
     alwaysShowFullProtocol = true,
-    onOrderChange, // opcional
+    onOrderChange, 
   },
   ref
 ) {
@@ -75,14 +75,12 @@ export const PlaninList = forwardRef(function PlaninList(
 
   const toggleRow = (id) => setExpandedRow((p) => (p === id ? null : id));
 
-  // seleção individual
   const toggleSelect = (id) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]
     );
   };
 
-  // helpers de período
   const fmt = (d) => {
     if (!d) return null;
     try {
@@ -179,15 +177,15 @@ export const PlaninList = forwardRef(function PlaninList(
   }
 
   const columns = [
-    "protocol", // OS
-    "inspector", // Técnico
-    "foreman", // Encarregado
-    "company", // Companhia
-    "address", // Endereço
-    "neighborhood", // Bairro
-    "type", // Tipo
-    "period", // Execução
-    "status", // Status
+    "protocol",
+    "inspector", 
+    "foreman", 
+    "company", 
+    "address",
+    "neighborhood", 
+    "type",
+    "period",
+    "status", 
   ];
 
   const dataToRender = rows || [];
@@ -247,7 +245,6 @@ export const PlaninList = forwardRef(function PlaninList(
                 isDragOver ? "ring-2 ring-blue-300" : ""
               }`}
             >
-              {/* Cabeçalho */}
               <div
                 className="hover:bg-gray-50 transition cursor-pointer"
                 onClick={() => toggleRow(occ.id)}
@@ -255,7 +252,7 @@ export const PlaninList = forwardRef(function PlaninList(
                 {/* Desktop */}
                 <div className="hidden xl:block p-4">
                   <div className="grid grid-cols-12 gap-4 items-center text-[#787891]">
-                    {/* OS  */}
+                    {/* OS */}
                     <div
                       className={`${spanClass(
                         "protocol"
@@ -332,7 +329,7 @@ export const PlaninList = forwardRef(function PlaninList(
                       {typeLabels[occ.type] || occ.type || "—"}
                     </div>
 
-                    {/* Execução (Período) */}
+                    {/* Período */}
                     <div className={`${spanClass("period")} text-sm truncate`}>
                       {periodo}
                     </div>

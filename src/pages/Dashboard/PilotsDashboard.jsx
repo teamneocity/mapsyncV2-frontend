@@ -177,7 +177,7 @@ export default function PilotsDashboard() {
       occurrences: p.count,
       fill: PIE_COLORS[idx % PIE_COLORS.length],
     }));
-  }, [pilotTotals]); 
+  }, [pilotTotals]);
 
   const activePieIndex = useMemo(() => {
     if (!pieChartData.length) return 0;
@@ -451,7 +451,7 @@ export default function PilotsDashboard() {
                                     y={(cy || 0) + 24}
                                     className="fill-muted-foreground text-xs"
                                   >
-                                    {active.name}
+                                    {nameToInitials(active.name)}
                                   </tspan>
                                 </text>
                               );

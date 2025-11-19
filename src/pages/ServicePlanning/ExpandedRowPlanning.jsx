@@ -18,7 +18,6 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 export function ExpandedRowPlanning(props) {
   const serviceorder = props.serviceorder || props.occurrence || {};
 
-  // helpers de data
   const fmt = (d, withTime = true) => {
     if (!d) return "-";
     try {

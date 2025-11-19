@@ -112,7 +112,7 @@ export function PlanningFilters({
         onFilterDateRange={onFilterDateRange}
       />
 
-      {/* Faixa extra só da tela de Planejamento (Encarregado + Setor) */}
+      {/* Encarregado + setor */}
       <div className="w-full bg-[#EBEBEB] px-1 pb-1 -mt-1">
         <div className="w-full flex flex-wrap items-center gap-2 md:gap-3 rounded-xl">
           {/* Encarregado */}
