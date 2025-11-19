@@ -50,7 +50,6 @@ function formatDatePtBR(value) {
   return d ? d.toLocaleDateString("pt-BR") : "—";
 }
 
-// Helper para exibir período
 function formatPeriodPtBR(start, end) {
   const ds = parseDateSafe(start);
   const de = parseDateSafe(end);
@@ -214,7 +213,6 @@ export function DailyPlanningPDF({ data = [], formattedDate }) {
           </View>
         </View>
 
-        {/* Cabeçalho da tabela */}
         <View style={styles.headerRow}>
           {columns.map((col, i) => (
             <Text
@@ -236,7 +234,6 @@ export function DailyPlanningPDF({ data = [], formattedDate }) {
 
                 switch (col.key) {
                   case "ordem":
-                    // só uma sequência
                     content = index + 1;
                     break;
                   case "inspector":
