@@ -77,8 +77,6 @@ export function ExpandedRowT({
     occurrence.status !== "em_execucao" &&
     occurrence.status !== "finalizada";
 
-  
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 bg-[#F7F7F7] rounded-lg text-sm">
       {/* Coluna 1 - Informações */}

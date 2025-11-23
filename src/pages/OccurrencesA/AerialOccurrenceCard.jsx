@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ExpandedRowA } from "./ExpandedRowA";
 import { Timeline } from "./Timeline";
-import { Copy, Clock } from "lucide-react"; // ⟵ (novo) só para o ícone
 import Video from "@/assets/icons/Video.svg?react";
 import Image from "@/assets/icons/Image.svg?react";
 import { useToast } from "@/hooks/use-toast";

@@ -19,7 +19,6 @@ import { api } from "@/services/api";
 import { useAuth } from "@/hooks/auth";
 
 // Assets
-
 import Airplane from "@/assets/icons/Airplane.svg?react";
 
 // Funções para busca de dados

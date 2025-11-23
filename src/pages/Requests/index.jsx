@@ -1,20 +1,25 @@
 // src/pages/Requests/index.jsx
 "use client";
 
+// React e React Query
 import React, { useEffect, useState } from "react";
-import { format } from "date-fns";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+// Hooks customizados
 import { useToast } from "@/hooks/use-toast";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import { useAuth } from "@/hooks/auth";
 import { useAnalysisNotification } from "@/hooks/useAnalysisNotification";
 
+// Componentes globais
 import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/topHeader";
 import { Filters } from "@/components/filters";
 import { Pagination } from "@/components/pagination";
 
+// Componentes locais
 import { RequestsList } from "./RequestsList";
+
+// Serviços e utilitários
 import { api } from "@/services/api";
 
 const typeLabels = {
@@ -29,21 +34,16 @@ const typeLabels = {
   DESOBSTRUCAO_CAMINHAO: "Desobstrução",
 };
 
-const PAGE_TITLE = "Solicitações";
-const PAGE_SUBTITLE = "de serviços";
-const ENDPOINT = "/pre-occurrences";
-
+// Parte expandida, cria a ocorrencia a partir da solicitacao
 function ExpandedCreateFromRequest({ item, onCreated }) {
   const { toast } = useToast();
   const [file, setFile] = useState(null);
 
-  const [photoResp, setPhotoResp] = useState(null);
   const [photoIdStr, setPhotoIdStr] = useState("");
   const [uploading, setUploading] = useState(false);
   const [creating, setCreating] = useState(false);
 
   // campos editáveis (preenchidos com a solicitação)
-
   const [description, setDescription] = useState(item?.description || "");
   const [latitude, setLatitude] = useState(item?.latitude ?? "");
   const [longitude, setLongitude] = useState(item?.longitude ?? "");
@@ -78,7 +78,6 @@ function ExpandedCreateFromRequest({ item, onCreated }) {
         throw new Error("Não foi possível identificar o ID do anexo.");
       }
 
-      setPhotoResp(resp);
       setPhotoIdStr(idStr);
 
       toast({
@@ -108,7 +107,7 @@ function ExpandedCreateFromRequest({ item, onCreated }) {
       const rawType = item?.type || "";
 
       const payload = {
-        type: String(rawType).trim(), // tipo vem SEMPRE da solicitação
+        type: String(rawType).trim(), 
         description: String(description || item?.description || "").trim(),
         street: item?.address?.street || item?.street || "",
         number: item?.address?.number || item?.number || "",
@@ -126,8 +125,10 @@ function ExpandedCreateFromRequest({ item, onCreated }) {
       if (!payload.neighborhoodId)
         throw new Error("Bairro é obrigatório (neighborhoodId).");
 
+      // cria a ocorrência
       await api.post("/occurrences/employee", payload);
 
+      // marca a pré-ocorrência como registrada
       try {
         await api.patch("/pre-occurrences/status", {
           preOccurrenceId: item?.id,
@@ -147,11 +148,7 @@ function ExpandedCreateFromRequest({ item, onCreated }) {
         title: "Ocorrência criada",
         description: "A solicitação foi convertida e registrada com sucesso.",
       });
-
       onCreated?.();
-      setTimeout(() => {
-        if (typeof window !== "undefined") window.location.reload();
-      }, 0);
     } catch (err) {
       console.error(err);
       toast({
@@ -166,7 +163,6 @@ function ExpandedCreateFromRequest({ item, onCreated }) {
 
   return (
     <div className="bg-white rounded-xl border p-4 mt-3 grid grid-cols-1 md:grid-cols-3 gap-4">
-      {/* Coluna 1: Endereço */}
       <div className="space-y-2">
         <div>
           <label className="text-xs text-zinc-500">Rua</label>
@@ -208,7 +204,7 @@ function ExpandedCreateFromRequest({ item, onCreated }) {
         </div>
       </div>
 
-      {/* Coluna 2: */}
+      {/* Campos editaveis */}
       <div className="space-y-2">
         <div>
           <label className="text-xs text-zinc-500">Tipo</label>
@@ -218,7 +214,6 @@ function ExpandedCreateFromRequest({ item, onCreated }) {
             className="w-full rounded-lg border px-3 py-2 bg-zinc-50 text-sm"
           />
         </div>
-        {/* Editáveis */}
 
         <div>
           <label className="text-xs text-zinc-500">Descrição</label>
@@ -263,7 +258,6 @@ function ExpandedCreateFromRequest({ item, onCreated }) {
         </label>
       </div>
 
-      {/* Coluna 3: Upload e ação */}
       <div className="space-y-3">
         <div>
           <label className="text-xs text-zinc-500">Foto inicial</label>
@@ -274,7 +268,6 @@ function ExpandedCreateFromRequest({ item, onCreated }) {
             className="block w-full text-sm file:mr-3 file:rounded-lg file:border file:px-3 file:py-1.5 file:bg-white file:hover:bg-zinc-50 file:text-zinc-700 file:border-zinc-300"
           />
 
-          {/* status do upload */}
           {photoIdStr ? (
             <p className="text-xs text-emerald-700 mt-1">
               Anexo enviado. ID: <span className="font-mono">{photoIdStr}</span>
@@ -308,16 +301,102 @@ function ExpandedCreateFromRequest({ item, onCreated }) {
   );
 }
 
+// Busca as solicitações
+async function fetchRequests({ queryKey }) {
+  const [
+    _key,
+    { page, searchTerm, filterRecent, filterType, filterNeighborhood },
+  ] = queryKey;
+
+  const order =
+    filterRecent === "oldest" || filterRecent === "asc" ? "asc" : "desc";
+
+  const params = {
+    page,
+    street: searchTerm || undefined,
+    neighborhoodId: filterNeighborhood || undefined,
+    type: filterType || undefined,
+    order,
+  };
+
+  const { data } = await api.get("/pre-occurrences", { params });
+
+  const raw = Array.isArray(data.items) ? data.items : [];
+
+  const list = raw.map((it) => ({
+    id: it.id,
+    createdAt: it.createdAt,
+    sentBy: {
+      id: it.createdById,
+      name: it.createdByName,
+      email: it.createdByEmail,
+    },
+    address: {
+      street: it.street,
+      number: it.number,
+      complement: it.complement,
+      neighborhood: it.neighborhoodName,
+      neighborhoodId: it.neighborhoodId,
+      city: it.city,
+      cep: it.cep,
+    },
+    type: it.type,
+    description: it.description,
+    status: it.status,
+    latitude: it.latitude ?? null,
+    longitude: it.longitude ?? null,
+  }));
+
+  return {
+    list,
+    page: data.page ?? page ?? 1,
+    totalPages: data.totalPages ?? data.total_pages ?? 1,
+  };
+}
+
+function useRequests({
+  page,
+  searchTerm,
+  filterRecent,
+  filterType,
+  filterNeighborhood,
+  toast,
+}) {
+  return useQuery({
+    queryKey: [
+      "requests",
+      {
+        page,
+        searchTerm,
+        filterRecent,
+        filterType,
+        filterNeighborhood,
+      },
+    ],
+    queryFn: fetchRequests,
+    keepPreviousData: true,
+    onError: (error) => {
+      console.error("Erro ao buscar solicitações:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao buscar solicitações",
+        description: error.message,
+      });
+    },
+  });
+}
+
 export function Requests() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  // helper para recarregar a lista via React Query
+  function refetchRequests() {
+    queryClient.invalidateQueries({ queryKey: ["requests"] });
+  }
 
-  const [occurrences, setOccurrences] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRecent, setFilterRecent] = useState("recent");
   const [filterType, setFilterType] = useState(null);
@@ -337,17 +416,19 @@ export function Requests() {
     }
   }, [currentCount, lastSeenCount, markAsSeen]);
 
-  useEffect(() => {
-    fetchOccurrences(currentPage);
-  }, [
-    currentPage,
+  // busca da lista via React Query
+  const { data, isLoading } = useRequests({
+    page: currentPage,
     searchTerm,
     filterRecent,
     filterType,
     filterNeighborhood,
-    filterDateRange.startDate,
-    filterDateRange.endDate,
-  ]);
+    toast,
+  });
+
+  const items = data?.list ?? [];
+  const totalPages = data?.totalPages ?? 1;
+  const effectivePage = data?.page ?? currentPage;
 
   const handleToggleDateOrder = (order) => {
     const normalized =
@@ -360,64 +441,9 @@ export function Requests() {
     setCurrentPage(1);
   };
 
-  const fetchOccurrences = async (page = 1) => {
-    try {
-      const order =
-        filterRecent === "oldest" || filterRecent === "asc" ? "asc" : "desc";
-
-      const params = {
-        page,
-        street: searchTerm || undefined, // filtro por rua
-        neighborhoodId: filterNeighborhood || undefined, // bairro
-        type: filterType || undefined, // tipo
-        order, // ordenação
-      };
-
-      const { data } = await api.get(ENDPOINT, { params });
-
-      const raw = Array.isArray(data.items) ? data.items : [];
-
-      const list = raw.map((it) => ({
-        id: it.id,
-        createdAt: it.createdAt,
-        sentBy: {
-          id: it.createdById,
-          name: it.createdByName,
-          email: it.createdByEmail,
-        },
-        address: {
-          street: it.street,
-          number: it.number,
-          complement: it.complement,
-          neighborhood: it.neighborhoodName,
-          neighborhoodId: it.neighborhoodId,
-          city: it.city,
-          cep: it.cep,
-        },
-        type: it.type,
-        description: it.description,
-        status: it.status,
-        latitude: it.latitude ?? null,
-        longitude: it.longitude ?? null,
-      }));
-
-      setOccurrences(list);
-      setCurrentPage(data.page ?? page);
-      setTotalPages(data.totalPages ?? data.total_pages ?? 1);
-    } catch (error) {
-      console.error("Erro ao buscar solicitações:", error);
-      toast({
-        variant: "destructive",
-        title: "Erro ao buscar solicitações",
-        description: error.message,
-      });
-      setOccurrences([]);
-      setCurrentPage(1);
-      setTotalPages(1);
-    }
+  const handleApplyFiltersClick = () => {
+    setCurrentPage(1);
   };
-
-  const handleApplyFiltersClick = () => fetchOccurrences(1);
 
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
@@ -426,11 +452,11 @@ export function Requests() {
 
       <div className="px-4 py-4 sm:py-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:hidden">
-          {PAGE_TITLE}
+          Solicitações
         </h1>
         <Filters
-          title={PAGE_TITLE}
-          subtitle={PAGE_SUBTITLE}
+          title="Solicitações"
+          subtitle="de serviços"
           onSearch={(input) => {
             setSearchTerm(input);
             setCurrentPage(1);
@@ -457,29 +483,23 @@ export function Requests() {
       </div>
 
       <RequestsList
-        items={occurrences}
+        items={items}
         dateOrder={filterRecent}
         onToggleDateOrder={handleToggleDateOrder}
         renderExpandedRow={(row) => (
-          <ExpandedCreateFromRequest
-            item={row}
-            onCreated={() => fetchOccurrences(currentPage)}
-          />
+          <ExpandedCreateFromRequest item={row} onCreated={refetchRequests} />
         )}
       />
 
       <footer className="bg-[#EBEBEB] p-4 mt-auto">
         <div className="max-w-full mx-auto">
           <Pagination
-            currentPage={currentPage}
+            currentPage={effectivePage}
             totalPages={totalPages}
-            onPageChange={fetchOccurrences}
+            onPageChange={(page) => setCurrentPage(page)}
           />
         </div>
       </footer>
     </div>
   );
 }
-
-export { Requests as RequestsNamed };
-export default Requests;
