@@ -2,7 +2,8 @@
 "use client";
 
 // React e bibliotecas externas
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 // Componentes globais
 import { Sidebar } from "@/components/sidebar";
@@ -30,10 +31,122 @@ function isoEndOfDay(d) {
   return x.toISOString();
 }
 
+// Busca as duplicatas
+async function fetchWarrantyOccurrences({ queryKey }) {
+  const [
+    _key,
+    {
+      page,
+      searchTerm,
+      filterType,
+      filterStatus,
+      filterRecent,
+      filterNeighborhood,
+      startDate,
+      endDate,
+    },
+  ] = queryKey;
+
+  const { data } = await api.get("/occurrences/warranty", {
+    params: {
+      page,
+      street: searchTerm || undefined, 
+      districtId: filterNeighborhood || undefined, 
+      type: filterType || undefined, 
+      status: filterStatus || undefined, 
+      orderBy: filterRecent || "recent", 
+      startDate,
+      endDate,
+    },
+  });
+
+  const {
+    occurrences: listRaw = [],
+    totalPages: apiTotalPages,
+    totalCount,
+    pageSize,
+    page: apiPage,
+  } = data ?? {};
+
+  const flattened = Array.isArray(listRaw)
+    ? listRaw.map((occ) => ({
+        ...occ,
+        protocolNumber: occ?.protocolNumber ?? occ?.id ?? "-",
+      }))
+    : [];
+
+  const computedTotalPages =
+    Number(apiTotalPages) ||
+    Math.max(
+      1,
+      Math.ceil(
+        (Number(totalCount) || flattened.length) / (Number(pageSize) || 10)
+      )
+    );
+
+  const serverPage =
+    typeof apiPage === "number" ? apiPage : page ?? 1;
+
+  return {
+    list: flattened,
+    page: serverPage,
+    totalPages: computedTotalPages,
+  };
+}
+
+function useWarrantyOccurrences({
+  page,
+  searchTerm,
+  filterType,
+  filterStatus,
+  filterRecent,
+  filterNeighborhood,
+  filterDateRange,
+  toast,
+}) {
+  const startDate = filterDateRange.startDate
+    ? isoStartOfDay(filterDateRange.startDate)
+    : undefined;
+
+  const endDate = filterDateRange.endDate
+    ? isoEndOfDay(filterDateRange.endDate)
+    : undefined;
+
+  const query = useQuery({
+    queryKey: [
+      "warranty-occurrences",
+      {
+        page,
+        searchTerm,
+        filterType,
+        filterStatus,
+        filterRecent,
+        filterNeighborhood,
+        startDate,
+        endDate,
+      },
+    ],
+    queryFn: fetchWarrantyOccurrences,
+    keepPreviousData: true,
+    onError: (error) => {
+      console.error(
+        "Erro ao buscar ocorrências de garantia:",
+        error?.response?.data || error
+      );
+      toast({
+        variant: "destructive",
+        title: "Erro ao buscar ocorrências (garantia)",
+        description:
+          error?.response?.data?.message || error.message,
+      });
+    },
+  });
+
+  return query;
+}
+
 export function Warranty() {
   const { toast } = useToast();
-
-  const [occurrences, setOccurrences] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState(null);
   const [filterStatus, setFilterStatus] = useState(null);
@@ -45,88 +158,21 @@ export function Warranty() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
 
-  //filtro muda, refaz a busca
-  useEffect(() => {
-    fetchWarranty(currentPage);
-  }, [
-    currentPage,
+  const { data } = useWarrantyOccurrences({
+    page: currentPage,
     searchTerm,
     filterType,
     filterStatus,
     filterRecent,
     filterNeighborhood,
-    filterDateRange.startDate,
-    filterDateRange.endDate,
-  ]);
+    filterDateRange,
+    toast,
+  });
 
-  const handleToggleDateOrder = (order) => {
-    setFilterRecent(order);
-    setCurrentPage(1);
-  };
-
-  const fetchWarranty = async (page = 1) => {
-    try {
-      const { data } = await api.get("/occurrences/warranty", {
-        params: {
-          page,
-          street: searchTerm || undefined, // rua/protocolo
-          districtId: filterNeighborhood || undefined, // bairro -> districtId
-          type: filterType || undefined, // tipos
-          status: filterStatus || undefined, // status
-          orderBy: filterRecent || "recent", // 'recent' | 'oldest'
-          startDate: filterDateRange.startDate
-            ? isoStartOfDay(filterDateRange.startDate)
-            : undefined,
-          endDate: filterDateRange.endDate
-            ? isoEndOfDay(filterDateRange.endDate)
-            : undefined,
-        },
-      });
-
-      const {
-        occurrences: listRaw = [],
-        totalPages: apiTotalPages,
-        totalCount,
-        pageSize,
-        page: apiPage,
-      } = data ?? {};
-
-      const flattened = Array.isArray(listRaw)
-        ? listRaw.map((occ) => ({
-            ...occ,
-            protocolNumber: occ?.protocolNumber ?? occ?.id ?? "-",
-          }))
-        : [];
-
-      const computedTotalPages =
-        Number(apiTotalPages) ||
-        Math.max(
-          1,
-          Math.ceil(
-            (Number(totalCount) || flattened.length) / (Number(pageSize) || 10)
-          )
-        );
-
-      setOccurrences(flattened);
-      setCurrentPage(typeof apiPage === "number" ? apiPage : page);
-      setTotalPages(computedTotalPages);
-    } catch (error) {
-      console.error(
-        "❌ Erro ao buscar ocorrências de garantia:",
-        error?.response?.data || error
-      );
-      toast({
-        variant: "destructive",
-        title: "Erro ao buscar ocorrências (garantia)",
-        description: error.message,
-      });
-      setOccurrences([]);
-      setCurrentPage(1);
-      setTotalPages(1);
-    }
-  };
+  const list = data?.list ?? [];
+  const totalPages = data?.totalPages ?? 1;
+  const effectivePage = data?.page ?? currentPage;
 
   const handleApplyFilters = () => {
     setCurrentPage(1);
@@ -145,7 +191,7 @@ export function Warranty() {
         <Filters
           title="Garantia"
           subtitle="Até 90 dias"
-          contextType="garantia" // para exibir os status corretos no dropdown
+          contextType="garantia" 
           onSearch={(input) => {
             setSearchTerm(input);
             setCurrentPage(1);
@@ -158,7 +204,7 @@ export function Warranty() {
             setFilterRecent(order);
             setCurrentPage(1);
           }}
-          onFilterNeighborhood={(neighborhood /* districtId */) => {
+          onFilterNeighborhood={(neighborhood) => {
             setFilterNeighborhood(neighborhood);
             setCurrentPage(1);
           }}
@@ -174,10 +220,10 @@ export function Warranty() {
         />
       </div>
 
-      {/* LISTA DE CARDS */}
+      {/* Cards */}
       <div className="px-6 pb-4 sm:pb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-          {occurrences?.length === 0 && (
+          {list?.length === 0 && (
             <div className="col-span-full">
               <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-8 text-center text-zinc-500">
                 Nenhuma ocorrência pendente de revisão dentro de 90 dias.
@@ -185,7 +231,7 @@ export function Warranty() {
             </div>
           )}
 
-          {occurrences?.map((occ) => (
+          {list?.map((occ) => (
             <WarrantyCard
               key={occ.id || occ.occurrenceId || occ.protocolNumber}
               occurrence={occ}
@@ -198,9 +244,9 @@ export function Warranty() {
       <footer className="bg-[#EBEBEB] p-4 mt-auto">
         <div className="max-w-full mx-auto">
           <Pagination
-            currentPage={currentPage}
+            currentPage={effectivePage}
             totalPages={totalPages}
-            onPageChange={fetchWarranty}
+            onPageChange={(page) => setCurrentPage(page)}
           />
         </div>
       </footer>

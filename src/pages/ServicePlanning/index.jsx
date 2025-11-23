@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { format as formatTz } from "date-fns-tz";
 import { pdf, PDFDownloadLink } from "@react-pdf/renderer";
+import { useQuery } from "@tanstack/react-query";
 
 // Componentes globais
 import { Sidebar } from "@/components/sidebar";
@@ -22,16 +23,136 @@ import { ExpandedRowPlanning } from "./ExpandedRowPlanning";
 
 // Serviços
 import { api } from "@/services/api";
+import { useToast } from "@/hooks/use-toast";
 
 // Assets
 import Printer from "@/assets/icons/Printer.svg?react";
 import FilePdf from "@/assets/icons/filePdf.svg?react";
 
-export function ServicePlanning() {
-  // dados
-  const [serviceOrders, setServiceOrders] = useState([]);
+// Busca das ocorrencias em planejamento
+async function fetchDailyPlanning({ queryKey }) {
+  const [
+    _key,
+    {
+      dateParam,
+      debouncedStreet,
+      neighborhoodId,
+      occurrenceType,
+      status,
+      sectorId,
+      foremanId,
+    },
+  ] = queryKey;
 
-  // data diária
+  const response = await api.get("/service-orders/daily-planning", {
+    params: {
+      date: dateParam,
+      street: debouncedStreet?.trim() || undefined,
+      neighborhoodId: neighborhoodId || undefined,
+      occurrenceType: occurrenceType || undefined,
+      status: status || undefined,
+      sectorId: sectorId || undefined,
+      foremanId: foremanId || undefined,
+    },
+  });
+
+  const formattedData = response.data.map((order, index) => {
+    const occ = order.occurrence || {};
+    const address = occ.address || {};
+
+    return {
+      __raw: order,
+      id: order.id,
+      createdAt: order.createdAt,
+      protocol: order.protocolNumber,
+      scheduledStart: order.scheduledStart,
+      scheduledEnd: order.scheduledEnd,
+
+      // flags
+      isDelayed: order.isDelayed ?? false,
+      isEmergencial: occ.isEmergencial ?? false,
+
+      externalCompany: occ.externalCompany || "Emurb",
+      neighborhood: address.neighborhoodName || "—",
+      origin: "Plataforma",
+      type: occ.type,
+      status: order.status,
+      sector: occ.sector,
+      address: {
+        street: address.street,
+        number: address.number,
+        city: "Aracaju",
+        neighborhoodName: address.neighborhoodName,
+      },
+      author: occ.author,
+      approvedBy: occ.approvedBy,
+      pilot: order.inspector,
+      ordem: index + 1,
+      scheduledDate: order.scheduledDate,
+      inspector: order.inspector,
+      foreman: order.foreman,
+      team: order.team,
+      serviceNature: order.serviceNature,
+      occurrence: { sector: occ.sector || null },
+      fullOccurrence: {
+        address: {
+          street: address.street,
+          number: address.number,
+          neighborhoodName: address.neighborhoodName,
+        },
+        sector: occ.sector || null,
+      },
+    };
+  });
+
+  return formattedData;
+}
+
+function useDailyPlanning({
+  dateParam,
+  debouncedStreet,
+  neighborhoodId,
+  occurrenceType,
+  status,
+  sectorId,
+  foremanId,
+  toast,
+}) {
+  const query = useQuery({
+    queryKey: [
+      "daily-planning",
+      {
+        dateParam,
+        debouncedStreet,
+        neighborhoodId,
+        occurrenceType,
+        status,
+        sectorId,
+        foremanId,
+      },
+    ],
+    queryFn: fetchDailyPlanning,
+    keepPreviousData: true,
+    onError: (error) => {
+      console.error("Erro ao buscar planejamento diário:", error);
+
+      toast?.({
+        variant: "destructive",
+        title: "Erro ao buscar planejamento diário",
+        description:
+          error?.response?.data?.message ||
+          error.message ||
+          "Tente novamente mais tarde.",
+      });
+    },
+  });
+
+  return query;
+}
+
+export function ServicePlanning() {
+  const { toast } = useToast();
+
   const [date, setDate] = useState(new Date());
 
   // filtros
@@ -42,8 +163,8 @@ export function ServicePlanning() {
   const [sectorId, setSectorId] = useState(null);
   const [foremanId, setForemanId] = useState(null);
 
+  // debounce para busca por rua
   const debouncedStreet = useDebouncedValue(street, 350);
-
   const dateParam = (() => {
     try {
       return formatTz(date, "yyyy-MM-dd", { timeZone: "America/Maceio" });
@@ -52,82 +173,7 @@ export function ServicePlanning() {
     }
   })();
 
-  const buildQuery = () => {
-    const params = new URLSearchParams({ date: dateParam });
-    if ((debouncedStreet || "").trim())
-      params.set("street", debouncedStreet.trim());
-    if (neighborhoodId) params.set("neighborhoodId", neighborhoodId);
-    if (occurrenceType) params.set("occurrenceType", occurrenceType);
-    if (status) params.set("status", status);
-    if (sectorId) params.set("sectorId", sectorId);
-    if (foremanId) params.set("foremanId", foremanId);
-    return params.toString();
-  };
-
-  // busca
-  const fetchPlanning = async () => {
-    try {
-      const query = buildQuery();
-      const response = await api.get(`/service-orders/daily-planning?${query}`);
-
-      const formattedData = response.data.map((order, index) => {
-        const occ = order.occurrence || {};
-        const address = occ.address || {};
-        return {
-          __raw: order,
-          id: order.id,
-          createdAt: order.createdAt,
-          protocol: order.protocolNumber,
-          scheduledStart: order.scheduledStart,
-          scheduledEnd: order.scheduledEnd,
-          
-          // flags
-          isDelayed: order.isDelayed ?? false,
-          isEmergencial: occ.isEmergencial ?? false,
-
-          externalCompany: occ.externalCompany || "Emurb",
-          neighborhood: address.neighborhoodName || "—",
-          origin: "Plataforma",
-          type: occ.type,
-          status: order.status,
-          sector: occ.sector,
-          address: {
-            street: address.street,
-            number: address.number,
-            city: "Aracaju",
-            neighborhoodName: address.neighborhoodName,
-          },
-          author: occ.author,
-          approvedBy: occ.approvedBy,
-          pilot: order.inspector,
-          ordem: index + 1,
-          scheduledDate: order.scheduledDate,
-          inspector: order.inspector,
-          foreman: order.foreman,
-          team: order.team,
-          serviceNature: order.serviceNature,
-          occurrence: { sector: occ.sector || null },
-          fullOccurrence: {
-            address: {
-              street: address.street,
-              number: address.number,
-              neighborhoodName: address.neighborhoodName,
-            },
-            sector: occ.sector || null,
-          },
-        };
-      });
-
-      setServiceOrders(formattedData);
-    } catch (error) {
-      console.error("Erro ao buscar planejamento:", error);
-    }
-  };
-
-  // refetch quando data/filtros mudam
-  useEffect(() => {
-    fetchPlanning();
-  }, [
+  const { data: serviceOrders = [] } = useDailyPlanning({
     dateParam,
     debouncedStreet,
     neighborhoodId,
@@ -135,7 +181,8 @@ export function ServicePlanning() {
     status,
     sectorId,
     foremanId,
-  ]);
+    toast,
+  });
 
   const planinRef = useRef(null);
 
@@ -178,7 +225,7 @@ export function ServicePlanning() {
               setDate(startDate);
           }}
           onFilterForeman={(id) => setForemanId(id || null)}
-          onFilterSector={(id) => setSectorId(id || null)} 
+          onFilterSector={(id) => setSectorId(id || null)}
         />
       </div>
 
@@ -228,6 +275,7 @@ export function ServicePlanning() {
   );
 }
 
+// Hook geral de debounce
 function useDebouncedValue(value, delay = 300) {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {

@@ -14,6 +14,7 @@ import {
 import { format } from "date-fns";
 import { api } from "@/services/api";
 import AlertPColor from "@/assets/icons/AlertPColor.svg?react";
+import { useQuery } from "@tanstack/react-query";
 
 const BASE_MEDIA_URL = (
   import.meta.env.VITE_MEDIA_CDN ||
@@ -34,57 +35,21 @@ const resolveMediaUrl = (u) => {
   return `${BASE_MEDIA_URL}/${sanitizeKey(u)}`;
 };
 
-// Badge simples para status (idêntico ao exemplo)
-function StatusBadge({
-  status,
-  isEmergencial,
-  isDelayed,
-  labelOverrides = {},
-}) {
-  const getStatusClasses = (status) => {
-    const map = {
-      em_analise: "bg-[#D0E4FC] text-[#1678F2]",
-      emergencial: "bg-[#FFE8E8] text-[#FF2222]",
-      aprovada: "bg-[#F6FFC6] text-[#79811C]",
-      os_gerada: "bg-[#f0ddee] text-[#733B73]",
-      aguardando_execucao: "bg-[#EBD4EA] text-[#5D2A61]",
-      em_execucao: "bg-[#FFF1CB] text-[#845B00]",
-      finalizada: "bg-[#C9F2E9] text-[#1C7551]",
-      pendente: "bg-[#FFE8DC] text-[#824F24]",
-      aceita: "bg-[#FFF4D6] text-[#986F00]",
-      verificada: "bg-[#DDF2EE] text-[#40C4AA]",
-      rejeitada: "bg-[#FFE8E8] text-[#9D0000]",
-    };
-    return map[status] || "bg-gray-100 text-gray-600";
-  };
-
-  const statusLabels = {
-    em_analise: "Em análise",
-    emergencial: "Emergencial",
-    aprovada: "Aprovada",
-    os_gerada: "O.S. gerada",
-    aguardando_execucao: "Agendada",
-    em_execucao: "Andamento",
-    finalizada: "Finalizada",
-    pendente: "Pendente",
-    aceita: "Aceita",
-    verificada: "Verificada",
-    rejeitada: "Rejeitada",
-  };
-
-  const label = labelOverrides[status] || statusLabels[status] || status || "—";
-  const classes = getStatusClasses(status);
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${classes}`}
-    >
-      {label}
-    </span>
-  );
+// Hook para buscar possíveis duplicatas
+function useNearbyOccurrences(occurrenceId, enabled) {
+  return useQuery({
+    queryKey: ["occurrence-nearby", occurrenceId],
+    queryFn: async () => {
+      const { data } = await api.get(`/occurrences/${occurrenceId}/nearby`);
+      const baseId = data?.baseId ?? null;
+      const items = Array.isArray(data?.occurrences) ? data.occurrences : [];
+      return { baseId, items };
+    },
+    enabled: !!(enabled && occurrenceId),
+  });
 }
 
-export function WarrantyCard({ occurrence, expanded, onToggle }) {
+export function WarrantyCard({ occurrence }) {
   const { toast } = useToast();
 
   const photos = useMemo(() => {
@@ -109,57 +74,27 @@ export function WarrantyCard({ occurrence, expanded, onToggle }) {
 
   const photosCount = photos.length;
   const [activeIdx, setActiveIdx] = useState(0);
+
   useEffect(() => {
     setActiveIdx((i) => (photosCount ? Math.min(i, photosCount - 1) : 0));
   }, [photosCount]);
 
   // modal duplicatas
   const [isPossibleDuplicateOpen, setIsPossibleDuplicateOpen] = useState(false);
-  const [nearbyLoading, setNearbyLoading] = useState(false);
-  const [nearbyError, setNearbyError] = useState("");
-  const [nearbyBaseId, setNearbyBaseId] = useState(null);
-  const [nearbyItems, setNearbyItems] = useState([]);
 
-  useEffect(() => {
-    let mounted = true;
+  const {
+    data: nearbyData,
+    isLoading: nearbyLoading,
+    error: nearbyErrorRaw,
+  } = useNearbyOccurrences(occurrence?.id, isPossibleDuplicateOpen);
 
-    async function fetchNearby() {
-      try {
-        setNearbyError("");
-        setNearbyLoading(true);
-
-        const { data } = await api.get(`/occurrences/${occurrence.id}/nearby`);
-        if (!mounted) return;
-
-        setNearbyBaseId(data?.baseId ?? null);
-        setNearbyItems(
-          Array.isArray(data?.occurrences) ? data.occurrences : []
-        );
-      } catch (err) {
-        if (!mounted) return;
-        console.error("Erro ao buscar duplicatas próximas:", err);
-        setNearbyError(
-          err?.response?.data?.message ||
-            "Não foi possível carregar possíveis duplicatas."
-        );
-      } finally {
-        if (mounted) setNearbyLoading(false);
-      }
-    }
-
-    if (isPossibleDuplicateOpen) {
-      fetchNearby();
-    } else {
-      setNearbyBaseId(null);
-      setNearbyItems([]);
-      setNearbyError("");
-      setNearbyLoading(false);
-    }
-
-    return () => {
-      mounted = false;
-    };
-  }, [isPossibleDuplicateOpen, occurrence.id]);
+  const nearbyBaseId = nearbyData?.baseId ?? null;
+  const nearbyItems = nearbyData?.items ?? [];
+  const nearbyError = nearbyErrorRaw
+    ? nearbyErrorRaw?.response?.data?.message ||
+      nearbyErrorRaw.message ||
+      "Não foi possível carregar possíveis duplicatas."
+    : "";
 
   const street = occurrence?.address?.street ?? "—";
   const number = occurrence?.address?.number ?? "—";
@@ -178,9 +113,14 @@ export function WarrantyCard({ occurrence, expanded, onToggle }) {
       ? occurrence.address.latitude
       : "—";
 
-  const status = occurrence?.status ?? "—";
-  const tipoOcorrencia = occurrence?.type ?? "—";
   const solicitadoPor = occurrence?.author?.name ?? "—";
+
+  const tipoOcorrencia =
+    occurrence?.type === "DESOBSTRUCAO"
+      ? "Drenagem"
+      : occurrence?.type === "TAPA_BURACO"
+      ? "Asfalto"
+      : occurrence?.type ?? "—";
 
   const osCode = occurrence?.protocolNumber || occurrence?.id || "—";
 
@@ -270,8 +210,6 @@ export function WarrantyCard({ occurrence, expanded, onToggle }) {
           </Button>
         </div>
       </div>
-
-      {/* info + timeline */}
       <div className="p-4 sm:p-5 border-t border-zinc-100">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Informações */}
@@ -297,13 +235,7 @@ export function WarrantyCard({ occurrence, expanded, onToggle }) {
                 <span className="font-semibold text-zinc-700">
                   Ocorrência:{" "}
                 </span>
-                <span className="text-zinc-700">
-                  {occurrence.type === "DESOBSTRUCAO"
-                    ? "Drenagem"
-                    : occurrence.type === "TAPA_BURACO"
-                    ? "Asfalto"
-                    : occurrence.type}
-                </span>
+                <span className="text-zinc-700">{tipoOcorrencia}</span>
               </li>
               <li className="text-zinc-500">
                 <span className="font-semibold text-zinc-700">Endereço: </span>
@@ -340,6 +272,8 @@ export function WarrantyCard({ occurrence, expanded, onToggle }) {
           </div>
         </div>
       </div>
+
+      {/* Modal de possíveis duplicatas */}
       <Dialog
         open={isPossibleDuplicateOpen}
         onOpenChange={setIsPossibleDuplicateOpen}
