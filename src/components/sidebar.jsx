@@ -221,7 +221,8 @@ export function Sidebar() {
                   */}
 
                   <NavLink to="/reports" className={linkClass}>
-                    <DataAnalytics className="w-5 h-5 shrink-0" /> Relatórios
+                    <DataAnalytics className="w-5 h-5 shrink-0" /> Data
+                    Analytics
                   </NavLink>
                 </>
               )}
@@ -462,8 +463,8 @@ export function Sidebar() {
                       */}
 
                       <NavLink to="/reports" className={linkClassMobile}>
-                        <DataAnalytics className="w-5 h-5 shrink-0" />{" "}
-                        Relatórios
+                        <DataAnalytics className="w-5 h-5 shrink-0" /> Data
+                        Analytics
                       </NavLink>
                     </>
                   )}

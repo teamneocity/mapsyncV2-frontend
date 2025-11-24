@@ -98,7 +98,7 @@ function pickPhoto(photos = []) {
   return `${BASE_MEDIA_URL}/${String(chosen.url).replace(/^\/+/, "")}`;
 }
 
-// NOVO: pega antes e depois separadamente
+// pega antes e depois separadamente
 function pickBeforeAfterPhotos(photos = []) {
   if (!Array.isArray(photos) || photos.length === 0) {
     return { initialUrl: null, finalUrl: null };
