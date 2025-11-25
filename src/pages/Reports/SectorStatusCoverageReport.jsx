@@ -1,3 +1,4 @@
+// src/pages/Reports/SectorStatusCoverageReport.jsx
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -56,6 +57,27 @@ function pickPhoto(photos = []) {
   return resolveMediaUrl(chosen?.url);
 }
 
+function pickBeforeAfterPhotos(photos = []) {
+  if (!Array.isArray(photos) || photos.length === 0) {
+    return { initialUrl: null, finalUrl: null };
+  }
+
+  const norm = (v) =>
+    String(v || "")
+      .trim()
+      .toUpperCase();
+
+  const finalPhoto = photos.find((p) => norm(p.stage) === "FINAL");
+  const initialPhoto = photos.find((p) =>
+    ["INICIAL", "INITIAL", "INICIO"].includes(norm(p.stage))
+  );
+
+  return {
+    initialUrl: resolveMediaUrl(initialPhoto?.url),
+    finalUrl: resolveMediaUrl(finalPhoto?.url),
+  };
+}
+
 function chunk2(arr = []) {
   const out = [];
   for (let i = 0; i < arr.length; i += 2) out.push(arr.slice(i, i + 2));
@@ -81,9 +103,14 @@ export default function SectorStatusCoverageReport({ onClose }) {
   const [params, setParams] = useSearchParams();
   const sectorId = params.get("sectorId");
   const sectorName = params.get("sectorName") || "Setor";
+
   const [selectedStatus, setSelectedStatus] = useState(
     params.get("status") || ""
-  ); // pode ser vazio
+  );
+
+  // flags
+  const isEmergency = params.get("isEmergency") === "true";
+  const isDelayed = params.get("isDelayed") === "true";
 
   const initialPeriod = (() => {
     const p = params.get("period");
@@ -100,24 +127,29 @@ export default function SectorStatusCoverageReport({ onClose }) {
     setSelectedStatus(params.get("status") || "");
   }, [params]);
 
-  // carregar dados (sem status quando vazio)
+  // Busca de dados
   useEffect(() => {
     let alive = true;
     (async () => {
       setLoading(true);
       try {
         const query = { sectorId };
-        if (selectedStatus) query.status = selectedStatus;
 
-        const { data } = await api.get("/reports/neighborhood-coverage", {
+        if (selectedStatus) query.status = selectedStatus;
+        if (isEmergency) query.isEmergency = true;
+        if (isDelayed) query.isDelayed = true;
+
+        const { data } = await api.get("/occurrences/dashboard/coverage", {
           params: query,
         });
 
         if (!alive) return;
-        setData(data?.data || null);
+
+        const coverage = data?.coverage || data?.data || null;
+        setData(coverage);
       } catch (err) {
         console.error(
-          "[SectorStatusCoverageReport] /reports/neighborhood-coverage",
+          "[SectorStatusCoverageReport] /occurrences/dashboard/coverage",
           err
         );
         if (!alive) return;
@@ -129,15 +161,7 @@ export default function SectorStatusCoverageReport({ onClose }) {
     return () => {
       alive = false;
     };
-  }, [sectorId, selectedStatus]);
-
-  // remove status
-  function handleClearStatus() {
-    const next = new URLSearchParams(params);
-    next.delete("status");
-    setParams(next);
-    setSelectedStatus("");
-  }
+  }, [sectorId, selectedStatus, isEmergency, isDelayed]);
 
   const now = new Date().toLocaleString("pt-BR");
   const periodLabel =
@@ -149,9 +173,17 @@ export default function SectorStatusCoverageReport({ onClose }) {
     return data?.neighborhoodNames || [];
   }, [data, period]);
 
+  // Mantenho as flags no objeto
   const occurrences = useMemo(() => {
     const list = data?.occurrencesByWindow?.[period] || [];
-    const sorted = [...list].sort((a, b) => {
+
+    const mapped = list.map((o) => ({
+      ...o,
+      isEmergency: o.isEmergency ?? false,
+      isDelayed: o.isDelayed ?? false,
+    }));
+
+    return mapped.sort((a, b) => {
       const an = String(
         a?.address?.neighborhoodName || a?.neighborhoodName || ""
       ).localeCompare(
@@ -160,7 +192,6 @@ export default function SectorStatusCoverageReport({ onClose }) {
       if (an !== 0) return an;
       return new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0);
     });
-    return sorted;
   }, [data, period]);
 
   const totalOccurrences = data?.totalOccurrences ?? 0;
@@ -168,6 +199,13 @@ export default function SectorStatusCoverageReport({ onClose }) {
     data?.occurrencesCountByWindow?.[period] ?? occurrences.length;
 
   const pages = useMemo(() => chunk2(occurrences), [occurrences]);
+
+  const extraFiltersLabel =
+    !isEmergency && !isDelayed
+      ? "Nenhum filtro adicional"
+      : [isEmergency && "Emergenciais", isDelayed && "Atrasadas"]
+          .filter(Boolean)
+          .join(" e ");
 
   return (
     <div className="min-h-screen bg-white text-black">
@@ -224,6 +262,9 @@ export default function SectorStatusCoverageReport({ onClose }) {
                   {humanizeStatus(selectedStatus)}
                 </span>{" "}
                 — Setor: <span className="font-semibold">{sectorName}</span>
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Filtros adicionais: <span>{extraFiltersLabel}</span>
               </p>
             </div>
           </div>
@@ -285,7 +326,7 @@ export default function SectorStatusCoverageReport({ onClose }) {
           </div>
         </section>
 
-        {/* ocorrências  */}
+        {/* ocorrências */}
         <section className="mt-10 break-before-page">
           {loading ? (
             <div className="h-[180px] flex items-center justify-center text-gray-400">
@@ -301,6 +342,11 @@ export default function SectorStatusCoverageReport({ onClose }) {
                 <div key={idx} className="sheet space-y-6">
                   {pair.map((o) => {
                     const photoUrl = pickPhoto(o.photos);
+                    const { initialUrl, finalUrl } = pickBeforeAfterPhotos(
+                      o.photos
+                    );
+                    const isFinalizada = o.status === "finalizada";
+
                     const addr = o.address || {};
                     const addrText = [
                       [addr.street, addr.number].filter(Boolean).join(", "),
@@ -309,30 +355,81 @@ export default function SectorStatusCoverageReport({ onClose }) {
                       .filter(Boolean)
                       .join(" — ");
 
+                    const typeLabel = String(
+                      o.occurrenceType || o.type || "Não informado"
+                    )
+                      .toLowerCase()
+                      .replace(/_/g, " ")
+                      .replace(/^./, (c) => c.toUpperCase());
+
                     return (
                       <article
                         key={o.id}
                         className="card rounded-xl border border-neutral-200 p-4"
                         style={{ breakInside: "avoid" }}
                       >
-                        <Photo src={photoUrl} alt={`Ocorrência ${o.id}`} />
+                        {/* fotos */}
+                        {isFinalizada && (initialUrl || finalUrl) ? (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <Photo
+                              src={initialUrl || finalUrl || photoUrl}
+                              alt={`Ocorrência ${o.id} - Antes`}
+                            />
+                            <Photo
+                              src={finalUrl || initialUrl || photoUrl}
+                              alt={`Ocorrência ${o.id} - Depois`}
+                            />
+                          </div>
+                        ) : (
+                          <Photo src={photoUrl} alt={`Ocorrência ${o.id}`} />
+                        )}
 
+                        {/* informações */}
                         <div className="mt-3 text-sm text-gray-700 flex flex-wrap items-start justify-between gap-2">
-                          <div>
-                            <div className="font-semibold text-gray-900">
-                              {String(
-                                o.occurrenceType ||
-                                  o.type ||
-                                  "Tipo não informado"
-                              )
-                                .toLowerCase()
-                                .replace(/_/g, " ")
-                                .replace(/^./, (c) => c.toUpperCase())}
+                          <div className="space-y-0.5">
+                            <div>
+                              <span className="font-semibold text-gray-900">
+                                Tipo:{" "}
+                              </span>
+                              <span>{typeLabel}</span>
                             </div>
-                            <div className="mt-0.5">
-                              {addrText || "Endereço não informado"}
+                            <div>
+                              <span className="font-semibold text-gray-900">
+                                Endereço:{" "}
+                              </span>
+                              <span>
+                                {addrText || "Endereço não informado"}
+                              </span>
+                            </div>
+
+                            {/* ⭐ BADGES NOVOS */}
+                            <div className="flex gap-2 mt-2 flex-wrap">
+                              {o.isEmergency && (
+                                <span
+                                  className="px-2 py-0.5 text-[11px] font-medium rounded-md"
+                                  style={{
+                                    backgroundColor: "#FFE8E8",
+                                    color: "#7F1D1D",
+                                  }}
+                                >
+                                  Emergencial
+                                </span>
+                              )}
+
+                              {o.isDelayed && (
+                                <span
+                                  className="px-2 py-0.5 text-[11px] font-medium rounded-md"
+                                  style={{
+                                    backgroundColor: "#E9E4FC",
+                                    color: "#4C1D95",
+                                  }}
+                                >
+                                  Atrasada
+                                </span>
+                              )}
                             </div>
                           </div>
+
                           <div className="text-right text-xs text-gray-500">
                             <div>
                               {new Date(o.createdAt).toLocaleString("pt-BR")}
@@ -352,7 +449,7 @@ export default function SectorStatusCoverageReport({ onClose }) {
         </section>
       </main>
 
-      {/* CSS de impressão */}
+      {/* CSS impressão */}
       <style>{`
         @media print {
           @page { size: A4 portrait; margin: 12mm; }

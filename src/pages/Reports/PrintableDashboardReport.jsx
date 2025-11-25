@@ -1,3 +1,4 @@
+// src/pages/Reports/PrintableDashboardReport.jsx
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -148,7 +149,6 @@ function StatusBadge({ status }) {
   );
 }
 
-// imagem
 function Photo({ src, alt }) {
   if (!src) {
     return (
@@ -164,27 +164,29 @@ function Photo({ src, alt }) {
   );
 }
 
-// Gráfico de pizza
 function PieSVG({ items, size = 260 }) {
   const total = Math.max(
     1,
     items.reduce((s, it) => s + (Number(it.value) || 0), 0)
   );
-  const cx = size / 2,
-    cy = size / 2,
-    r = size / 2 - 2;
+  const cx = size / 2;
+  const cy = size / 2;
+  const r = size / 2 - 2;
   let angle = -90;
 
   const toPath = (v) => {
-    const slice = v / total,
-      sweep = slice * 360,
-      large = sweep > 180 ? 1 : 0;
-    const start = (angle * Math.PI) / 180,
-      end = ((angle + sweep) * Math.PI) / 180;
-    const x1 = cx + r * Math.cos(start),
-      y1 = cy + r * Math.sin(start);
-    const x2 = cx + r * Math.cos(end),
-      y2 = cy + r * Math.sin(end);
+    const slice = v / total;
+    const sweep = slice * 360;
+    const large = sweep > 180 ? 1 : 0;
+
+    const start = (angle * Math.PI) / 180;
+    const end = ((angle + sweep) * Math.PI) / 180;
+
+    const x1 = cx + r * Math.cos(start);
+    const y1 = cy + r * Math.sin(start);
+    const x2 = cx + r * Math.cos(end);
+    const y2 = cy + r * Math.sin(end);
+
     angle += sweep;
     return { x1, y1, x2, y2, large };
   };
@@ -194,11 +196,14 @@ function PieSVG({ items, size = 260 }) {
       {items.map((it, i) => {
         const v = Number(it.value) || 0;
         if (v <= 0) return null;
+
         const { x1, y1, x2, y2, large } = toPath(v);
+
         return (
           <path
             key={i}
-            d={`M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z`}
+            d={`M ${cx} ${cy} L ${x1} ${y1} 
+              A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z`}
             fill={it.colorHex}
           />
         );
@@ -210,59 +215,83 @@ function PieSVG({ items, size = 260 }) {
 
 // Página principal
 export default function PrintableDashboardReport() {
-  const [stats, setStats] = useState({ byNeighborhood: [], byStatus: [] });
+  const [stats, setStats] = useState({ byStatus: [] });
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // lê filtros da URL (vindos lá do ReportsOverview)
+  // lê filtros da URL
   const [params] = useSearchParams();
   const neighborhoodFilter = (params.get("neighborhood") || "").trim();
   const statusFilter = (params.get("status") || "").trim();
 
-  // busca dados
+  const isEmergency = params.get("isEmergency") === "true";
+  const isDelayed = params.get("isDelayed") === "true";
+
+  // Busca os dados
   useEffect(() => {
     let alive = true;
+
     (async () => {
       setLoading(true);
       try {
-        const { data } = await api.get("/service-orders/stats");
+        const query = { window: "month" };
+
+        if (isEmergency) query.isEmergency = true;
+        if (isDelayed) query.isDelayed = true;
+
+        const { data } = await api.get("/occurrences/dashboard/coverage", {
+          params: query,
+        });
+
         if (!alive) return;
 
-        setStats(data || { byNeighborhood: [], byStatus: [] });
+        const root = data || {};
+        const coverage = root.coverage || root.data || root || {};
+        const statsRaw = root.stats || coverage.stats || { byStatus: [] };
+        setStats(statsRaw || { byStatus: [] });
 
-        const flat = data.byNeighborhood.flatMap((n) =>
-          (n.occurrences || []).map((o) => ({
-            id: o.serviceOrderId,
-            status: o.status,
-            type: o.occurrenceType,
-            createdAt: o.createdAt,
-            address: o.address,
-            photos: o.photos || [],
-          }))
-        );
+        const list = Array.isArray(coverage.occurrencesByWindow?.month)
+          ? coverage.occurrencesByWindow.month
+          : [];
 
-        // ordena por bairro
+        const flat = list.map((o) => ({
+          id: o.serviceOrderId || o.id,
+          status: o.status,
+          type: o.occurrenceType || o.type,
+          createdAt: o.createdAt,
+          address: o.address,
+          photos: o.photos || [],
+
+          // flags extras
+          isEmergency: o.isEmergency ?? false,
+          isDelayed: o.isDelayed ?? false,
+        }));
+
         flat.sort((a, b) => {
           const an = (a.address?.neighborhoodName || "").localeCompare(
             b.address?.neighborhoodName || ""
           );
           if (an !== 0) return an;
-          return new Date(b.createdAt) - new Date(a.createdAt);
+          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
         });
 
         setOrders(flat);
       } catch (err) {
-        console.error("[PrintableDashboardReport] /service-orders/stats", err);
+        console.error(
+          "[PrintableDashboardReport] /occurrences/dashboard/coverage",
+          err
+        );
       } finally {
         if (alive) setLoading(false);
       }
     })();
+
     return () => {
       alive = false;
     };
   }, []);
 
-  // aplica filtros no front-end
+  // Filtros do front
   const filteredOrders = useMemo(() => {
     let list = [...orders];
 
@@ -280,10 +309,9 @@ export default function PrintableDashboardReport() {
     return list;
   }, [orders, neighborhoodFilter, statusFilter]);
 
+  // Gráfico
   const statusItems = useMemo(() => {
-    // agrupa por status com base nas ordens filtradas
     const map = new Map();
-
     filteredOrders.forEach((o) => {
       if (!o.status) return;
       map.set(o.status, (map.get(o.status) || 0) + 1);
@@ -291,26 +319,32 @@ export default function PrintableDashboardReport() {
 
     let fb = 0;
 
-    // se não houver ordens filtradas e stats.byStatus existir,
-    // usa o agrupamento original.
     if (
       map.size === 0 &&
       filteredOrders.length === 0 &&
-      stats.byStatus?.length
+      stats?.byStatus?.length
     ) {
       return stats.byStatus.map((s) => {
         const key = s.status;
         const color =
-          STATUS_COLOR_MAP[key] ||
+          STATUS_COLOR_MAP[key] ??
           FALLBACK_COLORS[fb++ % FALLBACK_COLORS.length];
-        return { label: humanize(key), value: s.count, colorHex: color.hex };
+        return {
+          label: humanize(key),
+          value: s.count,
+          colorHex: color.hex,
+        };
       });
     }
 
     return Array.from(map.entries()).map(([key, count]) => {
       const color =
-        STATUS_COLOR_MAP[key] || FALLBACK_COLORS[fb++ % FALLBACK_COLORS.length];
-      return { label: humanize(key), value: count, colorHex: color.hex };
+        STATUS_COLOR_MAP[key] ?? FALLBACK_COLORS[fb++ % FALLBACK_COLORS.length];
+      return {
+        label: humanize(key),
+        value: count,
+        colorHex: color.hex,
+      };
     });
   }, [filteredOrders, stats]);
 
@@ -318,7 +352,7 @@ export default function PrintableDashboardReport() {
   const now = new Date().toLocaleString("pt-BR");
   const period = monthLabel();
 
-  // bairros distintos a partir das ordens filtradas
+  // Lista de bairros
   const neighborhoodNames = useMemo(() => {
     const set = new Set();
     filteredOrders.forEach((o) => {
@@ -328,12 +362,10 @@ export default function PrintableDashboardReport() {
     return Array.from(set);
   }, [filteredOrders]);
 
-  // usa as ordens filtradas para montar as páginas de 2 em 2
   const sheets = useMemo(() => chunk2(filteredOrders), [filteredOrders]);
 
   return (
     <div className="min-h-screen bg-white text-black">
-      {/* Barra superior */}
       <div className="print:hidden sticky top-0 z-10 flex items-center gap-2 border-b border-neutral-200 bg-white/90 backdrop-blur px-4 py-3">
         <button
           onClick={() => window.history.back()}
@@ -341,6 +373,7 @@ export default function PrintableDashboardReport() {
         >
           Voltar
         </button>
+
         <button
           onClick={() => window.print()}
           className="h-10 px-3 rounded-lg border border-neutral-300 bg-white text-gray-700 text-sm"
@@ -349,30 +382,28 @@ export default function PrintableDashboardReport() {
         </button>
       </div>
 
-      {/* Conteúdo */}
       <main className="mx-auto max-w-[900px] px-6 py-6">
         {/* Cabeçalho */}
         <header className="relative mb-8 mt-10">
-          <div className="flex items-center justify-between">
-            <div className="text-left">
-              <h1 className="text-3xl font-bold text-gray-800">
-                Relatório fotográfico
-              </h1>
-              <p className="text-sm text-gray-500 mt-1">
-                Relatório — Ordens de Serviço
-              </p>
-            </div>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-800">
+            Relatório fotográfico
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">Relatório — Ocorrências</p>
 
           <div className="mt-6 flex flex-col items-center text-sm text-gray-600 text-center">
             <p>Gerado em: {now}</p>
             <p>Período: {period}</p>
+
             <p>
               Bairros com ocorrência:{" "}
-                <span className="font-semibold">{neighborhoodNames.length}</span>{" "}
-              | Total : <span className="font-semibold">{totalStatus}</span>
+              <span className="font-semibold">{neighborhoodNames.length}</span>{" "}
+              | Total: <span className="font-semibold">{totalStatus}</span>
             </p>
-            {(neighborhoodFilter || statusFilter) && (
+
+            {(neighborhoodFilter ||
+              statusFilter ||
+              isEmergency ||
+              isDelayed) && (
               <p className="mt-1 text-xs text-gray-500">
                 Filtros aplicados:
                 {neighborhoodFilter && (
@@ -382,7 +413,9 @@ export default function PrintableDashboardReport() {
                     <span className="font-semibold">{neighborhoodFilter}</span>
                   </>
                 )}
-                {neighborhoodFilter && statusFilter && " |"}
+                {(neighborhoodFilter || statusFilter) &&
+                  (isEmergency || isDelayed) &&
+                  " | "}
                 {statusFilter && (
                   <>
                     {" "}
@@ -392,15 +425,23 @@ export default function PrintableDashboardReport() {
                     </span>
                   </>
                 )}
+                {(statusFilter || neighborhoodFilter) &&
+                  (isEmergency || isDelayed) &&
+                  " | "}
+                {isEmergency && <>Somente emergenciais</>}
+                {isEmergency && isDelayed && " + "}
+                {isDelayed && <>Somente atrasadas</>}
               </p>
             )}
           </div>
         </header>
 
-        {/* Resumo + Gráfico */}
+        {/* Resumo + gráfico*/}
         <section className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Bairros */}
           <div className="lg:col-span-7 border rounded-xl p-4">
             <h3 className="text-base font-semibold mb-3">Lista dos bairros:</h3>
+
             {neighborhoodNames.length ? (
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                 {neighborhoodNames.map((name, i) => (
@@ -417,12 +458,15 @@ export default function PrintableDashboardReport() {
             )}
           </div>
 
+          {/* Gráfico */}
           <div className="lg:col-span-5 border rounded-xl p-4">
             <h3 className="text-base font-semibold">
-              Total de ocorrências fiscalizadas: {totalStatus}
+              Total de ocorrências: {totalStatus}
             </h3>
+
             <div className="mt-3 flex flex-col items-center">
               <PieSVG items={statusItems} />
+
               <div className="mt-4 w-full space-y-1 text-sm">
                 {statusItems
                   .filter((i) => i.value > 0)
@@ -455,7 +499,7 @@ export default function PrintableDashboardReport() {
           </div>
         </section>
 
-        {/* Ocorrências (2 por página) */}
+        {/* Lista das ocorrencias */}
         <section className="mt-10">
           {loading ? (
             <div className="h-[180px] flex items-center justify-center text-gray-400">
@@ -463,7 +507,7 @@ export default function PrintableDashboardReport() {
             </div>
           ) : sheets.length === 0 ? (
             <div className="h-[120px] flex items-center justify-center text-gray-400">
-              Nenhuma ocorrência neste mês com os filtros aplicados.
+              Nenhuma ocorrência no mês.
             </div>
           ) : (
             <div className="space-y-10">
@@ -475,7 +519,13 @@ export default function PrintableDashboardReport() {
                       so.photos
                     );
                     const isFinalizada = so.status === "finalizada";
+
                     const addr = so.address || {};
+                    const sectorLabel =
+                      so.sectorName ||
+                      so.sector?.name ||
+                      so.address?.sectorName ||
+                      "Não informado";
 
                     return (
                       <article
@@ -483,14 +533,13 @@ export default function PrintableDashboardReport() {
                         className="card rounded-xl border border-neutral-200 p-4"
                         style={{ breakInside: "avoid" }}
                       >
-                        {/* Quando finalizada, tenta mostrar ANTES/DEPOIS lado a lado */}
+                        {/* Fotos antes/depois */}
                         {isFinalizada && (initialUrl || finalUrl) ? (
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <Photo
                               src={initialUrl || finalUrl || photoUrl}
                               alt={`OS ${so.id} - Antes`}
                             />
-                            {/* se não tiver inicial, repete a final só pra não ficar vazio */}
                             <Photo
                               src={finalUrl || initialUrl || photoUrl}
                               alt={`OS ${so.id} - Depois`}
@@ -500,16 +549,55 @@ export default function PrintableDashboardReport() {
                           <Photo src={photoUrl} alt={`OS ${so.id}`} />
                         )}
 
-                        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                          <div className="text-sm text-gray-700">
-                            <div className="font-semibold text-gray-900">
-                              {humanize(so.type) || "Tipo não informado"}
+                        <div className="mt-3 flex flex-wrap items-start justify-between gap-2">
+                          <div className="text-sm text-gray-700 space-y-0.5">
+                            <div>
+                              <span className="font-semibold text-gray-900">
+                                Tipo:{" "}
+                              </span>
+                              <span>
+                                {humanize(so.type) || "Não informado"}
+                              </span>
                             </div>
-                            <div className="mt-0.5">
-                              {formatAddress(addr) || "Endereço não informado"}
+                            <div>
+                              <span className="font-semibold text-gray-900">
+                                Endereço:{" "}
+                              </span>
+                              <span>
+                                {formatAddress(addr) ||
+                                  "Endereço não informado"}
+                              </span>
                             </div>
                           </div>
+
                           <StatusBadge status={so.status} />
+                        </div>
+
+                        {/* emergencial/atrasada */}
+                        <div className="flex gap-2 mt-1 flex-wrap">
+                          {so.isEmergency && (
+                            <span
+                              className="px-2 py-0.5 text-[11px] font-medium rounded-md"
+                              style={{
+                                backgroundColor: "#FFE8E8",
+                                color: "#7F1D1D",
+                              }}
+                            >
+                              Emergencial
+                            </span>
+                          )}
+
+                          {so.isDelayed && (
+                            <span
+                              className="px-2 py-0.5 text-[11px] font-medium rounded-md"
+                              style={{
+                                backgroundColor: "#E9E4FC",
+                                color: "#4C1D95",
+                              }}
+                            >
+                              Atrasada
+                            </span>
+                          )}
                         </div>
                       </article>
                     );
@@ -521,7 +609,7 @@ export default function PrintableDashboardReport() {
         </section>
       </main>
 
-      {/* CSS de impressão */}
+      {/* CSS IMPRESSÃO */}
       <style>{`
         @media print {
           @page { size: A4 portrait; margin: 12mm; }
