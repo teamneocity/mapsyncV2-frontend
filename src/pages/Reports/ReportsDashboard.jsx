@@ -90,7 +90,7 @@ export default function ReportsDashboard({
               onChangePeriod?.("week");
               onChangeWeekAnchor?.(v === "" ? "" : v);
             }}
-            className="h-[32px] w-[80px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
+            className="h-[32px] w-[110px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
           >
             <option value="0">Semana atual</option>
             <option value="7">Semana de 7 dias atrás</option>
@@ -113,7 +113,7 @@ export default function ReportsDashboard({
             type="month"
             value={selectedMonth}
             onChange={(e) => {
-              const v = e.target.value; 
+              const v = e.target.value;
               setSelectedMonth(v);
 
               onChangePeriod?.("month");
@@ -126,7 +126,7 @@ export default function ReportsDashboard({
               const [yyyy, mm] = v.split("-");
               onChangeMonthAnchor?.(`${yyyy}-${mm}-01`);
             }}
-            className="h-[32px] w-[80px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
+            className="h-[32px] w-[110px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
           />
         </div>
       );
@@ -142,15 +142,32 @@ export default function ReportsDashboard({
         {cards.map((card, index) => {
           const isTotal = card.key === "total" || index === 3;
 
+          // valor como string pra controlar tamanho
+          const valueLabel = loading ? "..." : card.value ?? 0;
+          const valueStr = String(valueLabel);
+          const isLongNumber =
+            !loading && typeof card.value === "number" && valueStr.length >= 4;
+
           if (isTotal) {
-            // 4º card (total) continua centralizado, sem seletor nem seleção
+            // classes específicas para o card total
+            const totalNumberClass = isLongNumber
+              ? // 4+ dígitos → menor
+                "text-[40px] sm:text-[52px] md:text-[64px] lg:text-[72px] xl:text-[80px]"
+              : // até 3 dígitos → maior
+                "text-[48px] sm:text-[64px] md:text-[80px] lg:text-[96px] xl:text-[110px]";
+
             return (
               <div
                 key={card.key}
                 className="relative h-[170px] rounded-xl border shadow-sm overflow-hidden flex items-center justify-center transition-all bg-[#F6F8FA] text-[#787891]"
               >
-                <span className="text-[96px] font-semibold leading-none">
-                  {loading ? "..." : card.value}
+                <span
+                  className={[
+                    "font-semibold leading-none whitespace-nowrap",
+                    totalNumberClass,
+                  ].join(" ")}
+                >
+                  {valueLabel}
                 </span>
                 <div className="absolute left-4 bottom-3 text-[14px] tracking-wide">
                   {card.title}
@@ -160,6 +177,13 @@ export default function ReportsDashboard({
           }
 
           const isActive = card.key === selectedPeriod;
+
+          // classes dos outros cards
+          const numberClass = isLongNumber
+            ? // 4+ dígitos → reduz
+              "text-[30px] sm:text-[30px] md:text-[30px] lg:text-[30px] xl:text-[40px]"
+            : // até 3 dígitos → maior
+              "text-[40px] sm:text-[40px] md:text-[40px] lg:text-[52px] xl:text-[60px]";
 
           return (
             <button
@@ -174,8 +198,13 @@ export default function ReportsDashboard({
               ].join(" ")}
             >
               {/* número grande */}
-              <span className="text-[80px] font-semibold leading-none">
-                {loading ? "..." : card.value}
+              <span
+                className={[
+                  "font-semibold leading-none whitespace-nowrap",
+                  numberClass,
+                ].join(" ")}
+              >
+                {valueLabel}
               </span>
 
               {/* label */}

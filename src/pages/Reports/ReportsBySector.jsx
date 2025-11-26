@@ -127,7 +127,20 @@ export function ReportsBySector({
           const isSelectable = ["day", "week", "month"].includes(card.key);
           const isActive = card.key === selectedPeriod;
 
+          // controla tamanho do número conforme quantidade de dígitos
+          const valueLabel = anyLoading ? "..." : card.value ?? 0;
+          const valueStr = String(valueLabel);
+          const isLongNumber =
+            !anyLoading && typeof card.value === "number" && valueStr.length >= 4;
+
           if (isSelectable) {
+            // classes para os 3 primeiros cards
+            const numberClass = isLongNumber
+              ? // 4+ dígitos → menor
+                "text-[24px] sm:text-[32px] md:text-[40px] lg:text-[48px] xl:text-[56px]"
+              : // até 3 dígitos → maior
+                "text-[32px] sm:text-[40px] md:text-[56px] lg:text-[72px] xl:text-[80px]";
+
             // 3 primeiros cards alinhados à esquerda (igual geral)
             return (
               <button
@@ -137,8 +150,13 @@ export function ReportsBySector({
                 className={cardBoxClasses(isActive, true)}
                 title={`Mostrar bairros de ${card.label.toLowerCase()}`}
               >
-                <span className="text-[80px] font-semibold leading-none">
-                  {anyLoading ? "..." : card.value}
+                <span
+                  className={[
+                    "font-semibold leading-none whitespace-nowrap",
+                    numberClass,
+                  ].join(" ")}
+                >
+                  {valueLabel}
                 </span>
 
                 <div className="absolute left-4 bottom-3 text-[14px] tracking-wide text-[#555]">
@@ -151,14 +169,25 @@ export function ReportsBySector({
             );
           }
 
-          // Último card (total) continua centralizado
+          // Último card (total) centralizado
+          const totalNumberClass = isLongNumber
+            ? // 4+ dígitos → reduz
+              "text-[30px] sm:text-[30px] md:text-[30px] lg:text-[30px] xl:text-[40px]"
+            : // até 3 dígitos → maior
+              "text-[40px] sm:text-[40px] md:text-[40px] lg:text-[52px] xl:text-[60px]";
+
           return (
             <div
               key={card.key}
               className="relative h-[170px] rounded-xl border shadow-sm overflow-hidden flex items-center justify-center transition-all bg-[#F6F8FA] text-[#787891]"
             >
-              <span className="text-[96px] font-semibold leading-none">
-                {anyLoading ? "..." : card.value}
+              <span
+                className={[
+                  "font-semibold leading-none whitespace-nowrap",
+                  totalNumberClass,
+                ].join(" ")}
+              >
+                {valueLabel}
               </span>
               <div className="absolute left-4 bottom-3 text-[14px] tracking-wide">
                 {card.label}
