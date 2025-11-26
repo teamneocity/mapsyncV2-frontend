@@ -31,7 +31,30 @@ function humanizeStatus(s) {
   );
 }
 
-function monthLabel() {
+// tem uma lógica para concertar o erro de aumentar 1 dia ou 1 mês
+function monthLabel(anchorDate, windowParam) {
+  if (anchorDate) {
+    const [y, m, dRaw] = anchorDate.split("-").map(Number);
+
+    if (!Number.isNaN(y) && !Number.isNaN(m)) {
+      const base = new Date(y, m - 1, dRaw || 1);
+      base.setDate(base.getDate() - 1);
+
+      const year = base.getFullYear();
+      const day = base.getDate();
+      const monthName = base.toLocaleString("pt-BR", { month: "long" });
+      const safeMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+
+      if (windowParam === "day") {
+        return `Dia ${String(day).padStart(2, "0")} de ${safeMonth} de ${year}`;
+      }
+      if (windowParam === "week") {
+        return `Semana de referência em ${safeMonth} de ${year}`;
+      }
+      return `${safeMonth} de ${year}`;
+    }
+  }
+
   const d = new Date();
   const m = d.toLocaleString("pt-BR", { month: "long" });
   return `${m.replace(/^./, (c) => c.toUpperCase())} de ${d.getFullYear()}`;
@@ -112,6 +135,9 @@ export default function SectorStatusCoverageReport({ onClose }) {
   const isEmergency = params.get("isEmergency") === "true";
   const isDelayed = params.get("isDelayed") === "true";
 
+  const windowParam = params.get("window");
+  const anchorDate = params.get("anchorDate");
+
   const initialPeriod = (() => {
     const p = params.get("period");
     return p === "day" || p === "week" || p === "month" ? p : "month";
@@ -127,7 +153,7 @@ export default function SectorStatusCoverageReport({ onClose }) {
     setSelectedStatus(params.get("status") || "");
   }, [params]);
 
-  // Busca de dados
+  // Busca de dados do coverage setorial
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -139,13 +165,16 @@ export default function SectorStatusCoverageReport({ onClose }) {
         if (isEmergency) query.isEmergency = true;
         if (isDelayed) query.isDelayed = true;
 
+        if (windowParam) query.window = windowParam;
+        if (anchorDate) query.anchorDate = anchorDate;
+
         const { data } = await api.get("/occurrences/dashboard/coverage", {
           params: query,
         });
 
         if (!alive) return;
 
-        const coverage = data?.coverage || data?.data || null;
+        const coverage = data?.coverage || data?.data || data || null;
         setData(coverage);
       } catch (err) {
         console.error(
@@ -161,7 +190,14 @@ export default function SectorStatusCoverageReport({ onClose }) {
     return () => {
       alive = false;
     };
-  }, [sectorId, selectedStatus, isEmergency, isDelayed]);
+  }, [
+    sectorId,
+    selectedStatus,
+    isEmergency,
+    isDelayed,
+    windowParam,
+    anchorDate,
+  ]);
 
   const now = new Date().toLocaleString("pt-BR");
   const periodLabel =
@@ -207,9 +243,11 @@ export default function SectorStatusCoverageReport({ onClose }) {
           .filter(Boolean)
           .join(" e ");
 
+  // label do cabeçalho com correção de data
+  const docPeriodLabel = monthLabel(anchorDate, windowParam);
+
   return (
     <div className="min-h-screen bg-white text-black">
-      {/* barra superior */}
       <div className="print:hidden sticky top-0 z-10 flex items-center gap-2 border-b border-neutral-200 bg-white/90 backdrop-blur px-4 py-3">
         <button
           onClick={() => (onClose ? onClose() : window.history.back())}
@@ -271,7 +309,7 @@ export default function SectorStatusCoverageReport({ onClose }) {
 
           <div className="mt-6 flex flex-col items-center text-sm text-gray-600 text-center">
             <p>Gerado em: {now}</p>
-            <p>Período do documento: {monthLabel()}</p>
+            <p>Período do documento: {docPeriodLabel}</p>
             <p>
               Total de ocorrências (geral):{" "}
               <span className="font-semibold">{totalOccurrences}</span> | No
@@ -402,7 +440,7 @@ export default function SectorStatusCoverageReport({ onClose }) {
                               </span>
                             </div>
 
-                            {/* ⭐ BADGES NOVOS */}
+                            {/* badges de flags */}
                             <div className="flex gap-2 mt-2 flex-wrap">
                               {o.isEmergency && (
                                 <span

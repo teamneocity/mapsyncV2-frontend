@@ -2,13 +2,12 @@
 import React from "react";
 import { ChevronRight } from "lucide-react";
 
-function cardBoxClasses(isActive) {
+function cardBoxClasses(isActive, alignLeft = false) {
   return [
-    "relative h-[170px] rounded-xl border shadow-sm overflow-hidden flex items-center justify-center transition-all",
-    "bg-[#F6F8FA] text-[#787891]",
-    isActive
-      ? "ring-2 ring-indigo-300"
-      : "hover:ring-1 hover:ring-neutral-300",
+    "relative h-[170px] rounded-xl border shadow-sm overflow-hidden flex items-center",
+    alignLeft ? "justify-start px-4" : "justify-center",
+    "transition-all bg-[#F6F8FA] text-[#787891]",
+    isActive ? "ring-2 ring-indigo-300" : "hover:ring-1 hover:ring-neutral-300",
     "cursor-pointer select-none",
   ].join(" ");
 }
@@ -27,39 +26,133 @@ export function ReportsBySector({
   onChangePeriod,
   foundSector,
   onOpenSectorReport,
-  // novas props para flags
+  // flags
   isEmergencyFilter,
   isDelayedFilter,
   onToggleEmergency,
   onToggleDelayed,
+  // janelas setoriais
+  sectorDay,
+  onChangeSectorDay,
+  sectorWeek,
+  onChangeSectorWeek,
+  sectorMonth,
+  onChangeSectorMonth,
 }) {
+  function renderSelector(cardKey) {
+    if (cardKey === "day") {
+      return (
+        <div
+          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-2 shadow-sm border border-gray-100"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <p className="text-[11px] text-slate-600 font-medium">
+            Escolha o dia
+          </p>
+          <input
+            type="date"
+            value={sectorDay || ""}
+            onChange={(e) => {
+              const v = e.target.value;
+              // ao mexer no filtro de dia, seleciona o card de dia
+              onChangePeriod?.("day");
+              onChangeSectorDay?.(v);
+            }}
+            className="h-[32px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
+          />
+        </div>
+      );
+    }
+
+    if (cardKey === "week") {
+      return (
+        <div
+          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-2 shadow-sm border border-gray-100"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <p className="text-[11px] text-slate-600 font-medium">
+            Intervalo da semana
+          </p>
+
+          <select
+            value={sectorWeek || ""}
+            onChange={(e) => {
+              const v = e.target.value;
+              // ao mexer no filtro de semana, seleciona o card de semana
+              onChangePeriod?.("week");
+              onChangeSectorWeek?.(v);
+            }}
+            className="h-[32px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
+          >
+            <option value="">Selecione</option>
+            <option value="0">Semana atual</option>
+            <option value="7">Semana de 7 dias atrás</option>
+            <option value="14">Semana de 14 dias atrás</option>
+          </select>
+        </div>
+      );
+    }
+
+    if (cardKey === "month") {
+      return (
+        <div
+          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-2 shadow-sm border border-gray-100"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <p className="text-[11px] text-slate-600 font-medium">
+            Escolha o mês
+          </p>
+          <input
+            type="month"
+            value={sectorMonth || ""}
+            onChange={(e) => {
+              const v = e.target.value;
+              // ao mexer no filtro de mês, seleciona o card de mês
+              onChangePeriod?.("month");
+              onChangeSectorMonth?.(v);
+            }}
+            className="h-[32px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
+          />
+        </div>
+      );
+    }
+
+    return null;
+  }
+
   return (
     <>
       {/* Cards */}
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {cards.map((card) => {
+        {cards.map((card, index) => {
           const isSelectable = ["day", "week", "month"].includes(card.key);
           const isActive = card.key === selectedPeriod;
 
           if (isSelectable) {
+            // 3 primeiros cards alinhados à esquerda (igual geral)
             return (
               <button
                 key={card.key}
                 type="button"
                 onClick={() => onChangePeriod(card.key)}
-                className={cardBoxClasses(isActive)}
+                className={cardBoxClasses(isActive, true)}
                 title={`Mostrar bairros de ${card.label.toLowerCase()}`}
               >
                 <span className="text-[96px] font-semibold leading-none">
                   {anyLoading ? "..." : card.value}
                 </span>
+
                 <div className="absolute left-4 bottom-3 text-[14px] tracking-wide text-[#555]">
                   {card.label}
                 </div>
+
+                {/* seletores dia / semana / mês */}
+                {renderSelector(card.key)}
               </button>
             );
           }
 
+          // Último card (total) continua centralizado
           return (
             <div
               key={card.key}
@@ -83,9 +176,16 @@ export function ReportsBySector({
             Bairros co-relacionados atendidos
           </h3>
           <p className="text-sm text-gray-500 mt-1">
-            {selectedPeriod === "day" && "Hoje"}
-            {selectedPeriod === "week" && "Nesta semana"}
-            {selectedPeriod === "month" && "Neste mês"}
+            {selectedPeriod === "day" &&
+              (sectorDay ? `No dia selecionado (${sectorDay})` : "Hoje")}
+            {selectedPeriod === "week" &&
+              (sectorWeek
+                ? `Na semana do dia (${sectorWeek})`
+                : "Nesta semana")}
+            {selectedPeriod === "month" &&
+              (sectorMonth
+                ? `No mês selecionado (${sectorMonth})`
+                : "Neste mês")}
           </p>
 
           {neighborhoods.length > 0 ? (

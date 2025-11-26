@@ -4,6 +4,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { addMonths, addDays, format } from "date-fns";
 
 import { api } from "@/services/api";
 import { SelectField } from "@/components/selectField";
@@ -29,13 +30,25 @@ async function fetchSectors() {
   return mapped;
 }
 
-// Busca do dashboard geral (sem filtros)
+// Dashboard geral (sem filtros)
 async function fetchDashboardCoverage() {
   const { data } = await api.get("/occurrences/dashboard/coverage");
   return data;
 }
 
-// Busca de alguns dados
+// Dashboard geral passandod ata
+async function fetchDashboardCoverageWindow({ window, anchorDate }) {
+  const params = { window };
+  if (anchorDate) params.anchorDate = anchorDate;
+
+  const { data } = await api.get("/occurrences/dashboard/coverage", {
+    params,
+  });
+
+  return data;
+}
+
+// Stats gerais
 async function fetchDashboardStats() {
   const { data } = await api.get("/occurrences/stats");
 
@@ -66,13 +79,22 @@ async function fetchDashboardStats() {
   };
 }
 
-// Busca dashboard por setor (mesma rota do geral, só que filtrada)
-async function fetchCoverageData({ sectorId, status, isEmergency, isDelayed }) {
+// Dashboard por setor (rota única com filtros)
+async function fetchCoverageData({
+  sectorId,
+  status,
+  isEmergency,
+  isDelayed,
+  window,
+  anchorDate,
+}) {
   const params = {
     sectorId,
     ...(status ? { status } : {}),
     ...(isEmergency ? { isEmergency: true } : {}),
     ...(isDelayed ? { isDelayed: true } : {}),
+    ...(window ? { window } : {}),
+    ...(anchorDate ? { anchorDate } : {}),
   };
 
   const { data } = await api.get("/occurrences/dashboard/coverage", {
@@ -82,7 +104,7 @@ async function fetchCoverageData({ sectorId, status, isEmergency, isDelayed }) {
   return data || null;
 }
 
-// Busca bairros
+// Bairros
 async function fetchNeighborhoodList() {
   const { data } = await api.get("/neighborhoods");
   const list = Array.isArray(data?.neighborhoods) ? data.neighborhoods : [];
@@ -94,7 +116,6 @@ async function fetchNeighborhoodList() {
     .filter((n) => n.id && n.name);
 }
 
-// Componente princial
 export default function ReportsOverview({
   title = "Relatórios",
   selectedSector = "Escolha o painél de exibição do setor",
@@ -105,9 +126,23 @@ export default function ReportsOverview({
   const [selectedStatus, setSelectedStatus] = useState("em_analise");
   const [selectedPeriod, setSelectedPeriod] = useState("day");
 
-  //  filtros extras
+  // flags setoriais
   const [isEmergencyFilter, setIsEmergencyFilter] = useState(false);
   const [isDelayedFilter, setIsDelayedFilter] = useState(false);
+
+  // JANELAS DO DASHBOARD GERAL
+  const [dayAnchorDate, setDayAnchorDate] = useState(null);
+  const [weekAnchorDate, setWeekAnchorDate] = useState(null);
+  const [monthAnchorDate, setMonthAnchorDate] = useState(null);
+
+  // JANELAS DO DASHBOARD SETORIAL
+  const [sectorDayValue, setSectorDayValue] = useState("");
+  const [sectorWeekValue, setSectorWeekValue] = useState("");
+  const [sectorMonth, setSectorMonth] = useState("");
+
+  const [sectorDayAnchorDate, setSectorDayAnchorDate] = useState(null);
+  const [sectorWeekAnchorDate, setSectorWeekAnchorDate] = useState(null);
+  const [sectorMonthAnchorDate, setSectorMonthAnchorDate] = useState(null);
 
   const [builderOpen, setBuilderOpen] = useState(false);
 
@@ -123,7 +158,7 @@ export default function ReportsOverview({
     selectedSector === "Escolha o painél de exibição do setor" ||
     selectedSector === "Dashboard";
 
-  // máscaras
+  // máscara de status
   const STATUS_MASK = {
     em_analise: {
       label: "Sob análise",
@@ -142,7 +177,6 @@ export default function ReportsOverview({
       cls: "bg-rose-100 text-rose-700",
       active: "ring-2 ring-rose-300",
       clickable: true,
-
       isFlag: true,
       flagKey: "isEmergency",
     },
@@ -172,6 +206,7 @@ export default function ReportsOverview({
     setSelectedStatus("");
   }
 
+  // setores
   const {
     data: sectors = [],
     isLoading: loadingSectors,
@@ -186,15 +221,63 @@ export default function ReportsOverview({
     [sectors, selectedSector]
   );
 
+  // Dashboard geral "default"
+  const { data: dashboardCoverage, isLoading: loadingDashboardCoverage } =
+    useQuery({
+      queryKey: ["occurrences-dashboard-coverage"],
+      queryFn: fetchDashboardCoverage,
+    });
+
+  // Dashboard geral quando window=day
   const {
-    data: dashboardCoverage,
-    isLoading: loadingDashboardCoverage,
-    isError: errorDashboardCoverage,
+    data: dayWindowCoverage,
+    isLoading: loadingDayWindow,
+    isFetching: fetchingDayWindow,
   } = useQuery({
-    queryKey: ["occurrences-dashboard-coverage"],
-    queryFn: fetchDashboardCoverage,
+    queryKey: ["occurrences-dashboard-coverage", "day-window", dayAnchorDate],
+    queryFn: () =>
+      fetchDashboardCoverageWindow({
+        window: "day",
+        anchorDate: dayAnchorDate,
+      }),
+    enabled: !!dayAnchorDate,
   });
 
+  // Dashboard geral quando window=week
+  const {
+    data: weekWindowCoverage,
+    isLoading: loadingWeekWindow,
+    isFetching: fetchingWeekWindow,
+  } = useQuery({
+    queryKey: ["occurrences-dashboard-coverage", "week-window", weekAnchorDate],
+    queryFn: () =>
+      fetchDashboardCoverageWindow({
+        window: "week",
+        anchorDate: weekAnchorDate,
+      }),
+    enabled: !!weekAnchorDate,
+  });
+
+  // Dashboard geral quando window=month
+  const {
+    data: monthWindowCoverage,
+    isLoading: loadingMonthWindow,
+    isFetching: fetchingMonthWindow,
+  } = useQuery({
+    queryKey: [
+      "occurrences-dashboard-coverage",
+      "month-window",
+      monthAnchorDate,
+    ],
+    queryFn: () =>
+      fetchDashboardCoverageWindow({
+        window: "month",
+        anchorDate: monthAnchorDate,
+      }),
+    enabled: !!monthAnchorDate,
+  });
+
+  // Stats gerais
   const {
     data: dashboardData,
     isLoading: loadingDashboard,
@@ -207,7 +290,21 @@ export default function ReportsOverview({
 
   const sectorId = foundSector?.id || null;
 
-  // Dashboard filtrado por status + emergencial/atrasada
+  let sectorWindow = undefined;
+  let sectorAnchorForQuery = undefined;
+
+  if (selectedPeriod === "day" && sectorDayAnchorDate) {
+    sectorWindow = "day";
+    sectorAnchorForQuery = sectorDayAnchorDate;
+  } else if (selectedPeriod === "week" && sectorWeekAnchorDate) {
+    sectorWindow = "week";
+    sectorAnchorForQuery = sectorWeekAnchorDate;
+  } else if (selectedPeriod === "month" && sectorMonthAnchorDate) {
+    sectorWindow = "month";
+    sectorAnchorForQuery = sectorMonthAnchorDate;
+  }
+
+  // Dashboard setorial filtrado
   const {
     data: sectorDashboard,
     isLoading: loadingCoverage,
@@ -220,6 +317,8 @@ export default function ReportsOverview({
       selectedStatus,
       isEmergencyFilter,
       isDelayedFilter,
+      selectedPeriod,
+      sectorAnchorForQuery || null,
     ],
     queryFn: () =>
       fetchCoverageData({
@@ -227,19 +326,26 @@ export default function ReportsOverview({
         status: selectedStatus,
         isEmergency: isEmergencyFilter,
         isDelayed: isDelayedFilter,
+        window: sectorWindow,
+        anchorDate: sectorAnchorForQuery,
       }),
     enabled: !isDashboard && !!sectorId,
   });
 
   // Dashboard completo do setor (sem status/flags)
   const { data: sectorDashboardAll } = useQuery({
-    queryKey: ["reports", "sector-coverage-all", sectorId],
+    queryKey: [
+      "reports",
+      "sector-coverage-all",
+      sectorId,
+      selectedPeriod,
+      sectorAnchorForQuery || null,
+    ],
     queryFn: () =>
       fetchCoverageData({
         sectorId,
-        status: undefined,
-        isEmergency: false,
-        isDelayed: false,
+        window: sectorWindow,
+        anchorDate: sectorAnchorForQuery,
       }),
     enabled: !isDashboard && !!sectorId,
   });
@@ -249,6 +355,7 @@ export default function ReportsOverview({
 
   const fullStats = sectorDashboardAll?.stats || stats;
 
+  // Bairros para o relatório fotográfico
   const {
     data: neighborhoodList = [],
     isLoading: loadingNeighborhoods,
@@ -269,19 +376,31 @@ export default function ReportsOverview({
     }
   }, [params]);
 
-  // reset ao trocar de "dashboard" para setor e vice-versa
+  // reset ao alternar entre dashboard geral e setorial
   useEffect(() => {
     if (!isDashboard) {
       setSelectedStatus("em_analise");
     }
     setSelectedPeriod("day");
-    // Limpo os flags ao trocar entre dashboard/setor
     setIsEmergencyFilter(false);
     setIsDelayedFilter(false);
+
+    if (!isDashboard) {
+      setDayAnchorDate(null);
+      setWeekAnchorDate(null);
+      setMonthAnchorDate(null);
+    } else {
+      setSectorDayValue("");
+      setSectorWeekValue("");
+      setSectorMonth("");
+      setSectorDayAnchorDate(null);
+      setSectorWeekAnchorDate(null);
+      setSectorMonthAnchorDate(null);
+    }
   }, [isDashboard, selectedSector]);
 
+  // funçõezinhas auxiliares do SETOR (bairros / ruas)
   function getNeighborhoodNamesForPeriod(period) {
-    // Primeiro tentamos montar a partir das ocorrências da janela
     const list = coverage?.occurrencesByWindow?.[period] || [];
 
     if (Array.isArray(list) && list.length) {
@@ -340,36 +459,77 @@ export default function ReportsOverview({
     () => getStreetNamesForPeriod(selectedPeriod),
     [coverage, stats, selectedPeriod]
   );
-  // Contagens globais de ocorrências (dashboard geral)
+
+  // Contagens globais do dashboard geral
   const totals = dashboardCoverage?.stats?.totals ?? {};
   const windows = dashboardCoverage?.coverage?.occurrencesCountByWindow ?? {};
 
-  const dayCount = totals.day ?? windows.day ?? 0;
-  const weekCount = totals.week ?? windows.week ?? 0;
-  const monthCount = totals.month ?? windows.month ?? 0;
+  const baseDayCount = totals.day ?? windows.day ?? 0;
+  const baseWeekCount = totals.week ?? windows.week ?? 0;
+  const baseMonthCount = totals.month ?? windows.month ?? 0;
 
-  // Total geral de ocorrências 
   const totalCount =
     totals.overall ?? dashboardCoverage?.coverage?.totalOccurrences ?? 0;
 
+  // valores dos cards gerais com janelas customizadas
+  const dayCardValue =
+    dayAnchorDate && dayWindowCoverage?.coverage
+      ? dayWindowCoverage.coverage.totalOccurrences ?? baseDayCount
+      : baseDayCount;
+
+  const weekCardValue =
+    weekAnchorDate && weekWindowCoverage?.coverage
+      ? weekWindowCoverage.coverage.totalOccurrences ?? baseWeekCount
+      : baseWeekCount;
+
+  const monthCardValue =
+    monthAnchorDate && monthWindowCoverage?.coverage
+      ? monthWindowCoverage.coverage.totalOccurrences ?? baseMonthCount
+      : baseMonthCount;
+
+  // Totais setoriais base
   const sectorTotals = stats?.totals ?? {};
   const sectorOccurrencesByWindow = coverage?.occurrencesCountByWindow ?? {};
+
+  const sectorDayCardValue =
+    selectedPeriod === "day" &&
+    sectorDayAnchorDate &&
+    coverage &&
+    typeof coverage.totalOccurrences === "number"
+      ? coverage.totalOccurrences
+      : sectorTotals.day ?? sectorOccurrencesByWindow.day ?? 0;
+
+  const sectorWeekCardValue =
+    selectedPeriod === "week" &&
+    sectorWeekAnchorDate &&
+    coverage &&
+    typeof coverage.totalOccurrences === "number"
+      ? coverage.totalOccurrences
+      : sectorTotals.week ?? sectorOccurrencesByWindow.week ?? 0;
+
+  const sectorMonthCardValue =
+    selectedPeriod === "month" &&
+    sectorMonthAnchorDate &&
+    coverage &&
+    typeof coverage.totalOccurrences === "number"
+      ? coverage.totalOccurrences
+      : sectorTotals.month ?? sectorOccurrencesByWindow.month ?? 0;
 
   const sectorCards = [
     {
       key: "day",
       label: "Ocorrências de hoje",
-      value: sectorTotals.day ?? sectorOccurrencesByWindow.day ?? 0,
+      value: sectorDayCardValue,
     },
     {
       key: "week",
       label: "Ocorrências na semana",
-      value: sectorTotals.week ?? sectorOccurrencesByWindow.week ?? 0,
+      value: sectorWeekCardValue,
     },
     {
       key: "month",
       label: "Ocorrências neste mês",
-      value: sectorTotals.month ?? sectorOccurrencesByWindow.month ?? 0,
+      value: sectorMonthCardValue,
     },
     {
       key: "overall",
@@ -378,7 +538,7 @@ export default function ReportsOverview({
     },
   ];
 
-  // Ações
+  // Handlers gerais
   function handleChangePeriod(periodKey) {
     setSelectedPeriod(periodKey);
     setParams((prev) => {
@@ -390,34 +550,167 @@ export default function ReportsOverview({
 
   function openSectorReport() {
     if (!foundSector?.id) return;
+
+    // Descobre a janela (window) e a anchorDate de acordo com o período atual
+    let windowParam = null;
+    let anchorDateParam = null;
+
+    if (selectedPeriod === "day") {
+      windowParam = "day";
+      anchorDateParam = sectorDayAnchorDate || null;
+    } else if (selectedPeriod === "week") {
+      windowParam = "week";
+      anchorDateParam = sectorWeekAnchorDate || null;
+    } else if (selectedPeriod === "month") {
+      windowParam = "month";
+      anchorDateParam = sectorMonthAnchorDate || null;
+    }
+
     setParams((prev) => {
       const p = new URLSearchParams(prev);
+
       p.set("view", "sector_report");
       p.set("sectorId", String(foundSector.id));
       p.set("sectorName", String(foundSector.name));
+
+      // mantém o period pra UI
       p.set("period", String(selectedPeriod || "month"));
 
       if (selectedStatus) p.set("status", String(selectedStatus));
       else p.delete("status");
 
-      // se quiser, pode propagar os flags na URL também
+      // flags
       if (isEmergencyFilter) p.set("isEmergency", "true");
       else p.delete("isEmergency");
 
       if (isDelayedFilter) p.set("isDelayed", "true");
       else p.delete("isDelayed");
 
+      // NOVO: filtros de janela iguais ao dashboard setorial
+      if (windowParam) {
+        p.set("window", windowParam);
+      } else {
+        p.delete("window");
+      }
+
+      if (anchorDateParam) {
+        p.set("anchorDate", anchorDateParam);
+      } else {
+        p.delete("anchorDate");
+      }
+
       return p;
     });
   }
 
-  // toggles para emergencial/atrasada
   function handleToggleEmergency() {
     setIsEmergencyFilter((prev) => !prev);
   }
 
   function handleToggleDelayed() {
     setIsDelayedFilter((prev) => !prev);
+  }
+
+  // dia sempre passa + 1 dia, estava vindo errado
+  function handleChangeDayAnchor(value) {
+    if (!value) {
+      setDayAnchorDate(null);
+      return;
+    }
+
+    // value vem no formato "yyyy-MM-dd"
+    const [year, month, day] = value.split("-");
+    const d = new Date(Number(year), Number(month) - 1, Number(day) + 1);
+
+    const anchorDate = format(d, "yyyy-MM-dd");
+    setDayAnchorDate(anchorDate);
+  }
+
+  // semana geral – usa presets: 0, 7, 14 dias atrás
+  function handleChangeWeekAnchor(offsetStr) {
+    if (offsetStr === "" || offsetStr == null) {
+      setWeekAnchorDate(null);
+      return;
+    }
+
+    const offset = Number(offsetStr);
+    const today = new Date();
+
+    const d = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate() - offset
+    );
+
+    const anchorDate = format(d, "yyyy-MM-dd");
+    setWeekAnchorDate(anchorDate);
+  }
+
+  // mês com 1 dia a menos
+  function handleChangeMonthAnchor(monthStr) {
+    if (!monthStr) {
+      setMonthAnchorDate(null);
+      return;
+    }
+
+    const [year, month] = monthStr.split("-");
+    const d = new Date(Number(year), Number(month) - 1, 1);
+    const anchor = addMonths(d, 1);
+    const anchorDate = format(anchor, "yyyy-MM-dd");
+    setMonthAnchorDate(anchorDate);
+  }
+
+  // dia do setor
+  function handleChangeSectorDay(value) {
+    setSectorDayValue(value || "");
+
+    if (!value) {
+      setSectorDayAnchorDate(null);
+      return;
+    }
+
+    const [year, month, day] = value.split("-");
+    const d = new Date(Number(year), Number(month) - 1, Number(day) + 1);
+
+    const anchorDate = format(d, "yyyy-MM-dd");
+    setSectorDayAnchorDate(anchorDate);
+  }
+
+  // semana do setor – presets: 0, 7, 14 dias atrás
+  function handleChangeSectorWeek(offsetStr) {
+    setSectorWeekValue(offsetStr || "");
+
+    if (!offsetStr) {
+      setSectorWeekAnchorDate(null);
+      return;
+    }
+
+    const offset = Number(offsetStr);
+    const today = new Date();
+
+    const d = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate() - offset
+    );
+
+    const anchorDate = format(d, "yyyy-MM-dd");
+    setSectorWeekAnchorDate(anchorDate);
+  }
+
+  // mês do setor
+  function handleChangeSectorMonth(value) {
+    setSectorMonth(value || "");
+    if (!value) {
+      setSectorMonthAnchorDate(null);
+      return;
+    }
+
+    const [year, month] = value.split("-");
+    const d = new Date(Number(year), Number(month) - 1, 1);
+    const anchor = addMonths(d, 1);
+    const anchorDate = format(anchor, "yyyy-MM-dd");
+    setSectorMonthAnchorDate(anchorDate);
   }
 
   // Modais
@@ -558,23 +851,41 @@ export default function ReportsOverview({
     function handleApply() {
       setPhotoFilters(local);
 
+      let windowParam = null;
+      let anchorDateParam = null;
+
+      if (selectedPeriod === "day") {
+        windowParam = "day";
+        anchorDateParam = dayAnchorDate || null;
+      } else if (selectedPeriod === "week") {
+        windowParam = "week";
+        anchorDateParam = weekAnchorDate || null;
+      } else if (selectedPeriod === "month") {
+        windowParam = "month";
+        anchorDateParam = monthAnchorDate || null;
+      }
+
       setParams((prev) => {
         const p = new URLSearchParams(prev);
+
+        // tipo de relatório
         p.set("view", "printable_dashboard");
 
+        // filtros de bairro
         if (local.neighborhood && local.neighborhood !== "__all__") {
           p.set("neighborhood", local.neighborhood.trim());
         } else {
           p.delete("neighborhood");
         }
 
+        // filtros de status
         if (local.status && local.status !== "__all__") {
           p.set("status", local.status);
         } else {
           p.delete("status");
         }
 
-        // NOVO: filtros que vêm do back
+        // flags do back
         if (local.isEmergency) {
           p.set("isEmergency", "true");
         } else {
@@ -585,6 +896,22 @@ export default function ReportsOverview({
           p.set("isDelayed", "true");
         } else {
           p.delete("isDelayed");
+        }
+
+        if (windowParam) {
+          p.set("window", windowParam);
+        } else {
+          p.delete("window");
+        }
+
+        if (anchorDateParam) {
+          p.set("anchorDate", anchorDateParam);
+        } else {
+          p.delete("anchorDate");
+        }
+
+        if (selectedPeriod) {
+          p.set("period", selectedPeriod);
         }
 
         return p;
@@ -758,13 +1085,28 @@ export default function ReportsOverview({
       </div>
       {isDashboard ? (
         <ReportsDashboard
-          dayCount={dayCount}
-          weekCount={weekCount}
-          monthCount={monthCount}
+          dayCount={dayCardValue}
+          weekCount={weekCardValue}
+          monthCount={monthCardValue}
           totalCount={totalCount}
-          loading={loadingDashboardCoverage}
+          loading={
+            loadingDashboardCoverage ||
+            loadingDayWindow ||
+            loadingWeekWindow ||
+            loadingMonthWindow ||
+            fetchingDayWindow ||
+            fetchingWeekWindow ||
+            fetchingMonthWindow
+          }
           onOpenPhotoModal={() => setPhotoModalOpen(true)}
           onOpenBuilder={() => setBuilderOpen(true)}
+          // callbacks para janelas (geral)
+          onChangeDayAnchor={handleChangeDayAnchor}
+          onChangeWeekAnchor={handleChangeWeekAnchor}
+          onChangeMonthAnchor={handleChangeMonthAnchor}
+          // 🔥 novo: seleção de período no GERAL
+          selectedPeriod={selectedPeriod}
+          onChangePeriod={handleChangePeriod}
         />
       ) : (
         <ReportsBySector
@@ -781,11 +1123,18 @@ export default function ReportsOverview({
           onChangePeriod={handleChangePeriod}
           foundSector={foundSector}
           onOpenSectorReport={openSectorReport}
-          // props para flags
+          // flags
           isEmergencyFilter={isEmergencyFilter}
           isDelayedFilter={isDelayedFilter}
           onToggleEmergency={handleToggleEmergency}
           onToggleDelayed={handleToggleDelayed}
+          // janelas setoriais
+          sectorDay={sectorDayValue}
+          onChangeSectorDay={handleChangeSectorDay}
+          sectorWeek={sectorWeekValue}
+          onChangeSectorWeek={handleChangeSectorWeek}
+          sectorMonth={sectorMonth}
+          onChangeSectorMonth={handleChangeSectorMonth}
         />
       )}
 
