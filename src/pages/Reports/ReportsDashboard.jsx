@@ -150,7 +150,7 @@ export default function ReportsDashboard({
                 key={card.key}
                 className="relative h-[170px] rounded-xl border shadow-sm overflow-hidden flex items-center justify-center transition-all bg-[#F6F8FA] text-[#787891]"
               >
-                <span className="text-[80px] font-semibold leading-none">
+                <span className="text-[96px] font-semibold leading-none">
                   {loading ? "..." : card.value}
                 </span>
                 <div className="absolute left-4 bottom-3 text-[14px] tracking-wide">
@@ -175,7 +175,7 @@ export default function ReportsDashboard({
               ].join(" ")}
             >
               {/* número grande */}
-              <span className="text-[96px] font-semibold leading-none">
+              <span className="text-[80px] font-semibold leading-none">
                 {loading ? "..." : card.value}
               </span>
 
