@@ -131,7 +131,9 @@ export function ReportsBySector({
           const valueLabel = anyLoading ? "..." : card.value ?? 0;
           const valueStr = String(valueLabel);
           const isLongNumber =
-            !anyLoading && typeof card.value === "number" && valueStr.length >= 4;
+            !anyLoading &&
+            typeof card.value === "number" &&
+            valueStr.length >= 4;
 
           if (isSelectable) {
             // classes para os 3 primeiros cards
@@ -172,9 +174,9 @@ export function ReportsBySector({
           // Último card (total) centralizado
           const totalNumberClass = isLongNumber
             ? // 4+ dígitos → reduz
-              "text-[30px] sm:text-[30px] md:text-[30px] lg:text-[30px] xl:text-[40px]"
+              "text-[30px] sm:text-[30px] md:text-[30px] lg:text-[30px] xl:text-[40px] 2xl:text-[70px]"
             : // até 3 dígitos → maior
-              "text-[40px] sm:text-[40px] md:text-[40px] lg:text-[52px] xl:text-[60px]";
+              "text-[40px] sm:text-[40px] md:text-[40px] lg:text-[52px] xl:text-[60px] 2xl:text-[80px]";
 
           return (
             <div
