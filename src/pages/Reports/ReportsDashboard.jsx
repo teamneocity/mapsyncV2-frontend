@@ -51,7 +51,7 @@ export default function ReportsDashboard({
     if (cardKey === "day") {
       return (
         <div
-          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-1 shadow-sm border border-gray-100"
+          className="absolute right-3 top-3 flex flex-col gap-4 rounded-xl bg-[#ECEFF3] p-1 shadow-sm border "
           onClick={(e) => e.stopPropagation()}
         >
           <p className="text-[11px] text-slate-600 font-medium">
@@ -66,7 +66,7 @@ export default function ReportsDashboard({
               onChangePeriod?.("day");
               onChangeDayAnchor?.(v);
             }}
-            className="h-[32px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
+            className="h-[64px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
           />
         </div>
       );
@@ -75,7 +75,7 @@ export default function ReportsDashboard({
     if (cardKey === "week") {
       return (
         <div
-          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-1 shadow-sm border border-gray-100"
+          className="absolute right-3 top-3 flex flex-col gap-4 rounded-xl bg-[#ECEFF3] p-1 shadow-sm border "
           onClick={(e) => e.stopPropagation()}
         >
           <p className="text-[11px] text-slate-600 font-medium">
@@ -90,7 +90,7 @@ export default function ReportsDashboard({
               onChangePeriod?.("week");
               onChangeWeekAnchor?.(v === "" ? "" : v);
             }}
-            className="h-[32px] w-[110px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
+            className="h-[64px] w-[110px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
           >
             <option value="0">Semana atual</option>
             <option value="7">Semana de 7 dias atrás</option>
@@ -103,7 +103,7 @@ export default function ReportsDashboard({
     if (cardKey === "month") {
       return (
         <div
-          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-1 shadow-sm border border-gray-100"
+          className="absolute right-3 top-3 flex flex-col gap-4 rounded-xl bg-[#ECEFF3] p-1 shadow-sm border "
           onClick={(e) => e.stopPropagation()}
         >
           <p className="text-[11px] text-slate-600 font-medium">
@@ -126,7 +126,7 @@ export default function ReportsDashboard({
               const [yyyy, mm] = v.split("-");
               onChangeMonthAnchor?.(`${yyyy}-${mm}-01`);
             }}
-            className="h-[32px] w-[110px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
+            className="h-[64px] w-[110px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
           />
         </div>
       );
@@ -151,9 +151,9 @@ export default function ReportsDashboard({
           if (isTotal) {
             // classes específicas para o card total
             const totalNumberClass = isLongNumber
-              ? // 4+ dígitos → menor
+              ? // 4+ dígitos 
                 "text-[40px] sm:text-[52px] md:text-[64px] lg:text-[72px] xl:text-[80px]"
-              : // até 3 dígitos → maior
+              : // até 3 dígitos 
                 "text-[48px] sm:text-[64px] md:text-[80px] lg:text-[96px] xl:text-[110px]";
 
             return (
@@ -180,10 +180,10 @@ export default function ReportsDashboard({
 
           // classes dos outros cards
           const numberClass = isLongNumber
-            ? // 4+ dígitos → reduz
+            ? // 4+ dígitos 
               "text-[30px] sm:text-[30px] md:text-[30px] lg:text-[30px] xl:text-[40px] 2xl:text-[70px]"
-            : // até 3 dígitos → maior
-              "text-[40px] sm:text-[40px] md:text-[40px] lg:text-[52px] xl:text-[60px] 2xl:text-[80px]";
+            : // até 3 dígitos 
+              "text-[40px] sm:text-[40px] md:text-[40px] lg:text-[52px] xl:text-[60px] 2xl:text-[90px]";
 
           return (
             <button

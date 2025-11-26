@@ -43,7 +43,7 @@ export function ReportsBySector({
     if (cardKey === "day") {
       return (
         <div
-          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-1 shadow-sm border border-gray-100"
+          className="absolute right-3 top-3 flex flex-col gap-4 rounded-xl bg-[#ECEFF3] p-1 shadow-sm border "
           onClick={(e) => e.stopPropagation()}
         >
           <p className="text-[11px] text-slate-600 font-medium">
@@ -58,7 +58,7 @@ export function ReportsBySector({
               onChangePeriod?.("day");
               onChangeSectorDay?.(v);
             }}
-            className="h-[32px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
+            className="h-[64px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
           />
         </div>
       );
@@ -67,7 +67,7 @@ export function ReportsBySector({
     if (cardKey === "week") {
       return (
         <div
-          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-1 shadow-sm border border-gray-100"
+          className="absolute right-3 top-3 flex flex-col gap-4 rounded-xl bg-[#ECEFF3] p-1 shadow-sm border "
           onClick={(e) => e.stopPropagation()}
         >
           <p className="text-[11px] text-slate-600 font-medium">
@@ -82,7 +82,7 @@ export function ReportsBySector({
               onChangePeriod?.("week");
               onChangeSectorWeek?.(v);
             }}
-            className="h-[32px] w-[80px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
+            className="h-[64px] w-[80px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
           >
             <option value="0">Semana atual</option>
             <option value="7">Semana de 7 dias atrás</option>
@@ -95,7 +95,7 @@ export function ReportsBySector({
     if (cardKey === "month") {
       return (
         <div
-          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-1 shadow-sm border border-gray-100"
+          className="absolute right-3 top-3 flex flex-col gap-4 rounded-xl bg-[#ECEFF3] p-1 shadow-sm border "
           onClick={(e) => e.stopPropagation()}
         >
           <p className="text-[11px] text-slate-600 font-medium">
@@ -110,7 +110,7 @@ export function ReportsBySector({
               onChangePeriod?.("month");
               onChangeSectorMonth?.(v);
             }}
-            className="h-[32px] w-[80px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
+            className="h-[64px] w-[110px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
           />
         </div>
       );
@@ -176,7 +176,7 @@ export function ReportsBySector({
             ? // 4+ dígitos → reduz
               "text-[30px] sm:text-[30px] md:text-[30px] lg:text-[30px] xl:text-[40px] 2xl:text-[70px]"
             : // até 3 dígitos → maior
-              "text-[40px] sm:text-[40px] md:text-[40px] lg:text-[52px] xl:text-[60px] 2xl:text-[80px]";
+              "text-[40px] sm:text-[40px] md:text-[40px] lg:text-[52px] xl:text-[60px] 2xl:text-[90px]";
 
           return (
             <div

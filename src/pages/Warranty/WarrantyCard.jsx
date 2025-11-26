@@ -304,10 +304,6 @@ export function WarrantyCard({ occurrence }) {
               {Array.isArray(nearbyItems) && nearbyItems.length > 0 ? (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">
-                      ID:{" "}
-                      <span className="font-mono">{nearbyBaseId ?? "—"}</span>
-                    </span>
                     <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">
                       {nearbyItems.length} possível(is) duplicata(s)
                     </span>
