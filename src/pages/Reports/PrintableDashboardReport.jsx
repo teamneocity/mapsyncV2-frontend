@@ -33,21 +33,12 @@ function humanizeStatus(s) {
   );
 }
 
-// 🔧 CORREÇÃO DE DIA / MÊS (usa anchorDate - 1 dia / -1 mês só para EXIBIR)
+// Usa o anchorDate exatamente como veio (sem somar/subtrair dia/mês)
 function monthLabel(anchorDate, windowParam) {
   if (anchorDate) {
     const [y, m, d] = anchorDate.split("-").map(Number);
     if (!Number.isNaN(y) && !Number.isNaN(m)) {
-      // base = anchorDate vindo da URL
-      let base = new Date(y, (m - 1) || 0, d || 1);
-
-      if (windowParam === "day" || windowParam === "week") {
-        // backend espera o dia seguinte -> exibição = dia - 1
-        base.setDate(base.getDate() - 1);
-      } else if (windowParam === "month") {
-        // backend espera o primeiro dia do MÊS SEGUINTE -> exibição = mês - 1
-        base.setMonth(base.getMonth() - 1);
-      }
+      const base = new Date(y, (m - 1) || 0, d || 1);
 
       const monthName = base.toLocaleString("pt-BR", { month: "long" });
       const safeMonth =
@@ -141,8 +132,8 @@ export default function PrintableDashboardReport({ onClose }) {
   const isEmergency = params.get("isEmergency") === "true";
   const isDelayed = params.get("isDelayed") === "true";
 
-  const windowParam = params.get("window"); 
-  const anchorDate = params.get("anchorDate"); 
+  const windowParam = params.get("window");
+  const anchorDate = params.get("anchorDate");
 
   const initialPeriod = (() => {
     const p = params.get("period");
@@ -150,7 +141,7 @@ export default function PrintableDashboardReport({ onClose }) {
   })();
   const [period, setPeriod] = useState(initialPeriod);
 
-  const [payload, setPayload] = useState(null); 
+  const [payload, setPayload] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -230,7 +221,7 @@ export default function PrintableDashboardReport({ onClose }) {
     return parts.join(" — ");
   })();
 
-  // 🔎 Lista de ocorrências da janela + filtros de bairro/status no FRONT
+  // Lista de ocorrências da janela + filtros de bairro/status no FRONT
   const occurrences = useMemo(() => {
     const list = coverage?.occurrencesByWindow?.[period] || [];
 

@@ -31,14 +31,13 @@ function humanizeStatus(s) {
   );
 }
 
-// tem uma lógica para concertar o erro de aumentar 1 dia ou 1 mês
+// Usa o anchorDate exatamente como veio (sem somar/subtrair dia/mês)
 function monthLabel(anchorDate, windowParam) {
   if (anchorDate) {
     const [y, m, dRaw] = anchorDate.split("-").map(Number);
 
     if (!Number.isNaN(y) && !Number.isNaN(m)) {
-      const base = new Date(y, m - 1, dRaw || 1);
-      base.setDate(base.getDate() - 1);
+      const base = new Date(y, (m - 1) || 0, dRaw || 1);
 
       const year = base.getFullYear();
       const day = base.getDate();
@@ -243,7 +242,7 @@ export default function SectorStatusCoverageReport({ onClose }) {
           .filter(Boolean)
           .join(" e ");
 
-  // label do cabeçalho com correção de data
+  // label do cabeçalho usando anchorDate cru
   const docPeriodLabel = monthLabel(anchorDate, windowParam);
 
   return (

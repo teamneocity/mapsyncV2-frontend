@@ -4,7 +4,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { addMonths, addDays, format } from "date-fns";
+import { format } from "date-fns";
 
 import { api } from "@/services/api";
 import { SelectField } from "@/components/selectField";
@@ -36,7 +36,7 @@ async function fetchDashboardCoverage() {
   return data;
 }
 
-// Dashboard geral passandod ata
+// Dashboard geral passando data
 async function fetchDashboardCoverageWindow({ window, anchorDate }) {
   const params = { window };
   if (anchorDate) params.anchorDate = anchorDate;
@@ -586,7 +586,7 @@ export default function ReportsOverview({
       if (isDelayedFilter) p.set("isDelayed", "true");
       else p.delete("isDelayed");
 
-      // NOVO: filtros de janela iguais ao dashboard setorial
+      // filtros de janela iguais ao dashboard setorial
       if (windowParam) {
         p.set("window", windowParam);
       } else {
@@ -611,7 +611,7 @@ export default function ReportsOverview({
     setIsDelayedFilter((prev) => !prev);
   }
 
-  // dia sempre passa + 1 dia, estava vindo errado
+  // dia geral – usa a data exatamente como veio do input
   function handleChangeDayAnchor(value) {
     if (!value) {
       setDayAnchorDate(null);
@@ -620,7 +620,7 @@ export default function ReportsOverview({
 
     // value vem no formato "yyyy-MM-dd"
     const [year, month, day] = value.split("-");
-    const d = new Date(Number(year), Number(month) - 1, Number(day) + 1);
+    const d = new Date(Number(year), Number(month) - 1, Number(day));
 
     const anchorDate = format(d, "yyyy-MM-dd");
     setDayAnchorDate(anchorDate);
@@ -646,7 +646,7 @@ export default function ReportsOverview({
     setWeekAnchorDate(anchorDate);
   }
 
-  // mês com 1 dia a menos
+  // mês geral – ancora no primeiro dia do mês selecionado
   function handleChangeMonthAnchor(monthStr) {
     if (!monthStr) {
       setMonthAnchorDate(null);
@@ -655,8 +655,7 @@ export default function ReportsOverview({
 
     const [year, month] = monthStr.split("-");
     const d = new Date(Number(year), Number(month) - 1, 1);
-    const anchor = addMonths(d, 1);
-    const anchorDate = format(anchor, "yyyy-MM-dd");
+    const anchorDate = format(d, "yyyy-MM-dd");
     setMonthAnchorDate(anchorDate);
   }
 
@@ -670,7 +669,7 @@ export default function ReportsOverview({
     }
 
     const [year, month, day] = value.split("-");
-    const d = new Date(Number(year), Number(month) - 1, Number(day) + 1);
+    const d = new Date(Number(year), Number(month) - 1, Number(day));
 
     const anchorDate = format(d, "yyyy-MM-dd");
     setSectorDayAnchorDate(anchorDate);
@@ -698,7 +697,7 @@ export default function ReportsOverview({
     setSectorWeekAnchorDate(anchorDate);
   }
 
-  // mês do setor
+  // mês do setor – ancora no primeiro dia do mês selecionado
   function handleChangeSectorMonth(value) {
     setSectorMonth(value || "");
     if (!value) {
@@ -708,8 +707,7 @@ export default function ReportsOverview({
 
     const [year, month] = value.split("-");
     const d = new Date(Number(year), Number(month) - 1, 1);
-    const anchor = addMonths(d, 1);
-    const anchorDate = format(anchor, "yyyy-MM-dd");
+    const anchorDate = format(d, "yyyy-MM-dd");
     setSectorMonthAnchorDate(anchorDate);
   }
 
@@ -1104,7 +1102,7 @@ export default function ReportsOverview({
           onChangeDayAnchor={handleChangeDayAnchor}
           onChangeWeekAnchor={handleChangeWeekAnchor}
           onChangeMonthAnchor={handleChangeMonthAnchor}
-          // 🔥 novo: seleção de período no GERAL
+          // seleção de período no GERAL
           selectedPeriod={selectedPeriod}
           onChangePeriod={handleChangePeriod}
         />
