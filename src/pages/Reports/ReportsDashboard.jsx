@@ -90,9 +90,8 @@ export default function ReportsDashboard({
               onChangePeriod?.("week");
               onChangeWeekAnchor?.(v === "" ? "" : v);
             }}
-            className="h-[32px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
+            className="h-[32px] w-[80px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
           >
-            <option value="">Selecione</option>
             <option value="0">Semana atual</option>
             <option value="7">Semana de 7 dias atrás</option>
             <option value="14">Semana de 14 dias atrás</option>

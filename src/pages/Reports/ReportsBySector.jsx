@@ -43,7 +43,7 @@ export function ReportsBySector({
     if (cardKey === "day") {
       return (
         <div
-          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-2 shadow-sm border border-gray-100"
+          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-1 shadow-sm border border-gray-100"
           onClick={(e) => e.stopPropagation()}
         >
           <p className="text-[11px] text-slate-600 font-medium">
@@ -67,7 +67,7 @@ export function ReportsBySector({
     if (cardKey === "week") {
       return (
         <div
-          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-2 shadow-sm border border-gray-100"
+          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-1 shadow-sm border border-gray-100"
           onClick={(e) => e.stopPropagation()}
         >
           <p className="text-[11px] text-slate-600 font-medium">
@@ -82,9 +82,8 @@ export function ReportsBySector({
               onChangePeriod?.("week");
               onChangeSectorWeek?.(v);
             }}
-            className="h-[32px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
+            className="h-[32px] w-[80px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
           >
-            <option value="">Selecione</option>
             <option value="0">Semana atual</option>
             <option value="7">Semana de 7 dias atrás</option>
             <option value="14">Semana de 14 dias atrás</option>
@@ -96,7 +95,7 @@ export function ReportsBySector({
     if (cardKey === "month") {
       return (
         <div
-          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-2 shadow-sm border border-gray-100"
+          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-1 shadow-sm border border-gray-100"
           onClick={(e) => e.stopPropagation()}
         >
           <p className="text-[11px] text-slate-600 font-medium">
