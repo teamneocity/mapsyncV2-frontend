@@ -51,7 +51,7 @@ export default function ReportsDashboard({
     if (cardKey === "day") {
       return (
         <div
-          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-2 shadow-sm border border-gray-100"
+          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-1 shadow-sm border border-gray-100"
           onClick={(e) => e.stopPropagation()}
         >
           <p className="text-[11px] text-slate-600 font-medium">
@@ -75,7 +75,7 @@ export default function ReportsDashboard({
     if (cardKey === "week") {
       return (
         <div
-          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-2 shadow-sm border border-gray-100"
+          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-1 shadow-sm border border-gray-100"
           onClick={(e) => e.stopPropagation()}
         >
           <p className="text-[11px] text-slate-600 font-medium">
@@ -104,7 +104,7 @@ export default function ReportsDashboard({
     if (cardKey === "month") {
       return (
         <div
-          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-2 shadow-sm border border-gray-100"
+          className="absolute right-3 top-3 flex flex-col gap-1 rounded-xl bg-gray-200 p-1 shadow-sm border border-gray-100"
           onClick={(e) => e.stopPropagation()}
         >
           <p className="text-[11px] text-slate-600 font-medium">
@@ -114,7 +114,7 @@ export default function ReportsDashboard({
             type="month"
             value={selectedMonth}
             onChange={(e) => {
-              const v = e.target.value; // "2025-10"
+              const v = e.target.value; 
               setSelectedMonth(v);
 
               onChangePeriod?.("month");
@@ -127,7 +127,7 @@ export default function ReportsDashboard({
               const [yyyy, mm] = v.split("-");
               onChangeMonthAnchor?.(`${yyyy}-${mm}-01`);
             }}
-            className="h-[32px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
+            className="h-[32px] w-[80px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
           />
         </div>
       );
@@ -150,7 +150,7 @@ export default function ReportsDashboard({
                 key={card.key}
                 className="relative h-[170px] rounded-xl border shadow-sm overflow-hidden flex items-center justify-center transition-all bg-[#F6F8FA] text-[#787891]"
               >
-                <span className="text-[96px] font-semibold leading-none">
+                <span className="text-[80px] font-semibold leading-none">
                   {loading ? "..." : card.value}
                 </span>
                 <div className="absolute left-4 bottom-3 text-[14px] tracking-wide">

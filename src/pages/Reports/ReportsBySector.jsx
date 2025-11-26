@@ -111,7 +111,7 @@ export function ReportsBySector({
               onChangePeriod?.("month");
               onChangeSectorMonth?.(v);
             }}
-            className="h-[32px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
+            className="h-[32px] w-[80px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
           />
         </div>
       );
@@ -138,7 +138,7 @@ export function ReportsBySector({
                 className={cardBoxClasses(isActive, true)}
                 title={`Mostrar bairros de ${card.label.toLowerCase()}`}
               >
-                <span className="text-[96px] font-semibold leading-none">
+                <span className="text-[80px] font-semibold leading-none">
                   {anyLoading ? "..." : card.value}
                 </span>
 
