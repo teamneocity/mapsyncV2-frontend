@@ -139,11 +139,20 @@ export function AerialOccurrenceCard({ occurrence, expanded, onToggle }) {
       .map((u) => resolveMediaUrl(u));
   }, [occurrence?.result?.videos, occurrence?.videos]);
 
+  // result.driveUrl
+  const driveUrl = occurrence?.result?.driveUrl;
+  const hasDriveLink = status === "verificada" && !!driveUrl;
+
   const handleDownloadImages = () =>
     imageUrls.forEach((u) => window.open(u, "_blank", "noopener"));
 
   const handleDownloadVideos = () =>
     videoUrls.forEach((u) => window.open(u, "_blank", "noopener"));
+
+  const handleOpenDriveVideo = () => {
+    if (!driveUrl) return;
+    window.open(driveUrl, "_blank", "noopener");
+  };
 
   const t = occurrence?.timeline || {};
   const timelineSteps = [
@@ -172,6 +181,9 @@ export function AerialOccurrenceCard({ occurrence, expanded, onToggle }) {
 
   const isEmerg =
     (occurrence?.isEmergency ?? occurrence?.isEmergencial ?? false) === true;
+
+  const refusedReason =
+    occurrence?.refusedReason || occurrence?.refused_reason || "";
 
   return (
     <div className="rounded-2xl bg-white border border-zinc-200 overflow-hidden shadow-sm">
@@ -223,15 +235,22 @@ export function AerialOccurrenceCard({ occurrence, expanded, onToggle }) {
       </div>
 
       <div className="flex items-center px-1 sm:px-2 py-3 border-b border-zinc-200 gap-2">
+        {/* Se verificada + driveUrl, abre Drive; senão, comportamento antigo */}
         <button
-          onClick={handleDownloadVideos}
-          disabled={videoUrls.length === 0}
+          onClick={hasDriveLink ? handleOpenDriveVideo : handleDownloadVideos}
+          disabled={!hasDriveLink && videoUrls.length === 0}
           className={`inline-flex items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-50 ${
-            videoUrls.length === 0 ? "opacity-50 cursor-not-allowed" : ""
+            !hasDriveLink && videoUrls.length === 0
+              ? "opacity-50 cursor-not-allowed"
+              : ""
           }`}
         >
           <Video />
-          Downloads Vídeos {videoUrls.length ? `(${videoUrls.length})` : ""}
+          {hasDriveLink
+            ? "Ver vídeo (Drive)"
+            : `Downloads Vídeos ${
+                videoUrls.length ? `(${videoUrls.length})` : ""
+              }`}
         </button>
 
         <button
@@ -260,12 +279,25 @@ export function AerialOccurrenceCard({ occurrence, expanded, onToggle }) {
                 </span>
                 <span className="text-zinc-700">{solicitadoPor}</span>
               </li>
+
               <li className="text-zinc-500">
                 <span className="font-semibold text-zinc-700">
                   Ocorrência:{" "}
                 </span>
                 <span className="text-zinc-700">{tipoOcorrencia}</span>
               </li>
+
+              {status === "rejeitada" && refusedReason && (
+                <li className="text-zinc-500">
+                  <span className="font-semibold text-zinc-700">
+                    Motivo da recusa:{" "}
+                  </span>
+                  <span className="text-red-700 font-semibold">
+                    {refusedReason}
+                  </span>
+                </li>
+              )}
+
               {verifyUntil && (
                 <li className="text-zinc-500">
                   <span className="font-semibold text-zinc-700">
@@ -276,28 +308,34 @@ export function AerialOccurrenceCard({ occurrence, expanded, onToggle }) {
                   </span>
                 </li>
               )}
+
               <li className="text-zinc-500">
                 <span className="font-semibold text-zinc-700">Endereço: </span>
                 <span className="text-zinc-700">
                   {street}, {number}
                 </span>
               </li>
+
               <li className="text-zinc-500">
                 <span className="font-semibold text-zinc-700">Bairro: </span>
                 <span className="text-zinc-700">{neighborhood}</span>
               </li>
+
               <li className="text-zinc-500">
                 <span className="font-semibold text-zinc-700">Zona: </span>
                 <span className="text-zinc-700">{zone}</span>
               </li>
+
               <li className="text-zinc-500">
                 <span className="font-semibold text-zinc-700">CEP: </span>
                 <span className="text-zinc-700">{zip}</span>
               </li>
+
               <li className="text-zinc-500">
                 <span className="font-semibold text-zinc-700">Longitude: </span>
                 <span className="text-zinc-700">{lon}</span>
               </li>
+
               <li className="text-zinc-500">
                 <span className="font-semibold text-zinc-700">Latitude: </span>
                 <span className="text-zinc-700">{lat}</span>

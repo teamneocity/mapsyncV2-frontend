@@ -119,7 +119,18 @@ export function OccurrencesA() {
     toast,
   });
 
-  const occurrences = data?.list ?? [];
+  const occurrences = (data?.list ?? []).filter((occ) => {
+    // Se o filtro de status for "rejeitada", mostra todas as rejeitadas normalmente
+    if (status === "rejeitada") return occ.status === "rejeitada";
+
+    // Se algum status específico estiver selecionado, filtra por ele
+    if (status && status !== "rejeitada") return occ.status === status;
+
+    // Se **nenhum status** estiver selecionado (status === null),
+    // então remove apenas as rejeitadas
+    return occ.status !== "rejeitada";
+  });
+
   const totalPages = data?.totalPages ?? 1;
   const effectivePage = data?.page ?? currentPage;
 

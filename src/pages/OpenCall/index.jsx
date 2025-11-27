@@ -198,6 +198,21 @@ export function OpenCall() {
       setIsSubmitting(true);
 
       if (mode === "terrestre") {
+        // validação do tipo terrestre
+        const hasValidTerrestrialType = TYPE_OPTIONS.some(
+          (opt) => opt.value === form.type
+        );
+
+        if (!hasValidTerrestrialType) {
+          toast({
+            title: "Tipo obrigatório",
+            description: "Selecione o tipo da ocorrência terrestre.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+
         const { digits: cepDigits, usedDefault } = getCepOrDefault(form.cep);
 
         if (!cepDigits) {
@@ -229,12 +244,26 @@ export function OpenCall() {
           cep: cepDigits,
         };
 
+        console.log("[Terrestre] payload /pre-occurrences:", body);
+
         await api.post("/pre-occurrences", body);
         toast({
           title: "Pré-ocorrência criada!",
           description: "Terrestre enviada ",
         });
       } else {
+        // validação do tipo aéreo
+        const validAerialTypes = ["mapeamento", "metragem", "comunicacao"];
+        if (!validAerialTypes.includes(form.type)) {
+          toast({
+            title: "Tipo obrigatório",
+            description: "Selecione o tipo do mapeamento aéreo.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+
         const { digits: zipDigits, usedDefault } = getCepOrDefault(
           form.zipCode
         );
@@ -248,6 +277,12 @@ export function OpenCall() {
           setIsSubmitting(false);
           return;
         }
+
+        // formata para XXXXX-XXX
+        const formattedZip =
+          zipDigits.length === 8
+            ? `${zipDigits.slice(0, 5)}-${zipDigits.slice(5)}`
+            : zipDigits;
 
         if (usedDefault) {
           setField("zipCode", zipDigits);
@@ -266,7 +301,7 @@ export function OpenCall() {
         const body = {
           type: form.type,
           street: form.street.trim(),
-          zipCode: zipDigits,
+          zipCode: formattedZip,
           isEmergency: !!form.isEmergency,
           timeToBeVerified,
           latitude: form.latitude ? Number(form.latitude) : null,
@@ -275,15 +310,50 @@ export function OpenCall() {
           observation: form.observation.trim(),
         };
 
-        await api.post("/aerial-inspections", body);
-        toast({
-          title: "Inspeção aérea criada!",
-          description: "Aéreo enviada ",
-        });
+        console.log("[Aéreo] payload /aerial-inspections:", body);
+
+        // gambiarra controlada pro 500 que cria mas responde errado
+        try {
+          await api.post("/aerial-inspections", body);
+
+          toast({
+            title: "Inspeção aérea criada!",
+            description: "Aéreo enviada ",
+          });
+        } catch (err) {
+          console.error(
+            "Erro ao enviar /aerial-inspections:",
+            err?.response || err
+          );
+
+          const status = err?.response?.status;
+
+          if (status === 500) {
+            // sabemos que ele está criando mesmo assim
+            toast({
+              title: "Inspeção possivelmente criada",
+              description:
+                "O servidor retornou erro interno (500), mas a inspeção pode ter sido registrada. Verifique na listagem.",
+            });
+            // não dou return aqui pra deixar o fluxo seguir (resetar form etc.)
+          } else {
+            toast({
+              title: "Erro ao enviar",
+              description:
+                err?.response?.data?.message ||
+                "Verifique os campos e tente novamente.",
+              variant: "destructive",
+            });
+            setIsSubmitting(false);
+            return;
+          }
+        }
       }
 
       handleReset();
     } catch (e) {
+      console.error("Erro ao enviar chamada:", e?.response || e);
+
       toast({
         title: "Erro ao enviar",
         description:
@@ -613,6 +683,7 @@ export function OpenCall() {
                           onChange={(e) => setField("type", e.target.value)}
                           className="w-full h-10 rounded-md border px-3 text-sm bg-white"
                         >
+                          <option value="">Selecione...</option>
                           <option value="mapeamento">mapeamento</option>
                           <option value="comunicacao">comunicacao</option>
                           <option value="metragem">metragem</option>

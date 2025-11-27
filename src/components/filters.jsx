@@ -177,6 +177,7 @@ export function Filters({
       { value: "aceita", label: "Aceita" },
       { value: "pendente", label: "Pendente" },
       { value: "verificada", label: "Verificada" },
+      { value: "rejeitada", label:"Rejeitada"}
     ],
   };
 
