@@ -440,13 +440,6 @@ export function Sidebar() {
                         className={linkClassMobile}
                       >
                         <CalendarIcon className="w-5 h-5 shrink-0" />{" "}
-                        Planejamento diário
-                      </NavLink>
-                      <NavLink
-                        to="/servicePlanning"
-                        className={linkClassMobile}
-                      >
-                        <CalendarIcon className="w-5 h-5 shrink-0" />{" "}
                         Planejamento
                       </NavLink>
 
