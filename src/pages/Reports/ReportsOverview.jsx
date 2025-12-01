@@ -123,7 +123,7 @@ export default function ReportsOverview({
 }) {
   const [params, setParams] = useSearchParams();
 
-  const [selectedStatus, setSelectedStatus] = useState("em_analise");
+  const [selectedStatus, setSelectedStatus] = useState(null);
   const [selectedPeriod, setSelectedPeriod] = useState("day");
 
   // flags setoriais
@@ -158,20 +158,23 @@ export default function ReportsOverview({
     selectedSector === "Escolha o painél de exibição do setor" ||
     selectedSector === "Dashboard";
 
-  // máscara de status
   const STATUS_MASK = {
     em_analise: {
       label: "Sob análise",
       cls: "bg-sky-100 text-sky-700",
       active: "ring-2 ring-sky-300",
       clickable: true,
+      chartColor: "#0369A1", 
     },
+
     aprovada: {
       label: "Aprovadas",
       cls: "bg-[#E8F2FF] text-[#4593F5]",
       active: "ring-2 ring-sky-300",
       clickable: true,
+      chartColor: "#E8F2FF", 
     },
+
     emergencial: {
       label: "Emergencial",
       cls: "bg-rose-100 text-rose-700",
@@ -179,7 +182,9 @@ export default function ReportsOverview({
       clickable: true,
       isFlag: true,
       flagKey: "isEmergency",
+      chartColor: "#BE123C", 
     },
+
     atrasada: {
       label: "Atrasada",
       cls: "bg-violet-100 text-violet-700",
@@ -187,18 +192,23 @@ export default function ReportsOverview({
       clickable: true,
       isFlag: true,
       flagKey: "isDelayed",
+      chartColor: "#6D28D9", 
     },
+
     em_execucao: {
       label: "Andamento",
       cls: "bg-amber-100 text-amber-800",
       active: "ring-2 ring-amber-300",
       clickable: true,
+      chartColor: "#FFF1CB",
     },
+
     finalizada: {
       label: "Finalizado",
       cls: "bg-emerald-100 text-emerald-700",
       active: "ring-2 ring-emerald-300",
       clickable: true,
+      chartColor: "#DDF3EF", 
     },
   };
 
@@ -378,9 +388,8 @@ export default function ReportsOverview({
 
   // reset ao alternar entre dashboard geral e setorial
   useEffect(() => {
-    if (!isDashboard) {
-      setSelectedStatus("em_analise");
-    }
+    // sempre entra sem status selecionado
+    setSelectedStatus(null);
     setSelectedPeriod("day");
     setIsEmergencyFilter(false);
     setIsDelayedFilter(false);
@@ -399,7 +408,7 @@ export default function ReportsOverview({
     }
   }, [isDashboard, selectedSector]);
 
-  // funçõezinhas auxiliares do SETOR (bairros / ruas)
+  // funções auxiliares
   function getNeighborhoodNamesForPeriod(period) {
     const list = coverage?.occurrencesByWindow?.[period] || [];
 

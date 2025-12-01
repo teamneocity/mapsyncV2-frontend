@@ -31,7 +31,7 @@ export function ReportsBySector({
   isDelayedFilter,
   onToggleEmergency,
   onToggleDelayed,
-  // janelas setoriais
+  // campos setoriais
   sectorDay,
   onChangeSectorDay,
   sectorWeek,
@@ -39,6 +39,11 @@ export function ReportsBySector({
   sectorMonth,
   onChangeSectorMonth,
 }) {
+  // máscara ativa para pegar a cor da barra
+  const activeMask = selectedStatus ? STATUS_MASK[selectedStatus] : null;
+  // se tiver chartColor no STATUS_MASK, pega,se não cai pra cinza
+  const barColor = activeMask?.chartColor || "#9CA3AF";
+
   function renderSelector(cardKey) {
     if (cardKey === "day") {
       return (
@@ -119,6 +124,14 @@ export function ReportsBySector({
     return null;
   }
 
+  // calcula o maior count para usar como base do gráfico
+  const maxCount = neighborhoods.reduce((max, n) => {
+    if (typeof n.count === "number" && !Number.isNaN(n.count)) {
+      return Math.max(max, n.count);
+    }
+    return max;
+  }, 0);
+
   return (
     <>
       {/* Cards */}
@@ -136,14 +149,10 @@ export function ReportsBySector({
             valueStr.length >= 4;
 
           if (isSelectable) {
-            // classes para os 3 primeiros cards
             const numberClass = isLongNumber
-              ? // 4+ dígitos → menor
-                "text-[24px] sm:text-[32px] md:text-[40px] lg:text-[48px] xl:text-[56px]"
-              : // até 3 dígitos → maior
-                "text-[32px] sm:text-[40px] md:text-[56px] lg:text-[72px] xl:text-[80px]";
+              ? "text-[24px] sm:text-[32px] md:text-[40px] lg:text-[48px] xl:text-[56px]"
+              : "text-[32px] sm:text-[40px] md:text-[56px] lg:text-[72px] xl:text-[80px]";
 
-            // 3 primeiros cards alinhados à esquerda (igual geral)
             return (
               <button
                 key={card.key}
@@ -171,12 +180,9 @@ export function ReportsBySector({
             );
           }
 
-          // Último card (total) centralizado
           const totalNumberClass = isLongNumber
-            ? // 4+ dígitos → reduz
-              "text-[30px] sm:text-[30px] md:text-[30px] lg:text-[30px] xl:text-[40px] 2xl:text-[70px]"
-            : // até 3 dígitos → maior
-              "text-[40px] sm:text-[40px] md:text-[40px] lg:text-[52px] xl:text-[60px] 2xl:text-[90px]";
+            ? "text-[30px] sm:text-[30px] md:text-[30px] lg:text-[30px] xl:text-[40px] 2xl:text-[70px]"
+            : "text-[40px] sm:text-[40px] md:text-[40px] lg:text-[52px] xl:text-[60px] 2xl:text-[90px]";
 
           return (
             <div
@@ -221,23 +227,34 @@ export function ReportsBySector({
           {neighborhoods.length > 0 ? (
             <div className="mt-4 space-y-3">
               {neighborhoods.map((n, idx) => {
-                const mask = STATUS_MASK[selectedStatus] || {};
-                const bgClass = mask.cls?.split(" ")[0] || "bg-gray-100";
-                const textClass = mask.cls?.split(" ")[1] || "text-gray-800";
+                const hasCount =
+                  typeof n.count === "number" && !Number.isNaN(n.count);
+                const fraction =
+                  maxCount > 0 && hasCount ? n.count / maxCount : 0;
+                const widthPercent =
+                  fraction > 0 ? Math.max(fraction * 100, 8) : 0;
 
                 return (
                   <div key={`${n.name}-${idx}`} className="w-full">
-                    <div
-                      className={`flex items-center justify-between rounded-lg px-4 h-10 ${bgClass} ${textClass} transition-colors`}
-                    >
-                      <span className="text-[15px] font-medium truncate pr-3">
-                        {n.name || "-"}
-                      </span>
-                      {typeof n.count === "number" ? (
-                        <span className="min-w-10 text-center px-2 py-0.5 rounded-full bg-white/50 text-xs font-semibold">
-                          {n.count}
+                    {/* container fixo com 40px de altura */}
+                    <div className="h-10 w-full rounded-lg overflow-hidden">
+                      {/* barra proporcional ao count */}
+                      <div
+                        className="h-full flex items-center rounded-lg justify-between px-4 transition-all"
+                        style={{
+                          width: `${widthPercent}%`,
+                          backgroundColor: barColor,
+                        }}
+                      >
+                        <span className="text-[15px] font-semibold text-black truncate pr-3">
+                          {n.name || "-"}
                         </span>
-                      ) : null}
+                        {hasCount ? (
+                          <span className="min-w-10 text-right text-xs font-semibold text-black">
+                            {n.count}
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
                 );
@@ -254,7 +271,7 @@ export function ReportsBySector({
               onClick={onOpenSectorReport}
               disabled={!foundSector?.id}
               className="h-12 px-4 rounded-lg border border-neutral-200 bg-white text-gray-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Abrir relatório do setor e status selecionados"
+              title="Abrir relatório deste setor"
             >
               Abrir relatório deste setor
             </button>
@@ -276,18 +293,14 @@ export function ReportsBySector({
             </button>
           </div>
 
+          {/* Linha de status principais: Aprovadas, Andamento, Finalizado */}
+          {/* REMOVI o h-[55px] daqui pra não esmagar nada no mobile */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
-              {
-                key: "em_analise",
-                value: stats?.totalsByStatus?.em_analise ?? 0,
-              },
               {
                 key: "aprovada",
                 value: stats?.totalsByStatus?.aprovada ?? 0,
               },
-              { key: "emergencial", value: stats?.totalsEmergency ?? 0 },
-              { key: "atrasada", value: stats?.totalsDelayed ?? 0 },
               {
                 key: "em_execucao",
                 value: stats?.totalsByStatus?.em_execucao ?? 0,
@@ -320,7 +333,82 @@ export function ReportsBySector({
                   if (isFlag) {
                     if (key === "emergencial" && onToggleEmergency) {
                       onToggleEmergency();
-                    } else if (key === "atrasada" && onToggleDelayed) {
+                    } else if (key === "atrasada") {
+                      onToggleDelayed();
+                    }
+                  } else {
+                    onChangeStatus(key);
+                  }
+                };
+
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={handleClick}
+                    className={baseCls}
+                    title={
+                      isFlag
+                        ? `Filtrar por flag ${mask.label}`
+                        : `Filtrar por ${mask.label}`
+                    }
+                  >
+                    <span>{mask.label}</span>
+                    <span className="opacity-70">({value})</span>
+                  </button>
+                );
+              }
+
+              return (
+                <div
+                  key={key}
+                  className={`${baseCls} cursor-not-allowed`}
+                  title={`${mask.label} (informativo)`}
+                >
+                  <span>{mask.label}</span>
+                  <span className="opacity-70">({value})</span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Flags opcionais */}
+          <h4 className="text-sm font-semibold mt-5 mb-1 text-neutral-700">
+            Flags opcionais
+          </h4>
+          <p className="text-[11px] text-neutral-500 mb-2">
+            Você pode combinar com um status acima, se desejar.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              { key: "atrasada", value: stats?.totalsDelayed ?? 0 },
+              { key: "emergencial", value: stats?.totalsEmergency ?? 0 },
+            ].map(({ key, value }) => {
+              const mask = STATUS_MASK[key] || {};
+              const isFlag = mask.isFlag;
+
+              let isActive = false;
+              if (isFlag) {
+                if (key === "emergencial") {
+                  isActive = !!isEmergencyFilter;
+                } else if (key === "atrasada") {
+                  isActive = !!isDelayedFilter;
+                }
+              } else {
+                isActive = key === selectedStatus;
+              }
+
+              const baseCls = `${mask.cls || ""} ${
+                isActive ? mask.active || "" : ""
+              } px-4 py-4 rounded-lg text-sm font-medium flex items-center justify-between w-full`;
+
+              if (mask.clickable) {
+                const handleClick = () => {
+                  if (isFlag) {
+                    if (key === "emergencial" && onToggleEmergency) {
+                      onToggleEmergency();
+                    } else if (key === "atrasada") {
                       onToggleDelayed();
                     }
                   } else {
