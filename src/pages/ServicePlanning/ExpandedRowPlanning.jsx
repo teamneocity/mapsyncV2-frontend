@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Copy } from "lucide-react";
+import Copy from "@/assets/icons/Copy.svg?react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -156,7 +156,7 @@ export function ExpandedRowPlanning(props) {
             <span>
               Protocolo : {protocol && protocol !== "—" ? protocol : "Sem protocolo"}
             </span>
-            <Copy className="w-4 h-4" />
+            <Copy className="w-5 h-5" />
           </button>
 
           <Line label="Setor">{sector}</Line>

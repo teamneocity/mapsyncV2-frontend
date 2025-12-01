@@ -12,7 +12,7 @@ import Notes from "@/assets/icons/Notes.svg?react";
 import { MediaMapSection } from "@/components/MediaMapSection";
 
 import { useToast } from "@/hooks/use-toast";
-import { Copy } from "lucide-react";
+import Copy from "@/assets/icons/Copy.svg?react";
 import { Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -680,7 +680,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                   <span className="truncate">
                     Protocolo : {occurrence?.protocolNumber || "—"}
                   </span>
-                  <Copy className="w-4 h-4 shrink-0 opacity-70" />
+                  <Copy className="w-5 h-5 shrink-0 opacity-70" />
                 </button>
               </div>
               <p>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { Clock, Copy } from "lucide-react";
+import { Clock } from "lucide-react";
+import Copy from "@/assets/icons/Copy.svg?react";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
@@ -168,7 +169,7 @@ export function InspectionCard({ serviceorder }) {
       </div>
 
       {/* Conteúdo */}
-      <div className="px-4 pb-4 text-sm text-[#787891] grid grid-cols-12 gap-2 min-h-[400px] sm:min-h-[auto]">
+      <div className="px-4 pb-4 text-sm text-black grid grid-cols-12 gap-2 min-h-[400px] sm:min-h-[auto]">
         {/* Coluna 1 */}
         <div className="col-span-6 space-y-1">
           <button
@@ -181,7 +182,7 @@ export function InspectionCard({ serviceorder }) {
             <span className="truncate">
               Protocolo : {serviceorder.protocolNumber}
             </span>
-            <Copy className="w-4 h-4 shrink-0 opacity-70" />
+            <Copy className="w-5 h-5 shrink-0 opacity-70" />
           </button>
           <p>
             <strong>Companhia:</strong> {occurrence.externalCompany || "EMURB"}

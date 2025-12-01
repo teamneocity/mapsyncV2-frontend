@@ -164,7 +164,7 @@ export default function ReportsOverview({
       cls: "bg-sky-100 text-sky-700",
       active: "ring-2 ring-sky-300",
       clickable: true,
-      chartColor: "#0369A1", 
+      chartColor: "#0369A1",
     },
 
     aprovada: {
@@ -172,7 +172,7 @@ export default function ReportsOverview({
       cls: "bg-[#E8F2FF] text-[#4593F5]",
       active: "ring-2 ring-sky-300",
       clickable: true,
-      chartColor: "#E8F2FF", 
+      chartColor: "#E8F2FF",
     },
 
     emergencial: {
@@ -182,7 +182,7 @@ export default function ReportsOverview({
       clickable: true,
       isFlag: true,
       flagKey: "isEmergency",
-      chartColor: "#BE123C", 
+      chartColor: "#BE123C",
     },
 
     atrasada: {
@@ -192,7 +192,7 @@ export default function ReportsOverview({
       clickable: true,
       isFlag: true,
       flagKey: "isDelayed",
-      chartColor: "#6D28D9", 
+      chartColor: "#6D28D9",
     },
 
     em_execucao: {
@@ -208,7 +208,7 @@ export default function ReportsOverview({
       cls: "bg-emerald-100 text-emerald-700",
       active: "ring-2 ring-emerald-300",
       clickable: true,
-      chartColor: "#DDF3EF", 
+      chartColor: "#DDF3EF",
     },
   };
 
@@ -937,8 +937,8 @@ export default function ReportsOverview({
 
     const statusOptions = [
       { value: "__all__", label: "Todos os status" },
-      { value: "aguardando_execucao", label: "Aguardando execução" },
-      { value: "em_execucao", label: "Em execução" },
+      { value: "aguardando_execucao", label: "Agendada" },
+      { value: "em_execucao", label: "Andamento" },
       { value: "finalizada", label: "Finalizada" },
     ];
 

@@ -20,8 +20,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-import { ThumbsDown, ThumbsUp, Copy } from "lucide-react";
-import Location from "@/assets/icons/Location.svg?react";
+import { ThumbsDown, ThumbsUp } from "lucide-react";
+import Copy from "@/assets/icons/Copy.svg?react";
 import Folder from "@/assets/icons/Folder.svg?react";
 import Warning from "@/assets/icons/Warning.svg?react";
 
@@ -131,6 +131,25 @@ export function ExpandedRowAnalysis({
       toast({
         title: "Copiado!",
         description: "Protocolo copiado para a área de transferência.",
+      });
+    });
+  }
+  function handleCopyStreet() {
+    const value = localAddress.street || occurrence.address?.street;
+
+    if (!value) {
+      toast({
+        title: "Nada para copiar",
+        description: "Esta ocorrência não possui rua informada.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    navigator.clipboard.writeText(value).then(() => {
+      toast({
+        title: "Copiado!",
+        description: `Rua "${value}" copiada para a área de transferência.`,
       });
     });
   }
@@ -366,7 +385,7 @@ export function ExpandedRowAnalysis({
               <span className="truncate ">
                 Protocolo : {occurrence?.protocolNumber || "—"}
               </span>
-              <Copy className="w-4 h-4 shrink-0 opacity-70" />
+              <Copy className="w-5 h-5 shrink-0 opacity-70" />
             </button>
           </div>
           {/* Exibe aviso de possível duplicata quando vier true */}
@@ -412,10 +431,20 @@ export function ExpandedRowAnalysis({
                 {addressLine}
               </span>
 
-              {/* ícone à direita */}
-              <Location className="w-5 h-5 opacity-70 shrink-0" />
+              {/* ícone à direita que copia rua ao clicar */}
+              <span
+                onClick={(e) => {
+                  e.stopPropagation(); // não deixa abrir o modal
+                  handleCopyStreet();
+                }}
+                className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-300 cursor-pointer"
+                title="Copiar nome da rua"
+              >
+                <Copy className="w-5 h-5 opacity-70 shrink-0" />
+              </span>
             </button>
           </div>
+
           <p>
             <span className="text-black font-medium">CEP:</span> {zip}
           </p>

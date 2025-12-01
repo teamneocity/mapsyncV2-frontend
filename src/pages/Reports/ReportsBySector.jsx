@@ -210,8 +210,8 @@ export function ReportsBySector({
 
           if (isSelectable) {
             const numberClass = isLongNumber
-              ? "text-[24px] sm:text-[32px] md:text-[40px] lg:text-[48px] xl:text-[56px]"
-              : "text-[32px] sm:text-[40px] md:text-[56px] lg:text-[72px] xl:text-[80px]";
+              ? "text-[40px] sm:text-[52px] md:text-[64px] lg:text-[72px] xl:text-[80px]"
+              : "text-[48px] sm:text-[64px] md:text-[80px] lg:text-[96px] xl:text-[110px]";
 
             return (
               <button

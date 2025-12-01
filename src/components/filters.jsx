@@ -179,6 +179,9 @@ export function Filters({
       { value: "verificada", label: "Verificada" },
       { value: "rejeitada", label:"Rejeitada"}
     ],
+    analise: [
+      { value: "recusada", label: "Recusada" },
+    ]
   };
 
   const currentStatusList = statusOptions[contextType] || statusOptions.padrao;

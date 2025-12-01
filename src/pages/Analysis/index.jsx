@@ -45,6 +45,7 @@ export function Analysis() {
     startDate: null,
     endDate: null,
   });
+  const [filterStatus, setFilterStatus] = useState(null);
   const [filterNeighborhood, setFilterNeighborhood] = useState(null);
   const [filterExternalCompany, setFilterExternalCompany] = useState("");
 
@@ -81,6 +82,7 @@ export function Analysis() {
     filterDateRange.startDate,
     filterDateRange.endDate,
     filterExternalCompany,
+    filterStatus,
   ]);
 
   const handleToggleDateOrder = (order) => {
@@ -108,6 +110,7 @@ export function Analysis() {
               ).toISOString()
             : undefined,
           externalCompanyName: filterExternalCompany || undefined,
+          status: filterStatus || undefined,
         },
       });
 
@@ -230,6 +233,7 @@ export function Analysis() {
         <Filters
           title="Análise"
           subtitle="de ocorrências"
+          contextType="analise"
           onSearch={(input) => {
             setSearchTerm(input);
             setCurrentPage(1);
@@ -255,8 +259,12 @@ export function Analysis() {
             setFilterExternalCompany(name || "");
             setCurrentPage(1);
           }}
+          onFilterStatus={(status) => {
+            setFilterStatus(status);
+            setCurrentPage(1);
+          }}
           handleApplyFilters={handleApplyFiltersClick}
-          showStatus={false}
+          showStatus={true}
         />
       </div>
 
@@ -264,7 +272,7 @@ export function Analysis() {
         occurrences={occurrences || []}
         dateOrder={filterRecent ?? "recent"}
         onToggleDateOrder={handleToggleDateOrder}
-        hiddenColumns={[ "reviewedBy","sentBy"]} 
+        hiddenColumns={["reviewedBy", "sentBy"]}
         renderExpandedRow={(occurrence) => (
           <ExpandedRowAnalysis
             occurrence={occurrence}

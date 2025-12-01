@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { Copy } from "lucide-react";
+import Copy from "@/assets/icons/Copy.svg?react";
 import { useToast } from "@/hooks/use-toast";
 import { Timeline } from "./Timeline";
 import { Button } from "@/components/ui/button";
@@ -222,7 +222,7 @@ export function WarrantyCard({ occurrence }) {
                 aria-label="Copiar protocolo"
               >
                 <span className="truncate ">O.S.: {osCode}</span>
-                <Copy className="w-4 h-4 shrink-0 opacity-70" />
+                <Copy className="w-5 h-5 shrink-0 opacity-70" />
               </button>
 
               <li className="text-zinc-500">

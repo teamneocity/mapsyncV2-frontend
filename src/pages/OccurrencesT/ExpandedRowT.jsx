@@ -7,7 +7,7 @@ import { MediaMapSection } from "@/components/MediaMapSection";
 import ThumbsUp from "@/assets/icons/thumbs-up.svg?react";
 import ThumbsDown from "@/assets/icons/thumbs-down.svg?react";
 
-import { Copy } from "lucide-react";
+import Copy from "@/assets/icons/Copy.svg?react";
 import { useToast } from "@/hooks/use-toast";
 
 export function ExpandedRowT({
@@ -92,7 +92,7 @@ export function ExpandedRowT({
               <span className="truncate">
                 Protocolo : {occurrence?.protocolNumber || "—"}
               </span>
-              <Copy className="w-4 h-4 shrink-0 opacity-70" />
+              <Copy className="w-5 h-5 shrink-0 opacity-70" />
             </button>
           </div>
 

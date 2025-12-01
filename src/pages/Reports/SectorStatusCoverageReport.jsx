@@ -13,9 +13,9 @@ const BASE_MEDIA_URL = (
 ).replace(/\/$/, "");
 
 const STATUS_LABELS = {
-  em_analise: "Sob análise",
+  em_analise: "Em análise",
   aprovada: "Aprovada",
-  em_execucao: "Em execução",
+  em_execucao: "Andamento",
   finalizada: "Finalizada",
   atrasada: "Atrasada",
   emergencial: "Emergencial",
