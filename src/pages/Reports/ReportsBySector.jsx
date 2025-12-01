@@ -1,5 +1,5 @@
 // src/pages/Reports/ReportsBySector.jsx
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ChevronRight } from "lucide-react";
 
 function cardBoxClasses(isActive, alignLeft = false) {
@@ -10,6 +10,66 @@ function cardBoxClasses(isActive, alignLeft = false) {
     isActive ? "ring-2 ring-indigo-300" : "hover:ring-1 hover:ring-neutral-300",
     "cursor-pointer select-none",
   ].join(" ");
+}
+
+function NeighborhoodBar({ name, count, barColor, maxCount }) {
+  const containerRef = useRef(null);
+  const labelRef = useRef(null);
+  const [minWidthPct, setMinWidthPct] = useState(0);
+
+  // mede o tamanho do texto vs container e calcula a % mínima
+  useEffect(() => {
+    const containerEl = containerRef.current;
+    const labelEl = labelRef.current;
+    if (!containerEl || !labelEl) return;
+
+    const containerWidth = containerEl.getBoundingClientRect().width;
+    const labelWidth = labelEl.getBoundingClientRect().width;
+
+    if (containerWidth > 0 && labelWidth > 0) {
+      const paddingX = 32;
+      const neededPct = ((labelWidth + paddingX) / containerWidth) * 100;
+
+      setMinWidthPct(Math.min(neededPct, 100));
+    }
+  }, [name]);
+
+  const hasCount = typeof count === "number" && !Number.isNaN(count);
+
+  const fraction = hasCount && maxCount > 0 ? count / maxCount : 0;
+  const widthPercent = fraction > 0 ? Math.max(fraction * 100, 8) : 0;
+  const finalWidth = Math.max(widthPercent, minWidthPct || 0);
+
+  return (
+    <div className="w-full">
+      {/* container fixo com 40px de altura */}
+      <div
+        className="h-10 w-full rounded-lg overflow-hidden"
+        ref={containerRef}
+      >
+        <div
+          className="h-full flex items-center rounded-lg justify-between px-4 transition-all"
+          style={{
+            width: `${finalWidth}%`,
+            backgroundColor: barColor,
+          }}
+        >
+          <span
+            ref={labelRef}
+            className="text-[15px] font-semibold text-black pr-3 whitespace-nowrap"
+          >
+            {name || "-"}
+          </span>
+
+          {hasCount ? (
+            <span className="min-w-10 text-right text-xs font-semibold text-black">
+              {count}
+            </span>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function ReportsBySector({
@@ -226,39 +286,15 @@ export function ReportsBySector({
 
           {neighborhoods.length > 0 ? (
             <div className="mt-4 space-y-3">
-              {neighborhoods.map((n, idx) => {
-                const hasCount =
-                  typeof n.count === "number" && !Number.isNaN(n.count);
-                const fraction =
-                  maxCount > 0 && hasCount ? n.count / maxCount : 0;
-                const widthPercent =
-                  fraction > 0 ? Math.max(fraction * 100, 8) : 0;
-
-                return (
-                  <div key={`${n.name}-${idx}`} className="w-full">
-                    {/* container fixo com 40px de altura */}
-                    <div className="h-10 w-full rounded-lg overflow-hidden">
-                      {/* barra proporcional ao count */}
-                      <div
-                        className="h-full flex items-center rounded-lg justify-between px-4 transition-all"
-                        style={{
-                          width: `${widthPercent}%`,
-                          backgroundColor: barColor,
-                        }}
-                      >
-                        <span className="text-[15px] font-semibold text-black truncate pr-3">
-                          {n.name || "-"}
-                        </span>
-                        {hasCount ? (
-                          <span className="min-w-10 text-right text-xs font-semibold text-black">
-                            {n.count}
-                          </span>
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              {neighborhoods.map((n, idx) => (
+                <NeighborhoodBar
+                  key={`${n.name}-${idx}`}
+                  name={n.name}
+                  count={n.count}
+                  barColor={barColor}
+                  maxCount={maxCount}
+                />
+              ))}
             </div>
           ) : (
             <div className="h-[260px] flex items-center justify-center text-gray-400 text-sm">
