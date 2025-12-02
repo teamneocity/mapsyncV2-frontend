@@ -120,14 +120,11 @@ export function OccurrencesA() {
   });
 
   const occurrences = (data?.list ?? []).filter((occ) => {
-    // Se o filtro de status for "rejeitada", mostra todas as rejeitadas normalmente
     if (status === "rejeitada") return occ.status === "rejeitada";
 
     // Se algum status específico estiver selecionado, filtra por ele
     if (status && status !== "rejeitada") return occ.status === status;
 
-    // Se **nenhum status** estiver selecionado (status === null),
-    // então remove apenas as rejeitadas
     return occ.status !== "rejeitada";
   });
 
@@ -141,7 +138,7 @@ export function OccurrencesA() {
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
-      <TopHeader />
+      <TopHeader title="Mapeamento" subtitle="Aéreo"/>
 
       <div className="px-6 py-4 sm:py-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:hidden">
@@ -149,8 +146,6 @@ export function OccurrencesA() {
         </h1>
 
         <Filters
-          title="Mapeamento"
-          subtitle="Aéreo"
           contextType="aerea"
           onSearch={(value) => {
             setStreet(value);

@@ -9,8 +9,9 @@ import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 import { api } from "@/services/api";
 import NewAju from "@/assets/NewAju.svg";
 import Bar from "@/assets/Bar.svg";
+import { ChevronRight } from "lucide-react";
 
-export function TopHeader() {
+export function TopHeader({ title, subtitle }) {
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const [openNotif, setOpenNotif] = useState(false);
@@ -37,7 +38,7 @@ export function TopHeader() {
   return (
     <header className="flex justify-between items-center py-3 px-4 sm:px-8 bg-[#EBEBEB] sticky top-0 z-10">
       {/* Logo */}
-      <div className="flex items-center px-2 py-4 gap-5">
+      <div className="flex items-center px-2 py-4 gap-1">
         <Link to="/">
           <img
             src={NewAju}
@@ -46,15 +47,20 @@ export function TopHeader() {
           />
         </Link>
         <Link to="/">
-          <img src={Bar} alt="Barra" className="h-[30px] w-auto rounded-md" />
+          <ChevronRight className="w-4 h-4 text-zinc-500" />
         </Link>
         <Link to="/">
-          <img
-            src={NewEmurb}
-            alt="Logo EMURB"
-            className="h-[35px] w-auto rounded-md"
-          />
+          <p className="font-bold">Emurb</p>
         </Link>
+        <Link to="/">
+          <ChevronRight className="w-4 h-4 text-zinc-500" />
+        </Link>
+        {title && (
+          <div className="flex text-lg text-black">
+            <p>{title}</p>
+            <p className="font-bold ml-2">{subtitle}</p>
+          </div>
+        )}
       </div>
 
       {/* Botões do lado direito */}

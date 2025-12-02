@@ -540,15 +540,13 @@ export function Requests() {
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
-      <TopHeader />
+      <TopHeader title="Pré-Análise" />
 
       <div className="px-4 py-4 sm:py-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:hidden">
           Solicitações
         </h1>
         <Filters
-          title="Solicitações"
-          subtitle="de serviços"
           onSearch={(input) => {
             setSearchTerm(input);
             setCurrentPage(1);

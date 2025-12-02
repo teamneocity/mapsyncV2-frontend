@@ -13,8 +13,6 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 
 export function PlanningFilters({
-  title = "Planejamento",
-  subtitle = "diário",
   onSearch,
   onFilterNeighborhood,
   onFilterType,
@@ -99,8 +97,6 @@ export function PlanningFilters({
   return (
     <div className="flex flex-col gap-2">
       <Filters
-        title={title}
-        subtitle={subtitle}
         contextType="padrao"
         showRecent={false}
         showDate={true}

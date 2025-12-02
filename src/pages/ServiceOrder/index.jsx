@@ -67,8 +67,8 @@ export function ServiceOrder() {
       const response = await api.get("/service-orders", {
         params: {
           page,
-          street: searchTerm, // rua
-          districtId: filterNeighborhood, // bairro
+          street: searchTerm, 
+          districtId: filterNeighborhood, 
           occurrenceType: filterType,
           status: filterStatus,
           orderBy: filterRecent || "recent",
@@ -172,15 +172,13 @@ export function ServiceOrder() {
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
 
-      <TopHeader />
+      <TopHeader title="Ordem de" subtitle="Serviço" />
 
       <div className="px-4 py-4 sm:py-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:hidden">
           Ordens de Serviço
         </h1>
         <Filters
-          title="Ordens de Serviço"
-          subtitle="Registradas"
           contextType="padrao"
           onFilterCompany={(company) => {
             setFilterCompany(company);

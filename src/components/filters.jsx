@@ -28,11 +28,10 @@ export function Filters({
   onFilterNeighborhood = () => {},
   onFilterStatus = () => {},
   onFilterCompany = () => {},
-  onFilterForeman = () => {},       
+  onFilterForeman = () => {},
   handleApplyFilters,
   onSearch = () => {},
-  title = "Análises de ocorrências",
-  subtitle = "Via aplicativo",
+
   contextType = "padrao",
 
   showRecent = true,
@@ -41,8 +40,8 @@ export function Filters({
   showNeighborhood = true,
   showStatus = true,
   showCompany = true,
-  showForeman = false,             
-  foremanEndpoint = "/users?role=FOREMAN", 
+  showForeman = false,
+  foremanEndpoint = "/users?role=FOREMAN",
 }) {
   const [selectedRecent, setSelectedRecent] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
@@ -77,11 +76,7 @@ export function Filters({
       try {
         const { data } = await api.get(foremanEndpoint);
 
-        const raw =
-          data?.foremen ??
-          data?.users ??
-          data ??
-          [];
+        const raw = data?.foremen ?? data?.users ?? data ?? [];
 
         const normalized = Array.isArray(raw)
           ? raw.map((u) => ({
@@ -96,9 +91,7 @@ export function Filters({
             }))
           : [];
 
-        setForemen(
-          normalized.filter((f) => f?.id && f?.name)
-        );
+        setForemen(normalized.filter((f) => f?.id && f?.name));
       } catch (error) {
         console.error("Erro ao buscar encarregados:", error);
       }
@@ -130,7 +123,7 @@ export function Filters({
 
   const handleCompanyFilter = (company) => {
     setSelectedCompany(company);
-    onFilterCompany(company); 
+    onFilterCompany(company);
   };
 
   const handleDateRangeChange = (range) => {
@@ -177,27 +170,16 @@ export function Filters({
       { value: "aceita", label: "Aceita" },
       { value: "pendente", label: "Pendente" },
       { value: "verificada", label: "Verificada" },
-      { value: "rejeitada", label:"Rejeitada"}
+      { value: "rejeitada", label: "Rejeitada" },
     ],
-    analise: [
-      { value: "recusada", label: "Recusada" },
-    ]
+    analise: [{ value: "recusada", label: "Recusada" }],
   };
 
   const currentStatusList = statusOptions[contextType] || statusOptions.padrao;
 
   return (
     <header className="w-full bg-[#EBEBEB] px-1 py-1">
-      <div className="w-full flex items-center justify-between gap-2 md:gap-3 flex-wrap md:flex-nowrap rounded-xl overflow-x-auto overflow-y-hidden scrollbar-hide scroll-smooth">
-        {/* Título */}
-        <div className="flex flex-col mr-2 min-w-[160px]">
-          <span className="text-[18px] text-gray-700 leading-tight">
-            {title}{" "}
-            <span className="text-[18px] font-semibold text-gray-900 leading-tight">
-              {subtitle}
-            </span>
-          </span>
-        </div>
+      <div className="w-full flex items-center justify-between gap-2 md:gap-3 flex-wrap rounded-xl">
 
         {/* Rua + Bairro */}
         <div className="flex flex-col sm:flex-row gap-2 flex-1 md:min-w-[320px]">
@@ -286,8 +268,7 @@ export function Filters({
               >
                 {selectedForeman
                   ? `Encarregado: ${
-                      foremen.find((f) => f.id === selectedForeman)?.name ||
-                      "—"
+                      foremen.find((f) => f.id === selectedForeman)?.name || "—"
                     }`
                   : "Encarregado"}
                 <ChevronDown className="ml-1 h-4 w-4" />
@@ -300,7 +281,10 @@ export function Filters({
               </DropdownMenuItem>
 
               {foremen.map((f) => (
-                <DropdownMenuItem key={f.id} onClick={() => handleForemanFilter(f.id)}>
+                <DropdownMenuItem
+                  key={f.id}
+                  onClick={() => handleForemanFilter(f.id)}
+                >
                   {f.name}
                 </DropdownMenuItem>
               ))}
@@ -359,7 +343,9 @@ export function Filters({
               >
                 Drenagem
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleTypeFilter("DESOBSTRUCAO_CAMINHAO")}>
+              <DropdownMenuItem
+                onClick={() => handleTypeFilter("DESOBSTRUCAO_CAMINHAO")}
+              >
                 Desobstrução
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleTypeFilter("LIMPA_FOSSA")}>

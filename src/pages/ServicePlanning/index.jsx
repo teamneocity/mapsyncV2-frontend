@@ -205,38 +205,37 @@ export function ServicePlanning() {
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
-      <TopHeader />
+     <TopHeader title="Planejamento" subtitle="Diário" />
 
-      <div className="px-4 py-4 sm:py-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:hidden">
-          Planejamento diário
-        </h1>
+<main className="flex-1 flex flex-col px-4 py-4 sm:py-6 gap-4 overflow-auto">
+  <h1 className="text-xl sm:text-2xl font-bold text-gray-800 sm:hidden">
+    Planejamento diário
+  </h1>
 
-        {/* Filtros */}
-        <PlanningFilters
-          title="Planejamento"
-          subtitle="diário"
-          onSearch={(txt) => setStreet(txt)}
-          onFilterNeighborhood={(id) => setNeighborhoodId(id || null)}
-          onFilterType={(t) => setOccurrenceType(t || null)}
-          onFilterStatus={(s) => setStatus(s || null)}
-          onFilterDateRange={({ startDate }) => {
-            if (startDate instanceof Date && !isNaN(startDate))
-              setDate(startDate);
-          }}
-          onFilterForeman={(id) => setForemanId(id || null)}
-          onFilterSector={(id) => setSectorId(id || null)}
-        />
-      </div>
+  {/* Filtros */}
+  <PlanningFilters
+    onSearch={(txt) => setStreet(txt)}
+    onFilterNeighborhood={(id) => setNeighborhoodId(id || null)}
+    onFilterType={(t) => setOccurrenceType(t || null)}
+    onFilterStatus={(s) => setStatus(s || null)}
+    onFilterDateRange={({ startDate }) => {
+      if (startDate instanceof Date && !isNaN(startDate))
+        setDate(startDate);
+    }}
+    onFilterForeman={(id) => setForemanId(id || null)}
+    onFilterSector={(id) => setSectorId(id || null)}
+  />
 
-      <PlaninList
-        ref={planinRef}
-        occurrences={serviceOrders}
-        statusLabelOverrides={{ aguardando_execucao: "Agendada" }}
-        renderExpandedRow={(occ) => (
-          <ExpandedRowPlanning serviceorder={occ.__raw || occ} />
-        )}
-      />
+  <PlaninList
+    ref={planinRef}
+    occurrences={serviceOrders}
+    statusLabelOverrides={{ aguardando_execucao: "Agendada" }}
+    renderExpandedRow={(occ) => (
+      <ExpandedRowPlanning serviceorder={occ.__raw || occ} />
+    )}
+  />
+</main>
+
 
       {/* footer  */}
       <footer className="bg-[#EBEBEB] p-4 mt-auto">

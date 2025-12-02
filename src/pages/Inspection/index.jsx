@@ -149,7 +149,7 @@ export function Inspection() {
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
-      <TopHeader />
+      <TopHeader title="Fiscalização" subtitle="de O.S." />
 
       <div className="flex-1">
         {/* Filtros */}
@@ -158,8 +158,6 @@ export function Inspection() {
             Fiscalização de O.S.
           </h1>
           <Filters
-            title="Fiscalização de"
-            subtitle="O.S."
             onSearch={(input) => {
               setSearchTerm(input);
               setCurrentPage(1);

@@ -71,7 +71,7 @@ export function Reports() {
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
-      <TopHeader />
+      <TopHeader title="Data" subtitle="Analytics" />
 
       <div className="px-4 py-4 sm:py-6 space-y-4">
         {/* Título + Imagem */}

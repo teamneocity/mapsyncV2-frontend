@@ -64,7 +64,7 @@ export function Dashboard() {
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
-      <TopHeader />
+      <TopHeader title="Dashboard" />
 
       <div className="flex-1">
         {/* Título */}
