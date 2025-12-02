@@ -130,6 +130,14 @@ export function ExpandedRowT({
                 {occurrence.address?.street || "—"}
               </p>
               <p>
+                <span className="font-bold">Número:</span>{" "}
+                {occurrence.address?.number || "—"}
+              </p>
+              <p>
+            <span className="font-bold">Complemento:</span>{" "}
+            {occurrence.description|| "Não informado" }
+          </p>
+              <p>
                 <span className="font-bold">Bairro:</span>{" "}
                 {occurrence.address?.neighborhoodName || "—"}
               </p>
