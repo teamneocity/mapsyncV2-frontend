@@ -451,10 +451,14 @@ export function ExpandedRowAnalysis({
           <p>
             <span className="text-black font-medium">Bairro:</span> {bairro}
           </p>
+          
           <p>
             <span className="text-black font-medium">Região:</span> {regiao}
           </p>
-
+          <p>
+            <span className="text-black font-medium">Complemento:</span>{" "}
+            {occurrence.description|| "Não informado" }
+          </p>
           <p>
             <span className="text-black font-medium">Latitude:</span>{" "}
             {localAddress.latitude}
