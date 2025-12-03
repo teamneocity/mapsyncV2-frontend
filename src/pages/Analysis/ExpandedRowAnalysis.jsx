@@ -366,6 +366,8 @@ export function ExpandedRowAnalysis({
     LIMPA_FOSSA: "Limpa fossa",
   };
 
+  const isRejected = occurrence.status === "recusada";
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 bg-[#F7F7F7] p-4 rounded-lg shadow-sm text-sm">
       {/* Coluna 1 - Informações */}
@@ -451,13 +453,13 @@ export function ExpandedRowAnalysis({
           <p>
             <span className="text-black font-medium">Bairro:</span> {bairro}
           </p>
-          
+
           <p>
             <span className="text-black font-medium">Região:</span> {regiao}
           </p>
           <p>
             <span className="text-black font-medium">Complemento:</span>{" "}
-            {occurrence.description|| "Não informado" }
+            {occurrence.description || "Não informado"}
           </p>
           <p>
             <span className="text-black font-medium">Latitude:</span>{" "}
@@ -470,184 +472,208 @@ export function ExpandedRowAnalysis({
         </div>
 
         {/* Encaminhar para outra empresa */}
-        <div className="mt-2">
-          <label className="text-[16px] text-[#787891] font-semibold mb-1 block">
-            Classificacão
-          </label>
+        {!isRejected && (
+          <>
+            <div className="mt-2">
+              <label className="text-[16px] text-[#787891] font-semibold mb-1 block">
+                Classificacão
+              </label>
 
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <SelectField
-                placeholder="Classifique"
-                value={externalCompany || ""}
-                options={[
-                  { value: "SERGAS", label: "SERGAS" },
-                  { value: "IGUA", label: "IGUA" },
-                ]}
-                onChange={(value) => setExternalCompany(value)}
-                className="h-[55px] border border-[#FFFFFF]"
-              />
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <SelectField
+                    placeholder="Classifique"
+                    value={externalCompany || ""}
+                    options={[
+                      { value: "SERGAS", label: "SERGAS" },
+                      { value: "IGUA", label: "IGUA" },
+                    ]}
+                    onChange={(value) => setExternalCompany(value)}
+                    className="h-[55px] border border-[#FFFFFF]"
+                  />
+                </div>
+
+                <Button
+                  className="h-[55px] px-6 bg-[#EDEDED] hover:bg-gray-100 text-[#5F5F5F] flex items-center justify-center gap-2"
+                  onClick={openConfirmExternal}
+                  disabled={archivingExternal}
+                >
+                  {archivingExternal ? "..." : "Arquivar"}
+                  <Folder className="w-4 h-4 shrink-0 opacity-70" />
+                </Button>
+              </div>
             </div>
 
             <Button
-              className="h-[55px] px-6 bg-[#EDEDED] hover:bg-gray-100 text-[#5F5F5F] flex items-center justify-center gap-2"
-              onClick={openConfirmExternal}
-              disabled={archivingExternal}
+              className="w-full bg-[#FFE8E8] hover:bg-red-200 h-[64px] flex items-center justify-center gap-2"
+              style={{ color: "#9D0000" }}
+              onClick={() => {
+                setSelectedOccurrenceId(occurrence.id);
+                setIsIgnoreOcurrenceModalOpen(true);
+                setSelectedOccurrenceStatus(occurrence.status);
+              }}
             >
-              {archivingExternal ? "..." : "Arquivar"}
-              <Folder className="w-4 h-4 shrink-0 opacity-70" />
+              Ignorar
+              <ThumbsDown className="w-4 h-4" />
             </Button>
-          </div>
-        </div>
-
-        <Button
-          className="w-full bg-[#FFE8E8] hover:bg-red-200 h-[64px] flex items-center justify-center gap-2"
-          style={{ color: "#9D0000" }}
-          onClick={() => {
-            setSelectedOccurrenceId(occurrence.id);
-            setIsIgnoreOcurrenceModalOpen(true);
-            setSelectedOccurrenceStatus(occurrence.status);
-          }}
-        >
-          Ignorar
-          <ThumbsDown className="w-4 h-4" />
-        </Button>
+          </>
+        )}
       </div>
 
-      {/* Coluna 2 - Edição */}
+      {/* Coluna 2 */}
       <div className="flex flex-col justify-between space-y-4 h-full">
-        <div className="space-y-4">
-          <label className="font-semibold text-[18px] block mb-1 text-[#787891]">
-            Ajustes da ocorrência
-          </label>
+        {isRejected ? (
+          // Quando recusada só mostra o motivo da recusa
           <div className="space-y-3">
-            <div className="flex gap-2">
-              <div className="flex-1">
+            <label className="font-semibold text-[18px] block mb-1 text-[#787891]">
+              Motivo da recusa :
+            </label>
+            <div className="border bg-[#E4E4E4] rounded-lg px-4 py-3 text-sm leading-relaxed">
+              {occurrence.rejectionReason || "Motivo não informado."}
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Edição */}
+            <div className="space-y-4">
+              <label className="font-semibold text-[18px] block mb-1 text-[#787891]">
+                Ajustes da ocorrência
+              </label>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <SelectField
+                      placeholder="Altere o bairro se necessário for"
+                      value={editableNeighborhoodId || ""}
+                      options={neighborhoods.map((n) => ({
+                        id: n.id,
+                        name: n.name,
+                      }))}
+                      onChange={(value) => setEditableNeighborhoodId(value)}
+                      className="h-[55px] border border-[#FFFFFF]"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <AddressUpdateDialog
+                    occurrenceId={occurrence.id}
+                    neighborhoods={neighborhoods}
+                    currentNeighborhoodId={currentNeighborhoodId}
+                    initialLat={
+                      Number(localAddress.latitude) ||
+                      Number(occurrence.address?.latitude) ||
+                      -10.9472
+                    }
+                    initialLng={
+                      Number(localAddress.longitude) ||
+                      Number(occurrence.address?.longitude) ||
+                      -37.0731
+                    }
+                    onSuccess={(updated) => {
+                      setLocalAddress((prev) => ({
+                        ...prev,
+                        street: updated.street ?? prev.street,
+                        zipCode: updated.zipCode ?? prev.zipCode,
+                      }));
+                      if (updated.neighborhoodId) {
+                        setCurrentNeighborhoodId(updated.neighborhoodId);
+                        setCurrentNeighborhoodName(
+                          updated.neighborhoodName ||
+                            neighborhoods.find(
+                              (n) => n.id === updated.neighborhoodId
+                            )?.name ||
+                            "Atualizado"
+                        );
+                      }
+                      toast?.({
+                        title: "Endereço atualizado",
+                        description: "Rua, CEP e bairro alterados com sucesso.",
+                      });
+                    }}
+                  />
+
+                  {/* Salva região */}
+                  <div className="mt-3 space-y-2">
+                    <SelectField
+                      placeholder="Informe a Zona / Região"
+                      value={regionValue}
+                      options={REGION_OPTIONS.map((r) => ({
+                        value: r,
+                        label: r,
+                      }))}
+                      onChange={(value) => setRegion(value)}
+                      className="h-[55px] border border-[#FFFFFF]"
+                    />
+                  </div>
+                </div>
+                <Button
+                  className="h-[55px] w-full px-4 bg-[#E8F7FF] hover:bg-blue-100 text-[#00679D] flex items-center justify-center gap-2"
+                  onClick={openConfirmAdjustments}
+                  disabled={updatingNeighborhood || nothingToSave}
+                >
+                  {updatingNeighborhood ? (
+                    "Salvando..."
+                  ) : (
+                    <>
+                      <span>Confirmar ajustes</span>
+                      <ThumbsUp className="w-4 h-4" />
+                    </>
+                  )}
+                </Button>
+              </div>
+              <label className="font-semibold text-[18px] block mb-1 text-[#787891]">
+                Encaminhamento para análise
+              </label>
+
+              {/* Setor responsável */}
+              <div>
                 <SelectField
-                  placeholder="Altere o bairro se necessário for"
-                  value={editableNeighborhoodId || ""}
-                  options={neighborhoods.map((n) => ({
-                    id: n.id,
-                    name: n.name,
+                  placeholder="Selecione o setor"
+                  value={editableSectorId ?? ""}
+                  options={sectors.map((s) => ({
+                    id: s.id,
+                    name: s.name,
                   }))}
-                  onChange={(value) => setEditableNeighborhoodId(value)}
+                  onChange={(value) => setEditableSectorId(value)}
                   className="h-[55px] border border-[#FFFFFF]"
                 />
               </div>
-            </div>
 
-            <div className="mt-4">
-              <AddressUpdateDialog
-                occurrenceId={occurrence.id}
-                neighborhoods={neighborhoods}
-                currentNeighborhoodId={currentNeighborhoodId}
-                initialLat={
-                  Number(localAddress.latitude) ||
-                  Number(occurrence.address?.latitude) ||
-                  -10.9472
-                }
-                initialLng={
-                  Number(localAddress.longitude) ||
-                  Number(occurrence.address?.longitude) ||
-                  -37.0731
-                }
-                onSuccess={(updated) => {
-                  setLocalAddress((prev) => ({
-                    ...prev,
-                    street: updated.street ?? prev.street,
-                    zipCode: updated.zipCode ?? prev.zipCode,
-                  }));
-                  if (updated.neighborhoodId) {
-                    setCurrentNeighborhoodId(updated.neighborhoodId);
-                    setCurrentNeighborhoodName(
-                      updated.neighborhoodName ||
-                        neighborhoods.find(
-                          (n) => n.id === updated.neighborhoodId
-                        )?.name ||
-                        "Atualizado"
-                    );
-                  }
-                  toast?.({
-                    title: "Endereço atualizado",
-                    description: "Rua, CEP e bairro alterados com sucesso.",
-                  });
-                }}
-              />
-
-              {/* Salva região */}
-              <div className="mt-3 space-y-2">
+              {/* Classificação */}
+              <div>
                 <SelectField
-                  placeholder="Informe a Zona / Região"
-                  value={regionValue}
-                  options={REGION_OPTIONS.map((r) => ({ value: r, label: r }))}
-                  onChange={(value) => setRegion(value)}
+                  placeholder="Classificação"
+                  value={isEmergencialSelection ? "true" : "false"}
+                  options={[
+                    { value: "false", label: "Não emergencial" },
+                    { value: "true", label: "Emergencial" },
+                  ]}
+                  onChange={(value) =>
+                    setIsEmergencialSelection(value === "true")
+                  }
                   className="h-[55px] border border-[#FFFFFF]"
                 />
               </div>
             </div>
+
+            {/* Encaminhar (sem salvar bairro aqui) */}
             <Button
-              className="h-[55px] w-full px-4 bg-[#E8F7FF] hover:bg-blue-100 text-[#00679D] flex items-center justify-center gap-2"
-              onClick={openConfirmAdjustments}
-              disabled={updatingNeighborhood || nothingToSave}
+              className="w-full bg-[#FFF0E6] h-[64px] hover:bg-orange-200 text-[#FF7A21] flex items-center justify-center gap-2"
+              onClick={() =>
+                handleForwardOccurrence(occurrence.id, isEmergencialSelection, {
+                  externalCompany: externalCompany || null,
+                  externalCompanyNote: externalCompany
+                    ? "Encaminhado via análise"
+                    : null,
+                })
+              }
             >
-              {updatingNeighborhood ? (
-                "Salvando..."
-              ) : (
-                <>
-                  <span>Confirmar ajustes</span>
-                  <ThumbsUp className="w-4 h-4" />
-                </>
-              )}
+              Encaminhar
+              <ThumbsUp className="w-4 h-4" />
             </Button>
-          </div>
-          <label className="font-semibold text-[18px] block mb-1 text-[#787891]">
-            Encaminhamento para análise
-          </label>
-
-          {/* Setor responsável */}
-          <div>
-            <SelectField
-              placeholder="Selecione o setor"
-              value={editableSectorId ?? ""}
-              options={sectors.map((s) => ({
-                id: s.id,
-                name: s.name,
-              }))}
-              onChange={(value) => setEditableSectorId(value)}
-              className="h-[55px] border border-[#FFFFFF]"
-            />
-          </div>
-
-          {/* Classificação */}
-          <div>
-            <SelectField
-              placeholder="Classificação"
-              value={isEmergencialSelection ? "true" : "false"}
-              options={[
-                { value: "false", label: "Não emergencial" },
-                { value: "true", label: "Emergencial" },
-              ]}
-              onChange={(value) => setIsEmergencialSelection(value === "true")}
-              className="h-[55px] border border-[#FFFFFF]"
-            />
-          </div>
-        </div>
-
-        {/* Encaminhar (sem salvar bairro aqui) */}
-        <Button
-          className="w-full bg-[#FFF0E6] h-[64px] hover:bg-orange-200 text-[#FF7A21] flex items-center justify-center gap-2"
-          onClick={() =>
-            handleForwardOccurrence(occurrence.id, isEmergencialSelection, {
-              externalCompany: externalCompany || null,
-              externalCompanyNote: externalCompany
-                ? "Encaminhado via análise"
-                : null,
-            })
-          }
-        >
-          Encaminhar
-          <ThumbsUp className="w-4 h-4" />
-        </Button>
+          </>
+        )}
       </div>
 
       {/* Coluna 3 - Imagem e Mapa */}

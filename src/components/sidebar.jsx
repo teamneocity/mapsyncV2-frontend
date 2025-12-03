@@ -52,7 +52,7 @@ export function Sidebar() {
   // depois do isOnAnalysis
   const isOnRequests = pathname.startsWith("/requests");
 
-  // mostra vermelho somente quando REALMENTE quer (tem new) E não está em /requests
+  // mostra vermelho somente quando realmente quer (tem new) E não está em requests
   const showAnalysisAlert = !!hasNew && !isOnRequests;
 
   const [email] = useState(user.email);
@@ -88,6 +88,7 @@ export function Sidebar() {
     isInspector,
     isChief,
     isDroneOperator,
+    isCallCenter,
   } = usePermissions();
   const canSeeAll = isAdmin || isSupervisor;
 
@@ -100,6 +101,7 @@ export function Sidebar() {
       INSPECTOR: "Fiscal",
       FIELD_AGENT: "Agente de Campo",
       DRONE_OPERATOR: "Operador de Drone",
+      CALLCENTER: "Call Center", 
     }[user?.role] || "Cargo desconhecido";
 
   const baseItem =
@@ -126,148 +128,130 @@ export function Sidebar() {
             <p className="text-base font-normal mb-2 text-[#4B4B62]">
               Workspace
             </p>
+
             <div className="flex flex-col gap-1 text-[#787891] border-b pb-3">
-              {(canSeeAll || isChief) && (
-                <NavLink
-                  to="/dashboard"
-                  className={() =>
-                    `${baseItem} ${
-                      isDashboardActive(pathname) ? activeItem : hoverItem
-                    }`
-                  }
-                >
-                  <HouseCheckIcon className="w-5 h-5 shrink-0" /> Dashboard
-                </NavLink>
-              )}
-
-              {/* Setor */}
-              {/*
-              <NavLink to="/sectorAdmin" className={linkClass}>
-                <PeopleLine className="w-5 h-5 shrink-0" /> Setor
-              </NavLink>
-              */}
-
-              {(isAdmin || isChief) && (
-                <NavLink to="/requests" className={linkClass}>
-                  <AlertP className="w-5 h-5 shrink-0" /> Pré-Análise
-                </NavLink>
-              )}
-
-              {(isAdmin || isAnalyst) && (
-                <NavLink
-                  to="/analysis"
-                  className={({ isActive }) =>
-                    showAnalysisAlert
-                      ? `${baseItem} ${
-                          isActive
-                            ? "bg-[#FFC3C3]"
-                            : "bg-[#FFC3C3] hover:bg-[#ffb3b3]"
-                        }`
-                      : linkClass({ isActive })
-                  }
-                >
-                  <span
-                    className={`flex items-center gap-2 ${
-                      showAnalysisAlert ? "text-[#CC1C35]" : ""
-                    }`}
-                  >
-                    <AlertIcon
-                      className={`w-5 h-5 shrink-0 ${
-                        showAnalysisAlert ? "text-[#CC1C35]" : ""
-                      }`}
-                    />
-                    <span className={showAnalysisAlert ? "font-semibold" : ""}>
-                      Análises
-                    </span>
-                  </span>
-                </NavLink>
-              )}
-
-              {(canSeeAll || isInspector || isChief || isDroneOperator) && (
+              {isCallCenter ? (
                 <>
-                  <NavLink to="/occurrencesa" className={linkClass}>
-                    <DroneIcon className="w-5 h-5 shrink-0" /> Mapeamento Aéreo
+                  {/* CALLCENTER: só vê Mapeamento Terrestre e O.S. */}
+                  <NavLink to="/occurrencest" className={linkClass}>
+                    <TrackIcon className="w-5 h-5 shrink-0" /> Mapeamento
+                    Terrestre
                   </NavLink>
-                </>
-              )}
 
-              {(canSeeAll || isInspector || isChief) && (
-                <NavLink to="/occurrencest" className={linkClass}>
-                  <TrackIcon className="w-5 h-5 shrink-0" /> Mapeamento
-                  Terrestre
-                </NavLink>
-              )}
-
-              {(canSeeAll || isChief) && (
-                <>
                   <NavLink to="/serviceorder" className={linkClass}>
                     <TaskChecklist className="w-5 h-5 shrink-0" /> O.S.
                   </NavLink>
-                  <NavLink to="/servicePlanning" className={linkClass}>
-                    <CalendarIcon className="w-5 h-5 shrink-0" /> Planejamento
-                  </NavLink>
-                  <NavLink to="/Warranty" className={linkClass}>
-                    <Ninety className="w-5 h-5 shrink-0" /> Garantia 90 dias
-                  </NavLink>
-                  <NavLink to="/inspection" className={linkClass}>
-                    <AssessmentIcon className="w-5 h-5 shrink-0" /> Fiscalização
-                  </NavLink>
+                </>
+              ) : (
+                <>
+                  {(canSeeAll || isChief) && (
+                    <NavLink
+                      to="/dashboard"
+                      className={() =>
+                        `${baseItem} ${
+                          isDashboardActive(pathname) ? activeItem : hoverItem
+                        }`
+                      }
+                    >
+                      <HouseCheckIcon className="w-5 h-5 shrink-0" /> Dashboard
+                    </NavLink>
+                  )}
 
-                  {/* Mapa de Percurso */}
-                  {/*
-                  <NavLink to="/PilotMap" className={linkClass}>
-                    <RoadmapIcon className="w-5 h-5 shrink-0" /> Mapa de Percurso
-                  </NavLink>
-                  */}
+                  {(isAdmin || isChief) && (
+                    <NavLink to="/requests" className={linkClass}>
+                      <AlertP className="w-5 h-5 shrink-0" /> Pré-Análise
+                    </NavLink>
+                  )}
 
-                  <NavLink to="/reports" className={linkClass}>
-                    <DataAnalytics className="w-5 h-5 shrink-0" /> Data
-                    Analytics
-                  </NavLink>
+                  {(isAdmin || isAnalyst) && (
+                    <NavLink
+                      to="/analysis"
+                      className={({ isActive }) =>
+                        showAnalysisAlert
+                          ? `${baseItem} ${
+                              isActive
+                                ? "bg-[#FFC3C3]"
+                                : "bg-[#FFC3C3] hover:bg-[#ffb3b3]"
+                            }`
+                          : linkClass({ isActive })
+                      }
+                    >
+                      <span
+                        className={`flex items-center gap-2 ${
+                          showAnalysisAlert ? "text-[#CC1C35]" : ""
+                        }`}
+                      >
+                        <AlertIcon
+                          className={`w-5 h-5 shrink-0 ${
+                            showAnalysisAlert ? "text-[#CC1C35]" : ""
+                          }`}
+                        />
+                        <span
+                          className={showAnalysisAlert ? "font-semibold" : ""}
+                        >
+                          Análises
+                        </span>
+                      </span>
+                    </NavLink>
+                  )}
+
+                  {(canSeeAll || isInspector || isChief || isDroneOperator) && (
+                    <>
+                      <NavLink to="/occurrencesa" className={linkClass}>
+                        <DroneIcon className="w-5 h-5 shrink-0" /> Mapeamento
+                        Aéreo
+                      </NavLink>
+                    </>
+                  )}
+
+                  {(canSeeAll || isInspector || isChief) && (
+                    <NavLink to="/occurrencest" className={linkClass}>
+                      <TrackIcon className="w-5 h-5 shrink-0" /> Mapeamento
+                      Terrestre
+                    </NavLink>
+                  )}
+
+                  {(canSeeAll || isChief) && (
+                    <>
+                      <NavLink to="/serviceorder" className={linkClass}>
+                        <TaskChecklist className="w-5 h-5 shrink-0" /> O.S.
+                      </NavLink>
+                      <NavLink to="/servicePlanning" className={linkClass}>
+                        <CalendarIcon className="w-5 h-5 shrink-0" />{" "}
+                        Planejamento
+                      </NavLink>
+                      <NavLink to="/Warranty" className={linkClass}>
+                        <Ninety className="w-5 h-5 shrink-0" /> Garantia 90 dias
+                      </NavLink>
+                      <NavLink to="/inspection" className={linkClass}>
+                        <AssessmentIcon className="w-5 h-5 shrink-0" />{" "}
+                        Fiscalização
+                      </NavLink>
+
+                      <NavLink to="/reports" className={linkClass}>
+                        <DataAnalytics className="w-5 h-5 shrink-0" /> Data
+                        Analytics
+                      </NavLink>
+                    </>
+                  )}
                 </>
               )}
             </div>
           </div>
 
-          {/* {isAdmin && (
-            <div className="w-full border-b pb-3 mt-3">
-              <p className="text-base font-normal mb-2 text-[#4B4B62]">Admin</p>
+          {/* Ajustes */}
+          {!isCallCenter && (
+            <div className="w-full border-b pb-3">
+              <p className="text-base font-normal mb-2 text-[#4B4B62]">
+                Ajustes
+              </p>
               <div className="flex flex-col gap-1 text-[#787891]">
-                <NavLink to="/panelAdm" className={linkClass}>
-                  <DesktopIcon className="w-5 h-5 shrink-0" /> Administrador
+                <NavLink to="/settings" className={linkClass}>
+                  <SettingsWindow className="w-5 h-5 shrink-0" /> Configurações
                 </NavLink>
               </div>
             </div>
-          )} */}
-
-          {/* Ajustes */}
-
-          <div className="w-full border-b pb-3">
-            <p className="text-base font-normal mb-2 text-[#4B4B62]">Ajustes</p>
-            <div className="flex flex-col gap-1 text-[#787891]">
-              <NavLink to="/settings" className={linkClass}>
-                <SettingsWindow className="w-5 h-5 shrink-0" /> Configurações
-              </NavLink>
-
-              {/* {(isAdmin || isChief) && (
-                <NavLink to="/userManagement" className={linkClass}>
-                  <IconUsers className="w-5 h-5 shrink-0" /> Usuários
-                </NavLink>
-              )} */}
-            </div>
-          </div>
-
-          {/* Feedback */}
-          {/*
-          {(canSeeAll || isChief) && (
-            <div className="mt-3 w-full">
-              <p className="text-base font-normal mb-2 text-[#4B4B62]">Suporte</p>
-              <NavLink to="/feedback" className={linkClass}>
-                <IconFeedback className="w-5 h-5 shrink-0" /> Feedback
-              </NavLink>
-            </div>
           )}
-          */}
         </nav>
 
         <div className="mt-auto w-full">
@@ -287,6 +271,7 @@ export function Sidebar() {
                         ANALYST: "Básico",
                         INSPECTOR: "Básico",
                         FIELD_AGENT: "Básico",
+                        CALLCENTER: "Básico", 
                       }[user?.role] || "Desconhecido"}
                     </span>
                   </span>
@@ -310,6 +295,7 @@ export function Sidebar() {
                       INSPECTOR: 40,
                       FIELD_AGENT: 40,
                       DRONE_OPERATOR: 40,
+                      CALLCENTER: 40, 
                     }[user?.role] || 0
                   }%`,
                   backgroundColor: "#003DF6",
@@ -366,113 +352,122 @@ export function Sidebar() {
             >
               <nav className="grid text-sm font-small">
                 <div className="flex flex-col gap-1 text-[#787891] border-b pb-5">
-                  {(canSeeAll || isChief) && (
-                    <NavLink
-                      to="/dashboard"
-                      className={() =>
-                        `${baseItemMobile} ${
-                          isDashboardActive(pathname) ? activeItem : hoverItem
-                        }`
-                      }
-                    >
-                      <HouseCheckIcon className="w-5 h-5 shrink-0" /> Dashboard
-                    </NavLink>
-                  )}
-
-                  {/* Setor */}
-                  {/*
-                  <NavLink to="/sectorAdmin" className={linkClassMobile}>
-                    <PeopleLine className="w-5 h-5 shrink-0" /> Setor
-                  </NavLink>
-                  */}
-
-                  {(isAdmin || isChief) && (
-                    <NavLink to="/requests" className={linkClassMobile}>
-                      <AlertP className="w-5 h-5 shrink-0" /> Pré-Análise
-                    </NavLink>
-                  )}
-
-                  {(isAdmin || isAnalyst) && (
-                    <NavLink to="/analysis" className={linkClassMobile}>
-                      <span
-                        className={`flex items-center gap-2 ${
-                          showAnalysisAlert ? "!text-red-600" : ""
-                        }`}
-                      >
-                        <AlertIcon className="w-5 h-5 shrink-0" />
-                        <span
-                          className={
-                            showAnalysisAlert
-                              ? "!text-red-600 font-semibold"
-                              : ""
-                          }
-                        >
-                          Análises
-                        </span>
-                      </span>
-                    </NavLink>
-                  )}
-
-                  {(canSeeAll || isInspector || isChief || isDroneOperator) && (
+                  {isCallCenter ? (
                     <>
-                      <NavLink to="/occurrencesa" className={linkClass}>
-                        <DroneIcon className="w-5 h-5 shrink-0" /> Mapeamento
-                        Aéreo
+                      {/*  CALLCENTER no mobile: só Mapeamento Terrestre e O.S. */}
+                      <NavLink to="/occurrencest" className={linkClassMobile}>
+                        <TrackIcon className="w-5 h-5 shrink-0" /> Mapeamento
+                        Terrestre
                       </NavLink>
-                    </>
-                  )}
 
-                  {(canSeeAll || isInspector || isChief) && (
-                    <NavLink to="/occurrencest" className={linkClass}>
-                      <TrackIcon className="w-5 h-5 shrink-0" /> Mapeamento
-                      Terrestre
-                    </NavLink>
-                  )}
-
-                  {(canSeeAll || isChief) && (
-                    <>
                       <NavLink to="/serviceorder" className={linkClassMobile}>
                         <TaskChecklist className="w-5 h-5 shrink-0" /> O.S.
                       </NavLink>
+                    </>
+                  ) : (
+                    <>
+                      {(canSeeAll || isChief) && (
+                        <NavLink
+                          to="/dashboard"
+                          className={() =>
+                            `${baseItemMobile} ${
+                              isDashboardActive(pathname)
+                                ? activeItem
+                                : hoverItem
+                            }`
+                          }
+                        >
+                          <HouseCheckIcon className="w-5 h-5 shrink-0" />{" "}
+                          Dashboard
+                        </NavLink>
+                      )}
 
-                      <NavLink
-                        to="/servicePlanning"
-                        className={linkClassMobile}
-                      >
-                        <CalendarIcon className="w-5 h-5 shrink-0" />{" "}
-                        Planejamento
-                      </NavLink>
+                      {(isAdmin || isChief) && (
+                        <NavLink
+                          to="/requests"
+                          className={linkClassMobile}
+                        >
+                          <AlertP className="w-5 h-5 shrink-0" /> Pré-Análise
+                        </NavLink>
+                      )}
 
-                      <NavLink to="/inspection" className={linkClassMobile}>
-                        <AssessmentIcon className="w-5 h-5 shrink-0" />{" "}
-                        Fiscalização
-                      </NavLink>
+                      {(isAdmin || isAnalyst) && (
+                        <NavLink
+                          to="/analysis"
+                          className={linkClassMobile}
+                        >
+                          <span
+                            className={`flex items-center gap-2 ${
+                              showAnalysisAlert ? "!text-red-600" : ""
+                            }`}
+                          >
+                            <AlertIcon className="w-5 h-5 shrink-0" />
+                            <span
+                              className={
+                                showAnalysisAlert
+                                  ? "!text-red-600 font-semibold"
+                                  : ""
+                              }
+                            >
+                              Análises
+                            </span>
+                          </span>
+                        </NavLink>
+                      )}
 
-                      {/* Mapa de Percurso */}
-                      {/*
-                      <NavLink to="/PilotMap" className={linkClassMobile}>
-                        <RoadmapIcon className="w-5 h-5 shrink-0" /> Mapa de Percurso
-                      </NavLink>
-                      */}
+                      {(canSeeAll ||
+                        isInspector ||
+                        isChief ||
+                        isDroneOperator) && (
+                        <>
+                          <NavLink to="/occurrencesa" className={linkClass}>
+                            <DroneIcon className="w-5 h-5 shrink-0" />{" "}
+                            Mapeamento Aéreo
+                          </NavLink>
+                        </>
+                      )}
 
-                      <NavLink to="/reports" className={linkClassMobile}>
-                        <DataAnalytics className="w-5 h-5 shrink-0" /> Data
-                        Analytics
-                      </NavLink>
+                      {(canSeeAll || isInspector || isChief) && (
+                        <NavLink to="/occurrencest" className={linkClass}>
+                          <TrackIcon className="w-5 h-5 shrink-0" />{" "}
+                          Mapeamento Terrestre
+                        </NavLink>
+                      )}
+
+                      {(canSeeAll || isChief) && (
+                        <>
+                          <NavLink
+                            to="/serviceorder"
+                            className={linkClassMobile}
+                          >
+                            <TaskChecklist className="w-5 h-5 shrink-0" /> O.S.
+                          </NavLink>
+
+                          <NavLink
+                            to="/servicePlanning"
+                            className={linkClassMobile}
+                          >
+                            <CalendarIcon className="w-5 h-5 shrink-0" />{" "}
+                            Planejamento
+                          </NavLink>
+
+                          <NavLink
+                            to="/inspection"
+                            className={linkClassMobile}
+                          >
+                            <AssessmentIcon className="w-5 h-5 shrink-0" />{" "}
+                            Fiscalização
+                          </NavLink>
+
+                          <NavLink to="/reports" className={linkClassMobile}>
+                            <DataAnalytics className="w-5 h-5 shrink-0" /> Data
+                            Analytics
+                          </NavLink>
+                        </>
+                      )}
                     </>
                   )}
                 </div>
-
-                {/* {isAdmin && (
-                  <div className="mt-3 pt-3 ">
-                    <p className="text-base font-normal mb-2 text-[#4B4B62]">
-                      Admin
-                    </p>
-                    <NavLink to="/panelAdm" className={linkClassMobile}>
-                      <DesktopIcon className="w-5 h-5 shrink-0" /> Administrador
-                    </NavLink>
-                  </div>
-                )} */}
               </nav>
 
               <div className="mt-auto w-full">

@@ -41,6 +41,7 @@ async function fetchDailyPlanning({ queryKey }) {
       status,
       sectorId,
       foremanId,
+      isDelayed,
     },
   ] = queryKey;
 
@@ -53,6 +54,7 @@ async function fetchDailyPlanning({ queryKey }) {
       status: status || undefined,
       sectorId: sectorId || undefined,
       foremanId: foremanId || undefined,
+      isDelayed: isDelayed ? true : undefined,
     },
   });
 
@@ -116,6 +118,7 @@ function useDailyPlanning({
   status,
   sectorId,
   foremanId,
+  isDelayed,
   toast,
 }) {
   const query = useQuery({
@@ -129,8 +132,10 @@ function useDailyPlanning({
         status,
         sectorId,
         foremanId,
+        isDelayed,
       },
     ],
+
     queryFn: fetchDailyPlanning,
     keepPreviousData: true,
     onError: (error) => {
@@ -162,6 +167,7 @@ export function ServicePlanning() {
   const [status, setStatus] = useState(null);
   const [sectorId, setSectorId] = useState(null);
   const [foremanId, setForemanId] = useState(null);
+  const [isDelayed, setIsDelayed] = useState(false);
 
   // debounce para busca por rua
   const debouncedStreet = useDebouncedValue(street, 350);
@@ -181,6 +187,7 @@ export function ServicePlanning() {
     status,
     sectorId,
     foremanId,
+    isDelayed,
     toast,
   });
 
@@ -205,37 +212,38 @@ export function ServicePlanning() {
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
-     <TopHeader title="Planejamento" subtitle="Diário" />
+      <TopHeader title="Planejamento" subtitle="Diário" />
 
-<main className="flex-1 flex flex-col px-4 py-4 sm:py-6 gap-4 overflow-auto">
-  <h1 className="text-xl sm:text-2xl font-bold text-gray-800 sm:hidden">
-    Planejamento diário
-  </h1>
+      <main className="flex-1 flex flex-col px-4 py-4 sm:py-6 gap-4 overflow-auto">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 sm:hidden">
+          Planejamento diário
+        </h1>
 
-  {/* Filtros */}
-  <PlanningFilters
-    onSearch={(txt) => setStreet(txt)}
-    onFilterNeighborhood={(id) => setNeighborhoodId(id || null)}
-    onFilterType={(t) => setOccurrenceType(t || null)}
-    onFilterStatus={(s) => setStatus(s || null)}
-    onFilterDateRange={({ startDate }) => {
-      if (startDate instanceof Date && !isNaN(startDate))
-        setDate(startDate);
-    }}
-    onFilterForeman={(id) => setForemanId(id || null)}
-    onFilterSector={(id) => setSectorId(id || null)}
-  />
+        {/* Filtros */}
+        <PlanningFilters
+          onSearch={(txt) => setStreet(txt)}
+          onFilterNeighborhood={(id) => setNeighborhoodId(id || null)}
+          onFilterType={(t) => setOccurrenceType(t || null)}
+          onFilterStatus={(s) => setStatus(s || null)}
+          onFilterDateRange={({ startDate }) => {
+            if (startDate instanceof Date && !isNaN(startDate))
+              setDate(startDate);
+          }}
+          onFilterForeman={(id) => setForemanId(id || null)}
+          onFilterSector={(id) => setSectorId(id || null)}
+          isDelayedFilter={isDelayed}
+          onToggleDelayed={(value) => setIsDelayed(value)}
+        />
 
-  <PlaninList
-    ref={planinRef}
-    occurrences={serviceOrders}
-    statusLabelOverrides={{ aguardando_execucao: "Agendada" }}
-    renderExpandedRow={(occ) => (
-      <ExpandedRowPlanning serviceorder={occ.__raw || occ} />
-    )}
-  />
-</main>
-
+        <PlaninList
+          ref={planinRef}
+          occurrences={serviceOrders}
+          statusLabelOverrides={{ aguardando_execucao: "Agendada" }}
+          renderExpandedRow={(occ) => (
+            <ExpandedRowPlanning serviceorder={occ.__raw || occ} />
+          )}
+        />
+      </main>
 
       {/* footer  */}
       <footer className="bg-[#EBEBEB] p-4 mt-auto">
@@ -274,7 +282,6 @@ export function ServicePlanning() {
   );
 }
 
-// Hook geral de debounce
 function useDebouncedValue(value, delay = 300) {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {

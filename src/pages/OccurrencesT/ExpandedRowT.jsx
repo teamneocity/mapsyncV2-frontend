@@ -10,6 +10,8 @@ import ThumbsDown from "@/assets/icons/thumbs-down.svg?react";
 import Copy from "@/assets/icons/Copy.svg?react";
 import { useToast } from "@/hooks/use-toast";
 
+import { usePermissions } from "@/hooks/usePermissions";
+
 export function ExpandedRowT({
   occurrence,
   selectedValues,
@@ -21,6 +23,7 @@ export function ExpandedRowT({
   const values = selectedValues[occurrence.id] || {};
   const lat = parseFloat(occurrence.address?.latitude || 0);
   const lng = parseFloat(occurrence.address?.longitude || 0);
+  const { isCallCenter } = usePermissions();
 
   const { toast } = useToast();
 
@@ -71,11 +74,12 @@ export function ExpandedRowT({
     DESOBSTRUCAO: "Drenagem",
     LIMPA_FOSSA: "Limpa fossa",
   };
-
-  const canGenerate =
+  const canGenerateBase =
     occurrence.status !== "os_gerada" &&
     occurrence.status !== "em_execucao" &&
     occurrence.status !== "finalizada";
+
+  const canGenerate = canGenerateBase && !isCallCenter;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 bg-[#F7F7F7] rounded-lg text-sm">
@@ -134,9 +138,9 @@ export function ExpandedRowT({
                 {occurrence.address?.number || "—"}
               </p>
               <p>
-            <span className="font-bold">Complemento:</span>{" "}
-            {occurrence.description|| "Não informado" }
-          </p>
+                <span className="font-bold">Complemento:</span>{" "}
+                {occurrence.description || "Não informado"}
+              </p>
               <p>
                 <span className="font-bold">Bairro:</span>{" "}
                 {occurrence.address?.neighborhoodName || "—"}
@@ -169,7 +173,7 @@ export function ExpandedRowT({
         </div>
 
         {/* Devolver */}
-        {occurrence.status == "aprovada" && (
+        {occurrence.status == "aprovada" && !isCallCenter && (
           <Button
             className="w-full h-[64px] min-h-[58px] py-0 flex items-center justify-center gap-2 bg-[#FFE8E8] hover:bg-red-200 text-[#9D0000]"
             onClick={() => onOpenReturnModal(occurrence.id)}
@@ -273,7 +277,9 @@ export function ExpandedRowT({
             </>
           ) : (
             <p className="text-gray-500 italic">
-              Esta ocorrência já possui uma O.S. gerada.
+              {isCallCenter
+                ? "Usuários do Call Center não podem gerar ordens de serviço."
+                : "Esta ocorrência já possui uma O.S. gerada."}
             </p>
           )}
         </div>
