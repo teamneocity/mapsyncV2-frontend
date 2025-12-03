@@ -151,9 +151,9 @@ export default function ReportsDashboard({
           if (isTotal) {
             // classes específicas para o card total
             const totalNumberClass = isLongNumber
-              ? // 4+ dígitos 
+              ? // 4+ dígitos
                 "text-[40px] sm:text-[52px] md:text-[64px] lg:text-[72px] xl:text-[80px]"
-              : // até 3 dígitos 
+              : // até 3 dígitos
                 "text-[48px] sm:text-[64px] md:text-[80px] lg:text-[96px] xl:text-[110px]";
 
             return (
@@ -180,9 +180,9 @@ export default function ReportsDashboard({
 
           // classes dos outros cards
           const numberClass = isLongNumber
-            ? // 4+ dígitos 
+            ? // 4+ dígitos
               "text-[30px] sm:text-[30px] md:text-[30px] lg:text-[30px] xl:text-[40px] 2xl:text-[70px]"
-            : // até 3 dígitos 
+            : // até 3 dígitos
               "text-[40px] sm:text-[40px] md:text-[40px] lg:text-[52px] xl:text-[60px] 2xl:text-[90px]";
 
           return (
@@ -244,14 +244,6 @@ export default function ReportsDashboard({
           className="inline-flex items-center rounded-lg border border-gray-200 bg-white p-3 text-xs font-medium text-gray-700 hover:bg-gray-50"
         >
           Gerar relatório fotográfico
-        </button>
-
-        <button
-          type="button"
-          onClick={onOpenBuilder}
-          className="inline-flex items-center rounded-lg border border-gray-200 bg-white p-3 text-xs font-medium text-gray-700 hover:bg-gray-50"
-        >
-          Gerar relatório customizado
         </button>
       </div>
     </div>

@@ -21,6 +21,9 @@ export function PlanningFilters({
 
   onFilterSector = () => {},
   onFilterForeman = () => {},
+
+  isDelayedFilter = false,
+  onToggleDelayed = () => {},
 }) {
   // Encarregados
   const [foremen, setForemen] = useState([]);
@@ -61,7 +64,7 @@ export function PlanningFilters({
     };
   }, []);
 
-  // Busca setores 
+  // Busca setores
   useEffect(() => {
     let mounted = true;
 
@@ -106,6 +109,9 @@ export function PlanningFilters({
         onFilterType={onFilterType}
         onFilterStatus={onFilterStatus}
         onFilterDateRange={onFilterDateRange}
+        showDelayed={true}
+        isDelayedFilter={isDelayedFilter}
+        onToggleDelayed={onToggleDelayed}
       />
 
       {/* Encarregado + setor */}

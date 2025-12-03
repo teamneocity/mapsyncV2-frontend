@@ -42,6 +42,11 @@ export function Filters({
   showCompany = true,
   showForeman = false,
   foremanEndpoint = "/users?role=FOREMAN",
+
+  // apenas para OS / Planejamento
+  showDelayed = false,
+  isDelayedFilter = false,
+  onToggleDelayed = () => {},
 }) {
   const [selectedRecent, setSelectedRecent] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
@@ -180,7 +185,6 @@ export function Filters({
   return (
     <header className="w-full bg-[#EBEBEB] px-1 py-1">
       <div className="w-full flex items-center justify-between gap-2 md:gap-3 flex-wrap rounded-xl">
-
         {/* Rua + Bairro */}
         <div className="flex flex-col sm:flex-row gap-2 flex-1 md:min-w-[320px]">
           <Input
@@ -437,6 +441,28 @@ export function Filters({
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+        )}
+
+        {/* Somente atrasadas (apenas OS / Planejamento) */}
+
+        {showDelayed && (
+          <Button
+            type="button"
+            onClick={() => onToggleDelayed(!isDelayedFilter)}
+            variant="outline"
+            className={`
+      w-full sm:w-auto gap-2 h-12 justify-between rounded-xl shadow-sm
+      text-[#4B4B62]
+      border-none
+      ${
+        isDelayedFilter
+          ? "bg-[#4B4B62] text-white font-medium shadow-md"
+          : "bg-white hover:bg-gray-100"
+      }
+    `}
+          >
+            {isDelayedFilter ? "Somente atrasadas" : "Incluir atrasadas"}
+          </Button>
         )}
 
         {/* Data */}

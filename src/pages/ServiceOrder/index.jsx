@@ -1,3 +1,4 @@
+// src/pages/ServiceOrder/index.jsx
 "use client";
 
 // React e bibliotecas externas
@@ -42,6 +43,7 @@ export function ServiceOrder() {
   const [filterCompany, setFilterCompany] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [isDelayed, setIsDelayed] = useState(false);
 
   useEffect(() => {
     fetchServiceOrders(currentPage);
@@ -55,6 +57,7 @@ export function ServiceOrder() {
     filterDateRange.startDate,
     filterDateRange.endDate,
     filterCompany,
+    isDelayed,
   ]);
 
   const handleToggleDateOrder = (order) => {
@@ -67,8 +70,8 @@ export function ServiceOrder() {
       const response = await api.get("/service-orders", {
         params: {
           page,
-          street: searchTerm, 
-          districtId: filterNeighborhood, 
+          street: searchTerm,
+          districtId: filterNeighborhood,
           occurrenceType: filterType,
           status: filterStatus,
           orderBy: filterRecent || "recent",
@@ -83,6 +86,7 @@ export function ServiceOrder() {
                 new Date(filterDateRange.endDate).setHours(23, 59, 59, 999)
               ).toISOString()
             : undefined,
+          isDelayed: isDelayed ? true : undefined,
         },
       });
 
@@ -117,7 +121,7 @@ export function ServiceOrder() {
       setTotalPages(serverTotalPages);
     } catch (error) {
       console.error(
-        "❌ Erro ao buscar ordens de serviço:",
+        "Erro ao buscar ordens de serviço:",
         error?.response?.data || error
       );
 
@@ -180,35 +184,49 @@ export function ServiceOrder() {
         </h1>
         <Filters
           contextType="padrao"
+          // filtro de companhia
           onFilterCompany={(company) => {
             setFilterCompany(company);
             setCurrentPage(1);
           }}
+          // busca por rua / protocolo
           onSearch={(input) => {
             setSearchTerm(input);
             setCurrentPage(1);
           }}
+          // tipo de ocorrência
           onFilterType={(type) => {
             setFilterType(type);
             setCurrentPage(1);
           }}
+          // ordenação por data
           onFilterRecent={(order) => {
             setFilterRecent(order);
             setCurrentPage(1);
           }}
+          // bairro
           onFilterNeighborhood={(neighborhood) => {
             setFilterNeighborhood(neighborhood);
             setCurrentPage(1);
           }}
+          // intervalo de datas
           onFilterDateRange={(range) => {
             setFilterDateRange(range);
             setCurrentPage(1);
           }}
+          // status
           onFilterStatus={(status) => {
             setFilterStatus(status);
             setCurrentPage(1);
           }}
           handleApplyFilters={handleApplyFilters}
+          // botão “Somente atrasadas”
+          showDelayed={true}
+          isDelayedFilter={isDelayed}
+          onToggleDelayed={(value) => {
+            setIsDelayed(value);
+            setCurrentPage(1);
+          }}
         />
       </div>
 

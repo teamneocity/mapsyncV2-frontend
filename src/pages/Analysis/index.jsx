@@ -124,12 +124,12 @@ export function Analysis() {
       setCurrentPage(serverPage);
       setTotalPages(serverTotalPages);
     } catch (error) {
-      console.error("❌ Erro ao buscar ocorrências:", error);
+      console.error(" Erro ao buscar ocorrências:", error);
 
       if (error.response) {
-        console.error("➡️ status:", error.response.status);
-        console.error("➡️ data:", error.response.data);
-        console.error("➡️ headers:", error.response.headers);
+        console.error(" status:", error.response.status);
+        console.error(" data:", error.response.data);
+        console.error(" headers:", error.response.headers);
       }
 
       toast({

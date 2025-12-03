@@ -18,7 +18,6 @@ import ReportsBuilder from "./ReportsBuilder";
 
 // Relatórios
 import PrintableDashboardReport from "./PrintableDashboardReport";
-import CustomPrintableSOReport from "./CustomPrintableSOReport";
 import SectorStatusCoverageReport from "./SectorStatusCoverageReport";
 
 export function Reports() {
@@ -46,15 +45,6 @@ export function Reports() {
     return (
       <div className="bg-white min-h-screen">
         <PrintableDashboardReport onClose={handleCloseReport} />
-      </div>
-    );
-  }
-
-  // Página única para o relatório custom
-  if (view === "custom_report") {
-    return (
-      <div className="bg-white min-h-screen">
-        <CustomPrintableSOReport onClose={handleCloseReport} />
       </div>
     );
   }
@@ -95,17 +85,11 @@ export function Reports() {
           </div>
         </section>
 
-        {view === "builder" ? (
-          <section className="max-w-[1500px] w-full mx-auto bg-white rounded-xl p-4 sm:p-6">
-            <ReportsBuilder selectedSector={selected} />
-          </section>
-        ) : (
-          <ReportsOverview
-            title="Resumo de indicadores operacionais"
-            selectedSector={selected}
-            onSectorChange={setSelected}
-          />
-        )}
+        <ReportsOverview
+          title="Resumo de indicadores operacionais"
+          selectedSector={selected}
+          onSectorChange={setSelected}
+        />
 
         <div aria-hidden className="h-8 md:h-3" />
       </div>

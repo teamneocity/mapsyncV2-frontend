@@ -11,6 +11,7 @@ import { SelectField } from "@/components/selectField";
 
 import ReportsDashboard from "./ReportsDashboard";
 import { ReportsBySector } from "./ReportsBySector";
+import ReportsBuilder from "./ReportsBuilder";
 
 // Busca setores
 async function fetchSectors() {
@@ -122,7 +123,6 @@ export default function ReportsOverview({
   onSectorChange = () => {},
 }) {
   const [params, setParams] = useSearchParams();
-
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [selectedPeriod, setSelectedPeriod] = useState("day");
 
@@ -144,8 +144,6 @@ export default function ReportsOverview({
   const [sectorWeekAnchorDate, setSectorWeekAnchorDate] = useState(null);
   const [sectorMonthAnchorDate, setSectorMonthAnchorDate] = useState(null);
 
-  const [builderOpen, setBuilderOpen] = useState(false);
-
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [photoFilters, setPhotoFilters] = useState({
     neighborhood: "",
@@ -157,6 +155,7 @@ export default function ReportsOverview({
   const isDashboard =
     selectedSector === "Escolha o painél de exibição do setor" ||
     selectedSector === "Dashboard";
+  const isChatBot = selectedSector === "Assistente IA";
 
   const STATUS_MASK = {
     em_analise: {
@@ -635,7 +634,7 @@ export default function ReportsOverview({
     setDayAnchorDate(anchorDate);
   }
 
-  // semana geral – usa presets: 0, 7, 14 dias atrás
+  // semana geral
   function handleChangeWeekAnchor(offsetStr) {
     if (offsetStr === "" || offsetStr == null) {
       setWeekAnchorDate(null);
@@ -655,7 +654,7 @@ export default function ReportsOverview({
     setWeekAnchorDate(anchorDate);
   }
 
-  // mês geral – ancora no primeiro dia do mês selecionado
+  // mês geral
   function handleChangeMonthAnchor(monthStr) {
     if (!monthStr) {
       setMonthAnchorDate(null);
@@ -684,7 +683,7 @@ export default function ReportsOverview({
     setSectorDayAnchorDate(anchorDate);
   }
 
-  // semana do setor – presets: 0, 7, 14 dias atrás
+  // semana do setor
   function handleChangeSectorWeek(offsetStr) {
     setSectorWeekValue(offsetStr || "");
 
@@ -706,7 +705,7 @@ export default function ReportsOverview({
     setSectorWeekAnchorDate(anchorDate);
   }
 
-  // mês do setor – ancora no primeiro dia do mês selecionado
+  // mês do setor
   function handleChangeSectorMonth(value) {
     setSectorMonth(value || "");
     if (!value) {
@@ -718,129 +717,6 @@ export default function ReportsOverview({
     const d = new Date(Number(year), Number(month) - 1, 1);
     const anchorDate = format(d, "yyyy-MM-dd");
     setSectorMonthAnchorDate(anchorDate);
-  }
-
-  // Modais
-  function BuilderModal() {
-    const [local, setLocal] = useState({
-      list: "1",
-      pieN: "1",
-      pieS: "1",
-      cmp: "1",
-      all: "1",
-    });
-
-    const set = (patch) => setLocal((old) => ({ ...old, ...patch }));
-
-    function handleSave() {
-      setParams((prev) => {
-        const p = new URLSearchParams(prev);
-        p.set("view", "custom_report");
-        p.set("rt", "custom");
-
-        p.set("list", local.list);
-        p.set("pieN", local.pieN);
-        p.set("pieS", local.pieS);
-        p.set("cmp", local.cmp);
-        p.set("all", local.all);
-
-        return p;
-      });
-
-      setBuilderOpen(false);
-    }
-
-    function handleClose() {
-      setBuilderOpen(false);
-    }
-
-    return (
-      <div
-        className="fixed inset-0 z-40 flex items-center justify-center p-4"
-        role="dialog"
-        aria-modal="true"
-      >
-        <div
-          className="absolute inset-0 z-40 bg-black/30 backdrop-blur-sm"
-          onClick={handleClose}
-        />
-        <div className="relative z-50 w-full max-w-2xl rounded-2xl bg-white shadow-xl border border-neutral-200 p-6">
-          <h3 className="text-xl font-semibold text-neutral-900">
-            Configure o tipo de relatório
-          </h3>
-          <p className="text-sm text-neutral-500 mt-1">
-            Escolha o que entra no relatório e como ordenar/filtrar.
-          </p>
-
-          <div className="mt-5 grid grid-cols-1 gap-4">
-            <SelectField
-              label="Lista de bairros (mês atual)"
-              value={local.list}
-              onChange={(v) => set({ list: v })}
-              options={[
-                { value: "1", label: "Incluir" },
-                { value: "0", label: "Ocultar" },
-              ]}
-            />
-
-            <SelectField
-              label="Gráfico de pizza por bairro"
-              value={local.pieN}
-              onChange={(v) => set({ pieN: v })}
-              options={[
-                { value: "1", label: "Incluir" },
-                { value: "0", label: "Ocultar" },
-              ]}
-            />
-
-            <SelectField
-              label="Gráfico de pizza por status"
-              value={local.pieS}
-              onChange={(v) => set({ pieS: v })}
-              options={[
-                { value: "1", label: "Incluir" },
-                { value: "0", label: "Ocultar" },
-              ]}
-            />
-
-            <SelectField
-              label="Comparação mês atual vs anterior (por bairro)"
-              value={local.cmp}
-              onChange={(v) => set({ cmp: v })}
-              options={[
-                { value: "1", label: "Incluir" },
-                { value: "0", label: "Ocultar" },
-              ]}
-            />
-
-            <SelectField
-              label="Lista de todas as ocorrências (2 por página)"
-              value={local.all}
-              onChange={(v) => set({ all: v })}
-              options={[
-                { value: "1", label: "Incluir" },
-                { value: "0", label: "Ocultar" },
-              ]}
-            />
-          </div>
-
-          <div className="mt-6 flex items-center justify-end gap-3">
-            <button
-              onClick={handleClose}
-              className="h-10 px-4 rounded-lg border border-neutral-200 bg-white text-neutral-700 text-sm hover:bg-neutral-50"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={handleSave}
-              className="h-10 px-4 rounded-lg bg-neutral-900 text-white text-sm hover:bg-neutral-800"
-            >
-              Salvar e abrir relatório
-            </button>
-          </div>
-        </div>
-      </div>
-    );
   }
 
   function PhotoFilterModal() {
@@ -1050,6 +926,7 @@ export default function ReportsOverview({
   const sectorOptions = useMemo(
     () => [
       "Escolha o painél de exibição do setor",
+      "Assistente IA",
       ...sectors.map((s) => s.name),
     ],
     [sectors]
@@ -1090,7 +967,9 @@ export default function ReportsOverview({
           )}
         </div>
       </div>
-      {isDashboard ? (
+      {isChatBot ? (
+        <ReportsBuilder selectedSector={selectedSector} />
+      ) : isDashboard ? (
         <ReportsDashboard
           dayCount={dayCardValue}
           weekCount={weekCardValue}
@@ -1106,7 +985,6 @@ export default function ReportsOverview({
             fetchingMonthWindow
           }
           onOpenPhotoModal={() => setPhotoModalOpen(true)}
-          onOpenBuilder={() => setBuilderOpen(true)}
           // callbacks para janelas (geral)
           onChangeDayAnchor={handleChangeDayAnchor}
           onChangeWeekAnchor={handleChangeWeekAnchor}
@@ -1145,7 +1023,6 @@ export default function ReportsOverview({
         />
       )}
 
-      {builderOpen ? <BuilderModal /> : null}
       {photoModalOpen ? <PhotoFilterModal /> : null}
     </section>
   );
