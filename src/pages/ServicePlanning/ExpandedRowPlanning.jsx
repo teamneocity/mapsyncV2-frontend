@@ -46,6 +46,12 @@ export function ExpandedRowPlanning(props) {
     LIMPA_FOSSA: "Limpa fossa",
   };
 
+  const statusLabels = {
+    em_execucao: "Andamento",
+    aguardando_execucao: "Agendada",
+    finalizada: "Finalizada",
+  };
+
  // campos principais
   const protocol =
     serviceorder?.protocol ??
@@ -65,7 +71,8 @@ export function ExpandedRowPlanning(props) {
     serviceorder?.pilot?.name ||
     "-";
   const foreman = serviceorder?.foreman?.name || "-";
-  const status = serviceorder?.status ?? "-";
+  const statusRaw = serviceorder?.status ?? "-";
+  const status = (statusRaw && statusLabels[statusRaw]) || statusRaw || "-";
 
   const occ = serviceorder?.occurrence || {};
   const tipoRaw = serviceorder?.type || occ?.type || serviceorder?.serviceNature?.name;
