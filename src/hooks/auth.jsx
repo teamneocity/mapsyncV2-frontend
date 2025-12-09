@@ -10,10 +10,18 @@ function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-
+  //  o Rrefresh Token volta a ser mandado pelo body
   async function renewAccessToken() {
     try {
-      const response = await api.post("/auth/renew");
+      const storedRefreshToken = localStorage.getItem("@popcity:refreshToken");
+
+      if (!storedRefreshToken) {
+        return null;
+      }
+
+      const response = await api.post("/auth/renew", {
+        refreshToken: storedRefreshToken,
+      });
 
       const { access_token, accessToken } = response.data;
       const newAccessToken = accessToken || access_token;
@@ -21,14 +29,19 @@ function AuthProvider({ children }) {
       if (!newAccessToken) {
         return null;
       }
+
+      // atualiza header padrão
       api.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
 
+      // salva novo access token
       localStorage.setItem("@popcity:accessToken", newAccessToken);
 
+      // atualiza estado
       setData((prev) => ({
         ...prev,
         token: newAccessToken,
       }));
+
       return newAccessToken;
     } catch (error) {
       console.error("Erro ao renovar access token:", error);
@@ -40,11 +53,8 @@ function AuthProvider({ children }) {
     try {
       const response = await api.post("/sessions", { email, password });
 
-      const {
-        access_token,
-        employee_name,
-        employee_email,
-      } = response.data;
+      const { access_token, refresh_token, employee_name, employee_email } =
+        response.data;
 
       const token = access_token;
 
@@ -62,6 +72,10 @@ function AuthProvider({ children }) {
 
       localStorage.setItem("@popcity:accessToken", token);
       localStorage.removeItem("@popcity:token");
+
+      if (refresh_token) {
+        localStorage.setItem("@popcity:refreshToken", refresh_token);
+      }
 
       api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
@@ -87,8 +101,9 @@ function AuthProvider({ children }) {
   function signOut() {
     localStorage.removeItem("@popcity:user");
     localStorage.removeItem("@popcity:accessToken");
-    localStorage.removeItem("@popcity:token"); 
+    localStorage.removeItem("@popcity:token");
     localStorage.removeItem("@popcity:loginTime");
+    localStorage.removeItem("@popcity:refreshToken");
 
     setData({});
     api.defaults.headers.common["Authorization"] = null;
@@ -125,7 +140,6 @@ function AuthProvider({ children }) {
     }
   }
 
-
   useEffect(() => {
     const userData = localStorage.getItem("@popcity:user");
 
@@ -143,8 +157,9 @@ function AuthProvider({ children }) {
       if (timeElapsed > tokenExpirationTime) {
         signOut();
       } else {
-        api.defaults.headers.common["Authorization"] =
-          `Bearer ${storedAccessToken}`;
+        api.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${storedAccessToken}`;
 
         try {
           const decodedToken = jwtDecode(storedAccessToken);
@@ -179,7 +194,6 @@ function AuthProvider({ children }) {
     }
   }
 
-
   useEffect(() => {
     const interceptorId = api.interceptors.response.use(
       (response) => response,
@@ -187,12 +201,14 @@ function AuthProvider({ children }) {
         const status = error?.response?.status;
         const originalRequest = error.config;
 
+        // Se não for 401 ou não tiver request original, segue como erro normal
         if (status !== 401 || !originalRequest) {
           return Promise.reject(error);
         }
 
         const url = originalRequest.url || "";
 
+        // Nessas rotas a gente NÃO tenta renovar token
         if (
           url.includes("/sessions") ||
           url.includes("/employees/password/forgot") ||
@@ -207,22 +223,36 @@ function AuthProvider({ children }) {
 
         originalRequest._retry = true;
 
+        //  401 em rota privada
+        console.info(
+          "[Auth] Token expirado (401) em rota privada. Tentando renovar..."
+        );
+
         try {
           const newAccessToken = await renewAccessToken();
 
+          // Se não conseguir renovar aí sim da erro
           if (!newAccessToken) {
+            console.warn(
+              "[Auth] Não foi possível renovar o token. Usuário será deslogado."
+            );
             signOut();
             return Promise.reject(error);
           }
+
+          console.info("[Auth] Token renovado automaticamente com sucesso.");
+
           originalRequest.headers = {
             ...originalRequest.headers,
             Authorization: `Bearer ${newAccessToken}`,
           };
 
-          
           return api(originalRequest);
         } catch (refreshError) {
-          
+          console.error(
+            "[Auth] Erro ao tentar renovar o token. Usuário será deslogado.",
+            refreshError
+          );
           signOut();
           return Promise.reject(refreshError);
         }
