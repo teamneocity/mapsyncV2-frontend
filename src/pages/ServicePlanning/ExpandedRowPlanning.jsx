@@ -46,7 +46,22 @@ export function ExpandedRowPlanning(props) {
     LIMPA_FOSSA: "Limpa fossa",
   };
 
- // campos principais
+  const statusLabels = {
+    em_analise: "Em análise",
+    emergencial: "Emergencial",
+    aprovada: "Aprovada",
+    os_gerada: "O.S. gerada",
+    aguardando_execucao: "Agendada",
+    em_execucao: "Andamento",
+    finalizada: "Finalizada",
+    pendente: "Pendente",
+    aceita: "Aceita",
+    verificada: "Verificada",
+    rejeitada: "Rejeitada",
+    encaminhada_externa: "Arquivada",
+  };
+
+  // campos principais
   const protocol =
     serviceorder?.protocol ??
     serviceorder?.protocolNumber ??
@@ -65,10 +80,12 @@ export function ExpandedRowPlanning(props) {
     serviceorder?.pilot?.name ||
     "-";
   const foreman = serviceorder?.foreman?.name || "-";
-  const status = serviceorder?.status ?? "-";
+  const rawStatus = serviceorder?.status ?? "-";
+  const status = statusLabels[rawStatus] || rawStatus || "-";
 
   const occ = serviceorder?.occurrence || {};
-  const tipoRaw = serviceorder?.type || occ?.type || serviceorder?.serviceNature?.name;
+  const tipoRaw =
+    serviceorder?.type || occ?.type || serviceorder?.serviceNature?.name;
   const tipo = (tipoRaw && typeLabels[tipoRaw]) || tipoRaw || "-";
 
   const addr = occ?.address || serviceorder?.address || {};
@@ -114,7 +131,7 @@ export function ExpandedRowPlanning(props) {
   );
 
   // rota das fotos
-  const baseURL = "https://mapsync-media.s3.sa-east-1.amazonaws.com/"; 
+  const baseURL = "https://mapsync-media.s3.sa-east-1.amazonaws.com/";
   const photos = occ?.photos || { initial: [], progress: [], final: [] };
 
   //monsta as imagens
@@ -140,8 +157,6 @@ export function ExpandedRowPlanning(props) {
   const [mapOpen, setMapOpen] = useState(false);
   const [ruaClicada, setRuaClicada] = useState(null);
 
-  
-
   return (
     <div className="w-full rounded-lg p-4">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -154,7 +169,8 @@ export function ExpandedRowPlanning(props) {
             className="h-[64px] w-fit px-3 rounded-lg bg-[#D9DCE2] hover:bg-gray-300 disabled:opacity-60 flex items-center gap-2 text-sm text-zinc-800"
           >
             <span>
-              Protocolo : {protocol && protocol !== "—" ? protocol : "Sem protocolo"}
+              Protocolo :{" "}
+              {protocol && protocol !== "—" ? protocol : "Sem protocolo"}
             </span>
             <Copy className="w-5 h-5" />
           </button>
@@ -179,8 +195,12 @@ export function ExpandedRowPlanning(props) {
           <Line label="Período de execução">{period(startDate, endDate)}</Line>
           {createdAt ? <Line label="Criada em">{fmt(createdAt)}</Line> : null}
           {acceptedAt ? <Line label="Aceita em">{fmt(acceptedAt)}</Line> : null}
-          {startedAt ? <Line label="Início da execução">{fmt(startedAt)}</Line> : null}
-          {finishedAt ? <Line label="Finalizada em">{fmt(finishedAt)}</Line> : null}
+          {startedAt ? (
+            <Line label="Início da execução">{fmt(startedAt)}</Line>
+          ) : null}
+          {finishedAt ? (
+            <Line label="Finalizada em">{fmt(finishedAt)}</Line>
+          ) : null}
         </div>
 
         <div className="min-h-[360px]">
@@ -202,7 +222,8 @@ export function ExpandedRowPlanning(props) {
                         onError={(e) => {
                           const el = e.currentTarget;
                           el.style.display = "none";
-                          const holder = el.parentElement?.querySelector("[data-fallback]");
+                          const holder =
+                            el.parentElement?.querySelector("[data-fallback]");
                           if (holder) holder.style.display = "flex";
                         }}
                       />
@@ -290,7 +311,9 @@ export function ExpandedRowPlanning(props) {
                       onMapClick={async ({ lat, lng }) => {
                         try {
                           const res = await fetch(
-                            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
+                            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${
+                              import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+                            }`
                           );
                           const data = await res.json();
                           const rua =

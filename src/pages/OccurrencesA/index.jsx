@@ -138,7 +138,7 @@ export function OccurrencesA() {
   return (
     <div className="flex min-h-screen flex-col sm:ml-[250px] font-inter bg-[#EBEBEB]">
       <Sidebar />
-      <TopHeader title="Mapeamento" subtitle="Aéreo"/>
+      <TopHeader title="Mapeamento" subtitle="Aéreo" />
 
       <div className="px-6 py-4 sm:py-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:hidden">
@@ -173,6 +173,8 @@ export function OccurrencesA() {
             setCurrentPage(1);
           }}
           handleApplyFilters={handleApplyFilters}
+          showType={false}
+          showCompany={false}
         />
       </div>
 
