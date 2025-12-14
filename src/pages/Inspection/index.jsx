@@ -21,7 +21,6 @@ import { InspectionCard } from "./inspectionCard";
 // Serviços e utilitários
 import { api } from "@/services/api";
 
-
 // Busca de dados
 async function fetchInspectionOrders({ queryKey }) {
   const [
@@ -183,6 +182,8 @@ export function Inspection() {
               setCurrentPage(1);
             }}
             handleApplyFilters={handleApplyFilters}
+            showType={false}
+            showCompany={false}
           />
         </div>
 

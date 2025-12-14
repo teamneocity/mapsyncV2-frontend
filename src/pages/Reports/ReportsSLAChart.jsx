@@ -324,9 +324,9 @@ export default function ReportsSLAChart({ className = "" }) {
                 <p className="text-xl md:text-2xl font-bold text-gray-900 leading-none">
                   {metric.value}
                 </p>
-                {metric.unit && (
-                  <span className="text-xs text-gray-600">{metric.unit}</span>
-                )}
+                <span className="block h-4 text-xs text-gray-600">
+                  {metric.unit || ""}
+                </span>
               </div>
             </div>
           ))}

@@ -101,8 +101,6 @@ export default function PilotsDashboard() {
   const [loadingRank, setLoadingRank] = useState(true);
   const [errRank, setErrRank] = useState(null);
 
-  const COL_H = "calc(100vh - 200px)";
-
   useEffect(() => {
     let ignore = false;
     (async () => {
@@ -292,10 +290,7 @@ export default function PilotsDashboard() {
 
           {/* Gráfico de barra */}
           <div className="col-span-12 md:col-span-6 xl:col-span-5">
-            <div
-              className="rounded-2xl bg-white shadow p-3 flex flex-col"
-              style={{ height: COL_H }}
-            >
+            <div className="rounded-2xl bg-white shadow p-3 flex flex-col h-auto min-h-[320px] md:min-h-[360px] xl:h-[calc(100vh-200px)]">
               <div className="flex items-center gap-2 mb-2">
                 <Airplane className="w-5 h-5 text-gray-700" />
                 <h3 className="text-base font-semibold">
@@ -358,13 +353,11 @@ export default function PilotsDashboard() {
             </div>
           </div>
 
-          {/* Gráfico de pizza */}
+          {/* Gráfico de pizza + total */}
           <div className="col-span-12 md:col-span-6 xl:col-span-4">
-            <div
-              className="rounded-2xl bg-white shadow p-3 flex flex-col"
-              style={{ height: COL_H }}
-            >
-              <div className="flex-1 min-h-0 flex flex-col">
+            <div className="rounded-2xl bg-white shadow p-3 flex flex-col h-auto min-h-[320px] md:min-h-[360px] xl:h-[calc(100vh-200px)]">
+              {/* bloco do gráfico de pizza */}
+              <div className="flex-1 min-h-[180px] flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
                   <Airplane className="w-5 h-5 text-gray-700" />
                   <h3 className="text-base font-semibold">
@@ -372,7 +365,7 @@ export default function PilotsDashboard() {
                   </h3>
                 </div>
 
-                <div className="flex-1 min-h-0">
+                <div className="flex-1 min-h-0 flex items-center justify-center">
                   {!pilotTotals.length || !pieChartData.length ? (
                     <div className="w-full h-full flex items-center justify-center text-gray-500">
                       Sem dados
@@ -464,10 +457,10 @@ export default function PilotsDashboard() {
                 </div>
               </div>
 
-              <div className="my-3 " />
+              <div className="my-2" />
 
               {/* total */}
-              <div className="flex-1 min-h-0 flex flex-col">
+              <div className="flex-1 min-h-[140px] flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
                   <Airplane className="w-5 h-5 text-gray-700" />
                   <h3 className="text-base font-semibold">
@@ -475,11 +468,8 @@ export default function PilotsDashboard() {
                   </h3>
                 </div>
 
-                <div className="flex-1 min-h-0 flex items-center justify-center">
-                  <p
-                    className="font-extrabold leading-none"
-                    style={{ fontSize: "150px", lineHeight: "1" }}
-                  >
+                <div className="flex-1 flex items-center justify-center">
+                  <p className="font-extrabold leading-none text-4xl md:text-5xl lg:text-6xl">
                     {selectedPilotTotal ?? 0}
                   </p>
                 </div>

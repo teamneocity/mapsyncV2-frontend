@@ -10,32 +10,78 @@ function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  //  o Rrefresh Token volta a ser mandado pelo body
+  async function renewAccessToken() {
+    try {
+      const storedRefreshToken = localStorage.getItem("@popcity:refreshToken");
+
+      if (!storedRefreshToken) {
+        return null;
+      }
+
+      const response = await api.post("/auth/renew", {
+        refreshToken: storedRefreshToken,
+      });
+
+      const { access_token, accessToken } = response.data;
+      const newAccessToken = accessToken || access_token;
+
+      if (!newAccessToken) {
+        return null;
+      }
+
+      // atualiza header padrão
+      api.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
+
+      // salva novo access token
+      localStorage.setItem("@popcity:accessToken", newAccessToken);
+
+      // atualiza estado
+      setData((prev) => ({
+        ...prev,
+        token: newAccessToken,
+      }));
+
+      return newAccessToken;
+    } catch (error) {
+      console.error("Erro ao renovar access token:", error);
+      throw error;
+    }
+  }
+
   async function signIn({ email, password }) {
     try {
       const response = await api.post("/sessions", { email, password });
 
-      const { access_token, employee_name, employee_email } = response.data;
+      const { access_token, refresh_token, employee_name, employee_email } =
+        response.data;
+
       const token = access_token;
 
-      // Decodificando o token para pegar o cargo (role)
       const decodedToken = jwtDecode(token);
       const role = decodedToken.role;
 
       const user = {
         name: employee_name,
         email: employee_email,
-        role, //  Aqui o cargo é armazenado
+        role,
       };
 
       localStorage.setItem("@popcity:user", JSON.stringify(user));
       localStorage.setItem("@popcity:loginTime", Date.now().toString());
-      localStorage.setItem("@popcity:token", token);
+
+      localStorage.setItem("@popcity:accessToken", token);
+      localStorage.removeItem("@popcity:token");
+
+      if (refresh_token) {
+        localStorage.setItem("@popcity:refreshToken", refresh_token);
+      }
 
       api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       setData({ user, token });
     } catch (error) {
-      console.error("❌ Erro no login:", error);
+      console.error("Erro no login:", error);
 
       if (error.response) {
         toast({
@@ -54,9 +100,13 @@ function AuthProvider({ children }) {
 
   function signOut() {
     localStorage.removeItem("@popcity:user");
+    localStorage.removeItem("@popcity:accessToken");
     localStorage.removeItem("@popcity:token");
     localStorage.removeItem("@popcity:loginTime");
+    localStorage.removeItem("@popcity:refreshToken");
+
     setData({});
+    api.defaults.headers.common["Authorization"] = null;
   }
 
   async function updateProfile({ user }) {
@@ -67,6 +117,7 @@ function AuthProvider({ children }) {
         name,
         email,
       });
+
       localStorage.setItem("@popcity:user", JSON.stringify(user));
       setData({ user, token: data.token });
 
@@ -91,33 +142,43 @@ function AuthProvider({ children }) {
 
   useEffect(() => {
     const userData = localStorage.getItem("@popcity:user");
-    const token = localStorage.getItem("@popcity:token");
+
+    const storedAccessToken =
+      localStorage.getItem("@popcity:accessToken") ||
+      localStorage.getItem("@popcity:token");
+
     const loginTime = localStorage.getItem("@popcity:loginTime");
 
-    if (token && userData && loginTime) {
+    if (storedAccessToken && userData && loginTime) {
       const now = Date.now();
       const timeElapsed = now - parseInt(loginTime, 10);
-      const tokenExpirationTime = 24 * 60 * 60 * 1000;
+      const tokenExpirationTime = 7 * 24 * 60 * 60 * 1000;
 
       if (timeElapsed > tokenExpirationTime) {
         signOut();
       } else {
-        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        api.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${storedAccessToken}`;
 
-        // ⬇️ Decodifica novamente para garantir que role esteja presente
-        const decodedToken = jwtDecode(token);
-        const role = decodedToken.role;
+        try {
+          const decodedToken = jwtDecode(storedAccessToken);
+          const role = decodedToken.role;
 
-        const parsedUser = JSON.parse(userData);
-        const userWithRole = {
-          ...parsedUser,
-          role,
-        };
+          const parsedUser = JSON.parse(userData);
+          const userWithRole = {
+            ...parsedUser,
+            role,
+          };
 
-        setData({
-          user: userWithRole,
-          token,
-        });
+          setData({
+            user: userWithRole,
+            token: storedAccessToken,
+          });
+        } catch (err) {
+          console.error("Erro ao decodificar token salvo:", err);
+          signOut();
+        }
       }
     }
 
@@ -132,6 +193,76 @@ function AuthProvider({ children }) {
       throw error;
     }
   }
+
+  useEffect(() => {
+    const interceptorId = api.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const status = error?.response?.status;
+        const originalRequest = error.config;
+
+        // Se não for 401 ou não tiver request original, segue como erro normal
+        if (status !== 401 || !originalRequest) {
+          return Promise.reject(error);
+        }
+
+        const url = originalRequest.url || "";
+
+        // Nessas rotas a gente NÃO tenta renovar token
+        if (
+          url.includes("/sessions") ||
+          url.includes("/employees/password/forgot") ||
+          url.includes("/auth/renew")
+        ) {
+          return Promise.reject(error);
+        }
+
+        if (originalRequest._retry) {
+          return Promise.reject(error);
+        }
+
+        originalRequest._retry = true;
+
+        //  401 em rota privada
+        console.info(
+          "[Auth] Token expirado (401) em rota privada. Tentando renovar..."
+        );
+
+        try {
+          const newAccessToken = await renewAccessToken();
+
+          // Se não conseguir renovar aí sim da erro
+          if (!newAccessToken) {
+            console.warn(
+              "[Auth] Não foi possível renovar o token. Usuário será deslogado."
+            );
+            signOut();
+            return Promise.reject(error);
+          }
+
+          console.info("[Auth] Token renovado automaticamente com sucesso.");
+
+          originalRequest.headers = {
+            ...originalRequest.headers,
+            Authorization: `Bearer ${newAccessToken}`,
+          };
+
+          return api(originalRequest);
+        } catch (refreshError) {
+          console.error(
+            "[Auth] Erro ao tentar renovar o token. Usuário será deslogado.",
+            refreshError
+          );
+          signOut();
+          return Promise.reject(refreshError);
+        }
+      }
+    );
+
+    return () => {
+      api.interceptors.response.eject(interceptorId);
+    };
+  }, []);
 
   return (
     <AuthContext.Provider

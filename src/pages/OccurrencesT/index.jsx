@@ -369,6 +369,8 @@ export function OccurrencesT() {
             setCurrentPage(1);
           }}
           handleApplyFilters={handleApplyFilters}
+            showStatus={false}
+
         />
       </div>
       <OccurrenceList

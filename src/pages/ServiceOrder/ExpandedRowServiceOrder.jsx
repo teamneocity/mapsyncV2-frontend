@@ -16,6 +16,8 @@ import Copy from "@/assets/icons/Copy.svg?react";
 import { Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+import { usePermissions } from "@/hooks/usePermissions";
+
 import { api } from "@/services/api";
 
 // serve pare evitar erro caso a foto ainda não esteja anexada na ocorrência replicada
@@ -136,6 +138,8 @@ export function ExpandedRowServiceOrder({ occurrence }) {
   const [sectorsError, setSectorsError] = useState("");
 
   const navigate = useNavigate();
+
+  const { isCallCenter } = usePermissions();
 
   const [pavSectorId, setPavSectorId] = useState("");
   const [pavLookupError, setPavLookupError] = useState("");
@@ -844,27 +848,27 @@ export function ExpandedRowServiceOrder({ occurrence }) {
 
           <Timeline timeline={timeline} />
         </div>
-
-        {!occurrence.startedAt ? (
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            className="w-full h-[64px] bg-[#D1F0FA] hover:bg-blue-300 text-[#116B97] mt-6"
-          >
-            Iniciar
-          </Button>
-        ) : (
-          <Button
-            onClick={() => setIsFinalizeModalOpen(true)}
-            disabled={!!occurrence.finishedAt}
-            className={`w-full h-[64px] mt-6 ${
-              occurrence.finishedAt
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-[#C9F2E9] hover:bg-green-300 text-[#1C7551]"
-            }`}
-          >
-            Finalizar
-          </Button>
-        )}
+        {!isCallCenter && //CallCenter não pode iniciar ou finalizar
+          (!occurrence.startedAt ? (
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              className="w-full h-[64px] bg-[#D1F0FA] hover:bg-blue-300 text-[#116B97] mt-6"
+            >
+              Iniciar
+            </Button>
+          ) : (
+            <Button
+              onClick={() => setIsFinalizeModalOpen(true)}
+              disabled={!!occurrence.finishedAt}
+              className={`w-full h-[64px] mt-6 ${
+                occurrence.finishedAt
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-[#C9F2E9] hover:bg-green-300 text-[#1C7551]"
+              }`}
+            >
+              Finalizar
+            </Button>
+          ))}
       </div>
 
       {/* Imagem e mapa com modal */}

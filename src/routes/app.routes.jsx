@@ -37,9 +37,12 @@ export function AppRoutes() {
     isChief,
     isPilot,
     isDroneOperator,
+    isCallCenter,
   } = usePermissions();
+
   const canSeeAll = isAdmin || isSupervisor;
 
+  //  Rotas exclusivas para piloto aéreo
   if (user.role === "pilotoa") {
     return (
       <Routes>
@@ -49,6 +52,7 @@ export function AppRoutes() {
     );
   }
 
+  //  Rotas exclusivas para piloto terrestre
   if (user.role === "pilotot") {
     return (
       <Routes>
@@ -58,6 +62,34 @@ export function AppRoutes() {
     );
   }
 
+  //  Rotas exclusivas para CALLCENTER
+  if (isCallCenter) {
+    return (
+      <Routes>
+        {/* mapeamento terrestre */}
+        <Route path="/" element={<Navigate to="/occurrencest" />} />
+
+        {/* Mapeamento terrestre */}
+        <Route path="/occurrencest" element={<OccurrencesT />} />
+
+        {/* Ordem de serviço */}
+        <Route path="/serviceorder" element={<ServiceOrder />} />
+        
+        {/* Perfil do usuário */}
+        <Route path="/userprofile" element={<UserProfile />} />
+
+        <Route
+          path="/service-orders/print/:id"
+          element={<ServiceOrderPrint />}
+        />
+
+        {/* Qualquer outra rota cai aqui */}
+        <Route path="*" element={<Navigate to="/occurrencest" />} />
+      </Routes>
+    );
+  }
+
+  //  Rotas padrão (admin, gestor, supervisor, analista, etc)
   return (
     <Routes>
       {/* Redireciona a rota raiz (/) de acordo com o role */}
@@ -71,12 +103,8 @@ export function AppRoutes() {
           )
         }
       />
-      {/* Rota: /sectorAdmin */}
-      {/* <Route
-        path="/sectorAdmin"
-        element={canSeeAll || isChief ? <SectorAdmin /> : <Navigate to="/" />}
-      /> */}
-      {/* Rota: /analysis */}
+
+      {/* analysis */}
       <Route
         path="/analysis"
         element={
@@ -87,7 +115,8 @@ export function AppRoutes() {
           )
         }
       />
-      {/* Rota: /occurrencesa */}
+
+      {/* occurrencesa */}
       <Route
         path="/occurrencesa"
         element={
@@ -98,7 +127,8 @@ export function AppRoutes() {
           )
         }
       />
-      {/* Rota: /occurrencest */}
+
+      {/* occurrencest */}
       <Route
         path="/occurrencest"
         element={
@@ -109,23 +139,27 @@ export function AppRoutes() {
           )
         }
       />
-      {/* Rota: /serviceorder */}
+
+      {/* serviceorder */}
       <Route
         path="/serviceorder"
         element={canSeeAll || isChief ? <ServiceOrder /> : <Navigate to="/" />}
       />
-      {/* Rota: /servicePlanning */}
+
+      {/* servicePlanning */}
       <Route
         path="/servicePlanning"
         element={
           canSeeAll || isChief ? <ServicePlanning /> : <Navigate to="/" />
         }
       />
-      {/* Rota: /inspection */}
+
+      {/* inspection */}
       <Route
         path="/inspection"
         element={canSeeAll || isChief ? <Inspection /> : <Navigate to="/" />}
       />
+
       <Route
         path="/requests"
         element={
@@ -133,33 +167,15 @@ export function AppRoutes() {
         }
       />
 
-      {/* <Route
-        path="/PilotMap"
-        element={canSeeAll || isChief ? <PilotMap /> : <Navigate to="/" />}
-      /> */}
-      {/* Rota: /reports */}
+      {/* reports */}
       <Route
         path="/reports"
         element={canSeeAll || isChief ? <Reports /> : <Navigate to="/" />}
       />
-      {/* Rota: /userManagement */}
-      {/* <Route
-        path="/userManagement"
-        element={isAdmin || isChief ? <UserManagement /> : <Navigate to="/" />}
-      /> */}
-      {/* <Route
-        path="/panelAdm"
-        element={isAdmin ? <PanelAdm /> : <Navigate to="/" />}
-      /> */}
+
       <Route path="/pilots/dashboard" element={<PilotsDashboard />} />
 
-      {/* Rota: /feedback */}
-      {/* <Route
-        path="/feedback"
-        element={canSeeAll || isChief ? <Feedback /> : <Navigate to="/" />}
-      /> */}
       {/* Rotas livres (não aparecem na Sidebar) */}
-
       <Route path="/userprofile" element={<UserProfile />} />
       <Route path="/warranty" element={<Warranty />} />
 
@@ -174,7 +190,7 @@ export function AppRoutes() {
         }
       />
 
-      {/* Rota: /settings (somente admin, gestor e chefe de setor) */}
+      {/* settings somente admin, gestor e chefe de setor */}
       <Route
         path="/settings"
         element={

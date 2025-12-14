@@ -33,21 +33,30 @@ export function InspectionCard({ serviceorder }) {
   const [photoIndex, setPhotoIndex] = useState(0);
   const currentPhoto = photoUrls[photoIndex];
 
+  const statusLabels = {
+    em_analise: "Em análise",
+    emergencial: "Emergencial",
+    aprovada: "Aprovada",
+    os_gerada: "O.S. gerada",
+    aguardando_execucao: "Agendada",
+    em_execucao: "Andamento",
+    finalizada: "Finalizada",
+    pendente: "Pendente",
+    aceita: "Aceita",
+    verificada: "Verificada",
+    rejeitada: "Rejeitada",
+    encaminhada_externa: "Arquivada",
+  };
+
   const statusColors = {
     em_execucao: "bg-[#FFF1CB] text-[#845B00]",
     aguardando_execucao: "bg-[#EBD4EA] text-[#5D2A61]",
     finalizada: "bg-[#C9F2E9] text-[#1C7551]",
   };
 
-  const statusLabel = {
-    aguardando_execucao: "Agendada",
-    em_execucao: "Andamento",
-    finalizada: "Finalizada",
-  };
-
-  const status = statusLabel[serviceorder.status] || "Status";
-  const statusClass =
-    statusColors[serviceorder.status] || "bg-gray-200 text-gray-600";
+  const rawStatus = serviceorder.status;
+  const status = statusLabels[rawStatus] || "Status";
+  const statusClass = statusColors[rawStatus] || "bg-gray-200 text-gray-600";
 
   const timeline = {
     requested: occurrence.createdAt,
@@ -72,6 +81,7 @@ export function InspectionCard({ serviceorder }) {
     MEIO_FIO: "Meio fio",
     DESOBSTRUCAO: "Drenagem",
     LIMPA_FOSSA: "Limpa fossa",
+    DESOBSTRUÇÃO_CAMINHÃO: "Desob. caminhão",
   };
 
   function handleCopyProtocol() {
@@ -91,8 +101,9 @@ export function InspectionCard({ serviceorder }) {
       });
     });
   }
+
   return (
-    <div className="bg-[#F7F7F7] rounded-[12px] shadow-sm overflow-hidden flex-shrink-0 w-full max-w-[525px] border border-gray-200 min-h-[650px] sm:min-h-[auto]">
+    <div className="bg-[#F7F7F7] rounded-[12px] shadow-sm overflow-hidden flex-shrink-0 w-full max-w-[525px] border border-gray-200 h-[650px] flex flex-col">
       {/* Imagem principal */}
       <div className="relative">
         <Dialog>
@@ -169,7 +180,7 @@ export function InspectionCard({ serviceorder }) {
       </div>
 
       {/* Conteúdo */}
-      <div className="px-4 pb-4 text-sm text-black grid grid-cols-12 gap-2 min-h-[400px] sm:min-h-[auto]">
+      <div className="px-4 pb-4 text-sm text-black grid grid-cols-12 gap-2 flex-1 overflow-y-auto">
         {/* Coluna 1 */}
         <div className="col-span-6 space-y-1">
           <button
@@ -187,7 +198,6 @@ export function InspectionCard({ serviceorder }) {
           <p>
             <strong>Companhia:</strong> {occurrence.externalCompany || "EMURB"}
           </p>
-          <p></p>
           <p>
             <strong>Solicitado por:</strong> {occurrence.author?.name || "—"}
           </p>
@@ -222,7 +232,6 @@ export function InspectionCard({ serviceorder }) {
           <div className="relative">
             <ul className="space-y-6 mt-1 pl-6">
               {timelineEntries.map(([key, date], index) => {
-                // Ícone por posição
                 let Icon;
                 if (index === 0) Icon = Start;
                 else if (index === timelineEntries.length - 1) Icon = End;
