@@ -1,14 +1,36 @@
 // src/pages/Reports/ReportsBuilder.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Star from "@/assets/icons/Star.svg?react";
 import ReportIcon from "@/assets/icons/ReportIcon.svg?react";
 import NeighborhoodIcon from "@/assets/icons/NeighborhoodIcon.svg?react";
 import FireIcon from "@/assets/icons/FireIcon.svg?react";
 
-import { Send } from "lucide-react";
+import { Send, TrendingUp } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { api } from "@/services/api";
+
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  LabelList,
+  XAxis,
+  YAxis,
+} from "recharts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
 export default function ReportsBuilder() {
   const [, setParams] = useSearchParams();
@@ -69,13 +91,42 @@ export default function ReportsBuilder() {
     const { status, result } = jobData;
 
     if (status === "completed") {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: result?.content ?? "Nenhuma resposta retornada.",
-        },
-      ]);
+      // Se retornar chart, adiciona uma mensagem que renderiza gráfico.
+      if (result?.responseType === "chart" && result?.chartData?.data?.length) {
+        const chartPayload = {
+          title: result.chartData.title ?? "Gráfico",
+          data: result.chartData.data,
+        };
+
+        setMessages((prev) => [
+          ...prev,
+          ...(result?.content
+            ? [
+                {
+                  role: "assistant",
+                  renderMode: "text",
+                  content: result.content,
+                },
+              ]
+            : []),
+
+          {
+            role: "assistant",
+            renderMode: "chart",
+            chartData: chartPayload,
+          },
+        ]);
+      } else {
+        // resposta normal (texto)
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            renderMode: "text",
+            content: result?.content ?? "Nenhuma resposta retornada.",
+          },
+        ]);
+      }
 
       setJobId(null);
       setError(null);
@@ -97,30 +148,22 @@ export default function ReportsBuilder() {
     const text = message.trim();
     if (!text) return;
 
-    setMessages((prev) => [...prev, { role: "user", content: text }]);
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", renderMode: "text", content: text },
+    ]);
 
     setMessage("");
     setError(null);
     invokeChatMutation.mutate(text);
   }
 
-  const isLoading =
-    invokeChatMutation.isPending || (jobId && isCheckingJob);
+  const isLoading = invokeChatMutation.isPending || !!jobId;
 
   return (
     <div className="space-y-8">
       {/* Cabeçalho */}
       <div className="space-y-6">
-        <div className="text-left">
-          <h2 className="text-[32px] font-bold text-black">
-            Resumo de indicadores operacionais
-          </h2>
-
-          <div className="flex items-center gap-1.5 text-[15px] text-zinc-400 -mt-1">
-            <span>Consulta por IA</span>
-          </div>
-        </div>
-
         <div className="text-center space-y-3">
           <h1 className="text-[64px] flex flex-col items-center leading-[1.15]">
             <Star className="w-12 h-12 text-yellow-400 animate-pulse mb-2" />
@@ -156,7 +199,9 @@ export default function ReportsBuilder() {
               }`}
             >
               <div
-                className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
+                className={`rounded-2xl px-3 py-2 text-sm ${
+                  msg.renderMode === "chart" ? "w-full" : "max-w-[80%]"
+                } ${
                   msg.role === "user"
                     ? "bg-blue-600 text-white"
                     : "bg-zinc-100 text-zinc-900"
@@ -165,7 +210,15 @@ export default function ReportsBuilder() {
                 <div className="text-[11px] font-semibold opacity-75 mb-0.5">
                   {msg.role === "user" ? "Você" : "Assistente IA"}
                 </div>
-                <p className="whitespace-pre-wrap">{msg.content}</p>
+
+                {/*  condicional, texto ou gráfico */}
+                {msg.renderMode === "chart" ? (
+                  <div className="mt-2">
+                    <ChartBarLabelCustomAI chartData={msg.chartData} />
+                  </div>
+                ) : (
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                )}
               </div>
             </div>
           ))}
@@ -256,5 +309,99 @@ function SuggestionCard({ icon, title, desc }) {
         </span>
       </div>
     </button>
+  );
+}
+
+function ChartBarLabelCustomAI({ chartData }) {
+  const data = useMemo(() => {
+    const arr = Array.isArray(chartData?.data) ? chartData.data : [];
+    return arr
+      .filter((item) => item && typeof item === "object")
+      .map((item) => ({
+        name: String(item.name ?? ""),
+        value: Number(item.value ?? 0),
+      }))
+      .filter((item) => item.name);
+  }, [chartData]);
+
+  const chartConfig = useMemo(
+    () => ({
+      value: { label: "Total", color: "var(--chart-2)" },
+    }),
+    []
+  );
+
+  if (!data.length) {
+    return (
+      <div className="text-xs text-zinc-500">
+        Não foi possível montar o gráfico (sem dados).
+      </div>
+    );
+  }
+
+  return (
+    <Card className="border-zinc-200">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base">
+          {chartData?.title ?? "Gráfico"}
+        </CardTitle>
+        <CardDescription className="text-xs">
+          Distribuição por bairro
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent className="pt-0">
+        <div
+          className="w-full overflow-x-auto"
+          style={{ height: Math.max(data.length * 44, 420) }}
+        >
+          <ChartContainer config={chartConfig} className="h-full w-full">
+            <BarChart
+              accessibilityLayer
+              data={data}
+              fill="#A6E0FF"
+              layout="vertical"
+              margin={{ left: -20, right: 24 }}
+              height={Math.max(data.length * 44, 420)}
+            >
+              <XAxis type="number" dataKey="value" hide />
+              <YAxis
+                dataKey="name"
+                type="category"
+                tickLine={false}
+                tickMargin={10}
+                axisLine={false}
+                width={150}
+                interval={0}
+              />
+
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
+
+              <Bar dataKey="value" fill="var(--color-value)" radius={5}>
+                <LabelList
+                  dataKey="value"
+                  position="right"
+                  offset={10}
+                  className="fill-foreground"
+                  fontSize={12}
+                />
+              </Bar>
+            </BarChart>
+          </ChartContainer>
+        </div>
+      </CardContent>
+
+      <CardFooter className="flex-col items-start gap-2 text-xs">
+        <div className="flex gap-2 leading-none font-medium">
+          Resultado gerado pela IA <TrendingUp className="h-4 w-4" />
+        </div>
+        <div className="text-muted-foreground leading-none">
+          Mostrando os valores retornados pela consulta
+        </div>
+      </CardFooter>
+    </Card>
   );
 }
