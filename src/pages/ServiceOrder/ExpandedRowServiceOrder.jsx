@@ -526,6 +526,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       await api.post("/occurrences/approve", {
         occurrenceId: novaOcorrenciaId,
         sectorId: targetSectorId,
+        isEmergencial: !!formEmergencial,
       });
 
       toast({
@@ -593,6 +594,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
       await api.post("/occurrences/approve", {
         occurrenceId: novaOcorrenciaId,
         sectorId: targetSectorId,
+        isEmergencial: !!formEmergencial,
       });
 
       toast({
