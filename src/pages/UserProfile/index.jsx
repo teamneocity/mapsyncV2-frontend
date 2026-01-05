@@ -19,8 +19,8 @@ import { api } from "@/services/api";
 import { getInicials } from "@/lib/utils";
 
 // Assets
-import Mapa from "@/assets/Mapa.svg";
-import Mapa2 from "@/assets/Mapa2.svg";
+import Profile from "@/assets/Profile.svg";
+import Password from "@/assets/Password.svg";
 import CloudUploadAlt from "@/assets/icons/cloudUploadAlt.svg?react";
 import Ponto from "@/assets/icons/Ponto.svg?react";
 import Pc from "@/assets/icons/Pc.svg?react";
@@ -158,7 +158,7 @@ export function UserProfile() {
           </div>
           <div className="flex-1 max-w-md w-full">
             <img
-              src={Mapa}
+              src={Profile}
               alt="Ilustração"
               className="w-full rounded-xl object-contain"
             />
@@ -274,7 +274,7 @@ export function UserProfile() {
 
               <div className="bg-[#E5E5F7] p-4 rounded-xl mb-4">
                 <img
-                  src={Mapa2}
+                  src={Password}
                   alt="Segurança"
                   className="w-full object-contain"
                 />

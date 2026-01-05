@@ -19,6 +19,7 @@ import PurpleCheck from "@/assets/icons/PurpleCheck.svg?react";
 import DesktopIcon from "@/assets/icons/desktop.svg?react";
 import Ninety from "@/assets/icons/Ninety.svg?react";
 import DataAnalytics from "@/assets/icons/DataAnalytics.svg?react";
+import Inspection from "@/assets/icons/Inspection.svg?react";
 import AlertP from "@/assets/icons/AlertP.svg?react";
 import { useAnalysisNotification } from "@/hooks/useAnalysisNotification";
 
@@ -52,7 +53,7 @@ export function Sidebar() {
   // depois do isOnAnalysis
   const isOnRequests = pathname.startsWith("/requests");
 
-  // mostra vermelho somente quando realmente quer (tem new) E não está em requests
+  // mostra vermelho somente quando realmente quer
   const showAnalysisAlert = !!hasNew && !isOnRequests;
 
   const [email] = useState(user.email);
@@ -101,7 +102,7 @@ export function Sidebar() {
       INSPECTOR: "Fiscal",
       FIELD_AGENT: "Agente de Campo",
       DRONE_OPERATOR: "Operador de Drone",
-      CALLCENTER: "Call Center", 
+      CALLCENTER: "Call Center",
     }[user?.role] || "Cargo desconhecido";
 
   const baseItem =
@@ -124,12 +125,12 @@ export function Sidebar() {
       {/* Sidebar Desktop */}
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-[250px] sm:flex bg-[#EBEBEB] text-[#787891] flex-col font-inter max-h-screen overflow-y-auto">
         <nav className="flex flex-col px-4 py-6">
-          <div>
+          <div className="bg-white p-3 rounded-lg mb-6 shadow-sm">
             <p className="text-base font-normal mb-2 text-[#4B4B62]">
               Workspace
             </p>
 
-            <div className="flex flex-col gap-1 text-[#787891] border-b pb-3">
+            <div className="flex flex-col gap-1 text-[#787891] pb-3">
               {isCallCenter ? (
                 <>
                   {/* CALLCENTER: só vê Mapeamento Terrestre e O.S. */}
@@ -218,19 +219,18 @@ export function Sidebar() {
                       </NavLink>
                       <NavLink to="/servicePlanning" className={linkClass}>
                         <CalendarIcon className="w-5 h-5 shrink-0" />{" "}
-                        Planejamento
+                        Planejamento diário
                       </NavLink>
                       <NavLink to="/Warranty" className={linkClass}>
                         <Ninety className="w-5 h-5 shrink-0" /> Garantia 90 dias
                       </NavLink>
                       <NavLink to="/inspection" className={linkClass}>
-                        <AssessmentIcon className="w-5 h-5 shrink-0" />{" "}
-                        Fiscalização
+                        <Inspection className="w-5 h-5 shrink-0" /> Fiscalização
                       </NavLink>
 
                       <NavLink to="/reports" className={linkClass}>
-                        <DataAnalytics className="w-5 h-5 shrink-0" /> Data
-                        Analytics
+                        <DataAnalytics className="w-5 h-5 shrink-0" />{" "}
+                        Relatórios
                       </NavLink>
                     </>
                   )}
@@ -238,10 +238,11 @@ export function Sidebar() {
               )}
             </div>
           </div>
+          <div className="border-b border-gray-300" />
 
           {/* Ajustes */}
           {!isCallCenter && (
-            <div className="w-full border-b pb-3">
+            <div className="w-full p-2">
               <p className="text-base font-normal mb-2 text-[#4B4B62]">
                 Ajustes
               </p>
@@ -271,7 +272,7 @@ export function Sidebar() {
                         ANALYST: "Básico",
                         INSPECTOR: "Básico",
                         FIELD_AGENT: "Básico",
-                        CALLCENTER: "Básico", 
+                        CALLCENTER: "Básico",
                       }[user?.role] || "Desconhecido"}
                     </span>
                   </span>
@@ -295,7 +296,7 @@ export function Sidebar() {
                       INSPECTOR: 40,
                       FIELD_AGENT: 40,
                       DRONE_OPERATOR: 40,
-                      CALLCENTER: 40, 
+                      CALLCENTER: 40,
                     }[user?.role] || 0
                   }%`,
                   backgroundColor: "#003DF6",
@@ -383,19 +384,13 @@ export function Sidebar() {
                       )}
 
                       {(isAdmin || isChief) && (
-                        <NavLink
-                          to="/requests"
-                          className={linkClassMobile}
-                        >
+                        <NavLink to="/requests" className={linkClassMobile}>
                           <AlertP className="w-5 h-5 shrink-0" /> Pré-Análise
                         </NavLink>
                       )}
 
                       {(isAdmin || isAnalyst) && (
-                        <NavLink
-                          to="/analysis"
-                          className={linkClassMobile}
-                        >
+                        <NavLink to="/analysis" className={linkClassMobile}>
                           <span
                             className={`flex items-center gap-2 ${
                               showAnalysisAlert ? "!text-red-600" : ""
@@ -429,8 +424,8 @@ export function Sidebar() {
 
                       {(canSeeAll || isInspector || isChief) && (
                         <NavLink to="/occurrencest" className={linkClass}>
-                          <TrackIcon className="w-5 h-5 shrink-0" />{" "}
-                          Mapeamento Terrestre
+                          <TrackIcon className="w-5 h-5 shrink-0" /> Mapeamento
+                          Terrestre
                         </NavLink>
                       )}
 
@@ -448,14 +443,11 @@ export function Sidebar() {
                             className={linkClassMobile}
                           >
                             <CalendarIcon className="w-5 h-5 shrink-0" />{" "}
-                            Planejamento
+                            Planejamento diário
                           </NavLink>
 
-                          <NavLink
-                            to="/inspection"
-                            className={linkClassMobile}
-                          >
-                            <AssessmentIcon className="w-5 h-5 shrink-0" />{" "}
+                          <NavLink to="/inspection" className={linkClassMobile}>
+                            <Inspection className="w-5 h-5 shrink-0" />{" "}
                             Fiscalização
                           </NavLink>
 
@@ -463,6 +455,19 @@ export function Sidebar() {
                             <DataAnalytics className="w-5 h-5 shrink-0" /> Data
                             Analytics
                           </NavLink>
+                          {!isCallCenter && (
+                            <div>
+                              <p className="text-base font-normal mb-2 text-[#4B4B62]">
+                                Ajustes
+                              </p>
+                              <div className="flex flex-col gap-1 text-[#787891]">
+                                <NavLink to="/settings" className={linkClass}>
+                                  <SettingsWindow className="w-5 h-5 shrink-0" />{" "}
+                                  Configurações
+                                </NavLink>
+                              </div>
+                            </div>
+                          )}
                         </>
                       )}
                     </>

@@ -371,36 +371,21 @@ export function ExpandedRowAnalysis({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 bg-[#F7F7F7] p-4 rounded-lg shadow-sm text-sm">
       {/* Coluna 1 - Informações */}
+
       <div className="flex flex-col justify-between space-y-4 h-full">
-        <div className="space-y-1 text-[#787891]">
-          <h3 className="font-semibold text-base mb-2 border-b pb-1">
-            Informações sobre a ocorrência
-          </h3>
-          <div className="space-y-1">
-            <button
-              type="button"
-              onClick={handleCopyProtocol}
-              className="w-full h-[58px] text-left text-black flex items-center justify-between gap-3 rounded-lg border px-3 py-2
-                 bg-[#D9DCE2] hover:bg-gray-300 "
-              aria-label="Copiar protocolo"
-            >
-              <span className="truncate ">
-                Protocolo : {occurrence?.protocolNumber || "—"}
-              </span>
-              <Copy className="w-5 h-5 shrink-0 opacity-70" />
-            </button>
-          </div>
+        <div className="space-y-1 text-[#787891] border border-gray rounded-xl p-1.5">
+          
           {/* Exibe aviso de possível duplicata quando vier true */}
           {occurrence?.isAPossibleDuplicate === true && (
             <button
               type="button"
               onClick={() => setIsPossibleDuplicateOpen(true)}
-              className="w-full h-[52px] mt-2 text-left flex items-center justify-between gap-3 rounded-lg border px-3 py-2
+              className="w-full h-[64px] mt-2 text-left flex items-center justify-between gap-3 rounded-lg border px-3 py-2
                bg-yellow-50 border-yellow-300 text-yellow-800 hover:bg-yellow-100"
               aria-label="Abrir detalhes de possível duplicata"
               title="Abrir detalhes de possível duplicata"
             >
-              <span className="truncate font-medium">Possível duplicata</span>
+              <span className="truncate font-medium">Verificar possível duplicata</span>
               <span className="text-xl leading-none" aria-hidden>
                 <Warning
                   className="w-5 h-5 shrink-0 text-yellow-800"
@@ -409,6 +394,20 @@ export function ExpandedRowAnalysis({
               </span>
             </button>
           )}
+          <div className="space-y-1">
+            <button
+              type="button"
+              onClick={handleCopyProtocol}
+              className="w-full h-[58px] text-left text-black flex items-center justify-between gap-3 rounded-lg border px-3 py-2
+                 bg-[#D9DCE2] hover:bg-gray-300 "
+              aria-label="Copiar protocolo"
+            >
+              <span className="truncate font-semibold text-[16px]">
+                Protocolo : {occurrence?.protocolNumber || "—"}
+              </span>
+              <Copy className="w-5 h-5 shrink-0 opacity-70" />
+            </button>
+          </div>
 
           <p>
             <span className="text-black font-medium">Data:</span> {createdAt}
@@ -424,7 +423,7 @@ export function ExpandedRowAnalysis({
             <button
               onClick={() => setIsAddressHistoryOpen(true)}
               className="w-full h-[64px] rounded-xl px-3 py-2
-             bg-[#E4E4E4] hover:bg-gray-200 transition
+             bg-[#D9DCE2] hover:bg-gray-200 transition
              flex items-center justify-between gap-3"
               title="Ver histórico de alterações de endereço"
             >
@@ -470,6 +469,7 @@ export function ExpandedRowAnalysis({
             {localAddress.longitude}
           </p>
         </div>
+       
 
         {/* Encaminhar para outra empresa */}
         {!isRejected && (
@@ -623,7 +623,7 @@ export function ExpandedRowAnalysis({
                 </Button>
               </div>
               <label className="font-semibold text-[18px] block mb-1 text-[#787891]">
-                Encaminhamento para análise
+                Encaminhar para setor
               </label>
 
               {/* Setor responsável */}

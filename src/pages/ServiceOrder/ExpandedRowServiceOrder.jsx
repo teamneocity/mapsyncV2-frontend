@@ -683,7 +683,7 @@ export function ExpandedRowServiceOrder({ occurrence }) {
                   className="w-full h-[58px] text-left flex items-center justify-between gap-3 rounded-lg border px-3 py-2 bg-[#D9DCE2] hover:bg-gray-300"
                   aria-label="Copiar protocolo"
                 >
-                  <span className="truncate">
+                  <span className="truncate font-semibold text-[16px]">
                     Protocolo : {occurrence?.protocolNumber || "—"}
                   </span>
                   <Copy className="w-5 h-5 shrink-0 opacity-70" />
