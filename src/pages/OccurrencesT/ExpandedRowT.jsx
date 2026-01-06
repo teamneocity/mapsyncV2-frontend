@@ -73,6 +73,9 @@ export function ExpandedRowT({
     MEIO_FIO: "Meio fio",
     DESOBSTRUCAO: "Drenagem",
     LIMPA_FOSSA: "Limpa fossa",
+    TERRAPLANAGEM: "Terraplanagem",
+    DESOBSTRUCAO_CAMINHAO: "Desob. caminhão",
+    LOGRADOURO: "Logradouro",
   };
   const canGenerateBase =
     occurrence.status !== "os_gerada" &&

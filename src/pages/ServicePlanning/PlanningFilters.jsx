@@ -112,71 +112,63 @@ export function PlanningFilters({
         showDelayed={true}
         isDelayedFilter={isDelayedFilter}
         onToggleDelayed={onToggleDelayed}
-      />
+      >
+        {/* Encarregado */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm text-[#4B4B62]"
+            >
+              {selectedForeman
+                ? `Encarregado: ${
+                    foremen.find((f) => f.id === selectedForeman)?.name || "—"
+                  }`
+                : "Encarregado"}
+              <ChevronDown className="ml-1 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
 
-      {/* Encarregado + setor */}
-      <div className="w-full bg-[#EBEBEB] px-1 pb-1 -mt-1">
-        <div className="w-full flex flex-wrap items-center gap-2 md:gap-3 rounded-xl">
-          {/* Encarregado */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm text-[#4B4B62]"
-              >
-                {selectedForeman
-                  ? `Encarregado: ${
-                      foremen.find((f) => f.id === selectedForeman)?.name || "—"
-                    }`
-                  : "Encarregado"}
-                <ChevronDown className="ml-1 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-
-            <DropdownMenuContent className="max-h-[320px] overflow-y-auto">
-              <DropdownMenuItem onClick={() => handleForeman(null)}>
-                Todos
+          <DropdownMenuContent className="max-h-[320px] overflow-y-auto">
+            <DropdownMenuItem onClick={() => handleForeman(null)}>
+              Todos
+            </DropdownMenuItem>
+            {foremen.map((f) => (
+              <DropdownMenuItem key={f.id} onClick={() => handleForeman(f.id)}>
+                {f.name}
               </DropdownMenuItem>
-              {foremen.map((f) => (
-                <DropdownMenuItem
-                  key={f.id}
-                  onClick={() => handleForeman(f.id)}
-                >
-                  {f.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-          {/* Setor */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm text-[#4B4B62]"
-              >
-                {selectedSector
-                  ? `Setor: ${
-                      sectors.find((s) => s.id === selectedSector)?.name || "—"
-                    }`
-                  : "Setor"}
-                <ChevronDown className="ml-1 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
+        {/* Setor */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full sm:w-auto gap-2 h-12 justify-between rounded-xl border-none shadow-sm text-[#4B4B62]"
+            >
+              {selectedSector
+                ? `Setor: ${
+                    sectors.find((s) => s.id === selectedSector)?.name || "—"
+                  }`
+                : "Setor"}
+              <ChevronDown className="ml-1 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
 
-            <DropdownMenuContent className="max-h-[320px] overflow-y-auto">
-              <DropdownMenuItem onClick={() => handleSector(null)}>
-                Todos
+          <DropdownMenuContent className="max-h-[320px] overflow-y-auto">
+            <DropdownMenuItem onClick={() => handleSector(null)}>
+              Todos
+            </DropdownMenuItem>
+            {sectors.map((s) => (
+              <DropdownMenuItem key={s.id} onClick={() => handleSector(s.id)}>
+                {s.name}
               </DropdownMenuItem>
-              {sectors.map((s) => (
-                <DropdownMenuItem key={s.id} onClick={() => handleSector(s.id)}>
-                  {s.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </Filters>
     </div>
   );
 }

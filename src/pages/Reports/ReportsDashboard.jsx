@@ -93,8 +93,8 @@ export default function ReportsDashboard({
             className="h-[64px] w-[110px] bg-white text-[11px] text-slate-600 rounded-lg px-2 focus:outline-none cursor-pointer"
           >
             <option value="0">Semana atual</option>
-            <option value="7">Semana de 7 dias atrás</option>
-            <option value="14">Semana de 14 dias atrás</option>
+            <option value="7">Semana passada</option>
+            <option value="14">Semana retrasada</option>
           </select>
         </div>
       );

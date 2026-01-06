@@ -44,6 +44,9 @@ export function ExpandedRowPlanning(props) {
     MEIO_FIO: "Meio fio",
     DESOBSTRUCAO: "Drenagem",
     LIMPA_FOSSA: "Limpa fossa",
+    DESOBSTRUCAO_CAMINHAO: "Desob. caminhão",
+    TERRAPLANAGEM: "Terraplanagem",
+    LOGRADOURO: "Logradouro",
   };
 
   const statusLabels = {

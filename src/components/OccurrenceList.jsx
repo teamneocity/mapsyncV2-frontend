@@ -184,6 +184,9 @@ export function OccurrenceList({
     MEIO_FIO: "Meio fio",
     DESOBSTRUCAO: "Drenagem",
     LIMPA_FOSSA: "Limpa fossa",
+    LOGRADOURO: "Logradouro",
+    DESOBSTRUCAO_CAMINHAO: "Desob. caminhão",
+    TERRAPLANAGEM: "Terraplanagem",
   };
 
   function StatusBadge({

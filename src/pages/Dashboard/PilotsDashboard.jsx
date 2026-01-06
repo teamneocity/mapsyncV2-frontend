@@ -21,6 +21,7 @@ import {
   Pie,
   Sector,
   Label,
+  ResponsiveContainer,
 } from "recharts";
 
 import {
@@ -375,83 +376,95 @@ export default function PilotsDashboard() {
                       config={chartConfig}
                       className="w-full h-full flex items-center justify-center"
                     >
-                      <PieChart>
-                        <ChartTooltip
-                          cursor={false}
-                          content={<ChartTooltipContent hideLabel />}
-                        />
-                        <Pie
-                          data={pieChartData}
-                          dataKey="occurrences"
-                          nameKey="name"
-                          innerRadius={60}
-                          strokeWidth={5}
-                          activeIndex={activePieIndex}
-                          activeShape={(props) => {
-                            const outerRadius = props.outerRadius || 0;
-                            return (
-                              <g>
-                                <Sector
-                                  {...props}
-                                  outerRadius={outerRadius + 10}
-                                />
-                                <Sector
-                                  {...props}
-                                  outerRadius={outerRadius + 25}
-                                  innerRadius={outerRadius + 12}
-                                />
-                              </g>
-                            );
-                          }}
-                          onClick={(_, index) => {
-                            const item = pieChartData[index];
-                            if (item) {
-                              setSelectedPilotId(item.pilotId);
-                              setSelectedPilotTotal(item.occurrences);
-                            }
-                          }}
-                        >
-                          <Label
-                            content={({ viewBox }) => {
-                              if (
-                                !viewBox ||
-                                !("cx" in viewBox) ||
-                                !("cy" in viewBox) ||
-                                !pieChartData[activePieIndex]
-                              ) {
-                                return null;
-                              }
+                      {/* altura mínima pra não colapsar quando a tela fica baixa */}
+                      <div className="w-full h-full min-h-[120px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <ChartTooltip
+                              cursor={false}
+                              content={<ChartTooltipContent hideLabel />}
+                            />
 
-                              const { cx, cy } = viewBox;
-                              const active = pieChartData[activePieIndex];
+                            <Pie
+                              data={pieChartData}
+                              dataKey="occurrences"
+                              nameKey="name"
+                              innerRadius="55%"
+                              outerRadius="80%"
+                              strokeWidth={5}
+                              activeIndex={activePieIndex}
+                              activeShape={(props) => {
+                                const outerRadius = props.outerRadius || 0;
+                                const bump1 = Math.max(outerRadius * 0.08, 6);
+                                const bump2 = Math.max(outerRadius * 0.16, 12);
 
-                              return (
-                                <text
-                                  x={cx}
-                                  y={cy}
-                                  textAnchor="middle"
-                                  dominantBaseline="middle"
-                                >
-                                  <tspan
-                                    x={cx}
-                                    y={cy}
-                                    className="fill-foreground text-3xl font-bold"
-                                  >
-                                    {active.occurrences.toLocaleString("pt-BR")}
-                                  </tspan>
-                                  <tspan
-                                    x={cx}
-                                    y={(cy || 0) + 24}
-                                    className="fill-muted-foreground text-xs"
-                                  >
-                                    {nameToInitials(active.name)}
-                                  </tspan>
-                                </text>
-                              );
-                            }}
-                          />
-                        </Pie>
-                      </PieChart>
+                                return (
+                                  <g>
+                                    <Sector
+                                      {...props}
+                                      outerRadius={outerRadius + bump1}
+                                    />
+                                    <Sector
+                                      {...props}
+                                      outerRadius={outerRadius + bump2}
+                                      innerRadius={outerRadius + bump1 + 2}
+                                    />
+                                  </g>
+                                );
+                              }}
+                              onClick={(_, index) => {
+                                const item = pieChartData[index];
+                                if (item) {
+                                  setSelectedPilotId(item.pilotId);
+                                  setSelectedPilotTotal(item.occurrences);
+                                }
+                              }}
+                            >
+                              <Label
+                                content={({ viewBox }) => {
+                                  if (
+                                    !viewBox ||
+                                    !("cx" in viewBox) ||
+                                    !("cy" in viewBox) ||
+                                    !pieChartData[activePieIndex]
+                                  ) {
+                                    return null;
+                                  }
+
+                                  const { cx, cy } = viewBox;
+                                  const active = pieChartData[activePieIndex];
+
+                                  return (
+                                    <text
+                                      x={cx}
+                                      y={cy}
+                                      textAnchor="middle"
+                                      dominantBaseline="middle"
+                                    >
+                                      <tspan
+                                        x={cx}
+                                        y={cy}
+                                        className="fill-foreground text-3xl font-bold"
+                                      >
+                                        {active.occurrences.toLocaleString(
+                                          "pt-BR"
+                                        )}
+                                      </tspan>
+                                      <tspan
+                                        x={cx}
+                                        y={(cy || 0) + 24}
+                                        className="fill-muted-foreground text-xs"
+                                      >
+                                        {nameToInitials(active.name)}
+                                      </tspan>
+                                    </text>
+                                  );
+                                }}
+                              />
+                            </Pie>
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
                     </ChartContainer>
                   )}
                 </div>

@@ -357,16 +357,36 @@ export function ExpandedRowAnalysis({
   const regionClean = (region ?? "").trim();
   const regionValue = REGION_OPTIONS.includes(regionClean) ? regionClean : "";
 
-  // máscara para tipos
+  // máscaras para tipos
   const typeLabels = {
     TAPA_BURACO: "Asfalto",
     AUSENCIA_DE_MEIO_FIO: "Ausência de meio fio",
     MEIO_FIO: "Meio fio",
     DESOBSTRUCAO: "Drenagem",
     LIMPA_FOSSA: "Limpa fossa",
+    LOGRADOURO: "Logradouro",
+    TERRAPLANAGEM: "Terraplanagem",
+    DESOBSTRUCAO_CAMINHAO: "Desob. caminhão",
   };
 
-  const isRejected = occurrence.status === "recusada";
+  // máscaras para status
+  const statusLabels = {
+    em_analise: "Em análise",
+    emergencial: "Emergencial",
+    aprovada: "Aprovada",
+    os_gerada: "O.S. gerada",
+    aguardando_execucao: "Agendada",
+    em_execucao: "Andamento",
+    finalizada: "Finalizada",
+    pendente: "Pendente",
+    aceita: "Aceita",
+    verificada: "Verificada",
+    rejeitada: "Rejeitada",
+    encaminhada_externa: "Arquivada",
+  };
+
+  const isRejected =
+    occurrence.status === "recusada" || occurrence.status === "rejeitada";
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 bg-[#F7F7F7] p-4 rounded-lg shadow-sm text-sm">
@@ -374,7 +394,6 @@ export function ExpandedRowAnalysis({
 
       <div className="flex flex-col justify-between space-y-4 h-full">
         <div className="space-y-1 text-[#787891] border border-gray rounded-xl p-1.5">
-          
           {/* Exibe aviso de possível duplicata quando vier true */}
           {occurrence?.isAPossibleDuplicate === true && (
             <button
@@ -385,7 +404,9 @@ export function ExpandedRowAnalysis({
               aria-label="Abrir detalhes de possível duplicata"
               title="Abrir detalhes de possível duplicata"
             >
-              <span className="truncate font-medium">Verificar possível duplicata</span>
+              <span className="truncate font-medium">
+                Verificar possível duplicata
+              </span>
               <span className="text-xl leading-none" aria-hidden>
                 <Warning
                   className="w-5 h-5 shrink-0 text-yellow-800"
@@ -469,7 +490,6 @@ export function ExpandedRowAnalysis({
             {localAddress.longitude}
           </p>
         </div>
-       
 
         {/* Encaminhar para outra empresa */}
         {!isRejected && (
@@ -739,7 +759,8 @@ export function ExpandedRowAnalysis({
                       const num = o?.address?.number ?? "s/n";
                       const bairro = o?.address?.neighborhoodName ?? "—";
                       const protocolo = o?.protocolNumber ?? "—";
-                      const status = o?.status ?? "—";
+                      const statusRaw = o?.status ?? "—";
+                      const status = statusLabels[statusRaw] || statusRaw;
 
                       return (
                         <li
@@ -749,11 +770,13 @@ export function ExpandedRowAnalysis({
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                               <p className="font-medium truncate">
-                                {o.type ?? "Ocorrência"}
+                                {typeLabels[o?.type] || o?.type || "Ocorrência"}
                               </p>
-                              <p className="text-gray-700 truncate">
+
+                              <p className="text-gray-700 break-words whitespace-normal line-clamp-3">
                                 {rua}, {num} — {bairro}
                               </p>
+
                               <p className="text-xs text-gray-500 mt-0.5">
                                 Criada em: {created}
                               </p>

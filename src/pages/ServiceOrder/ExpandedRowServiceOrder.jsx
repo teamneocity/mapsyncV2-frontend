@@ -625,6 +625,9 @@ export function ExpandedRowServiceOrder({ occurrence }) {
     MEIO_FIO: "Meio fio",
     DESOBSTRUCAO: "Drenagem",
     LIMPA_FOSSA: "Limpa fossa",
+    LOGRADOURO : "Logradouro",
+    TERRAPLANAGEM : "Terraplanagem",
+    DESOBSTRUCAO_CAMINHAO : "Desob. caminhão",
   };
 
   //Monta as imagens

@@ -81,7 +81,9 @@ export function InspectionCard({ serviceorder }) {
     MEIO_FIO: "Meio fio",
     DESOBSTRUCAO: "Drenagem",
     LIMPA_FOSSA: "Limpa fossa",
-    DESOBSTRUÇÃO_CAMINHÃO: "Desob. caminhão",
+    DESOBSTRUCAO_CAMINHAO: "Desob. caminhão",
+    TERRAPLANAGEM: "Terraplanagem",
+    LOGRADOURO: "Logradouro",
   };
 
   function handleCopyProtocol() {

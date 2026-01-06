@@ -452,8 +452,7 @@ export function Sidebar() {
                           </NavLink>
 
                           <NavLink to="/reports" className={linkClassMobile}>
-                            <DataAnalytics className="w-5 h-5 shrink-0" /> Data
-                            Analytics
+                            <DataAnalytics className="w-5 h-5 shrink-0" /> Relatórios
                           </NavLink>
                           {!isCallCenter && (
                             <div>

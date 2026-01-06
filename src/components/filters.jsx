@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/popover";
 
 export function Filters({
+  children,
   text,
   onFilterRecent = () => {},
   onFilterType = () => {},
@@ -184,7 +185,8 @@ export function Filters({
 
   return (
     <header className="w-full bg-[#EBEBEB] px-1 py-1">
-      <div className="w-full flex items-center justify-between gap-2 md:gap-3 flex-wrap rounded-xl">
+      <div className="w-full flex flex-wrap items-center justify-start gap-2 md:gap-3 rounded-xl">
+
         {/* Rua + Bairro */}
         <div className="flex flex-col sm:flex-row gap-2 flex-1 md:min-w-[320px]">
           <Input
@@ -261,7 +263,6 @@ export function Filters({
             </Popover>
           )}
         </div>
-
         {/* Encarregado */}
         {showForeman && (
           <DropdownMenu>
@@ -295,7 +296,6 @@ export function Filters({
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-
         {/* Recentes */}
         {showRecent && (
           <DropdownMenu>
@@ -322,7 +322,6 @@ export function Filters({
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-
         {/* Tipo */}
         {showType && (
           <DropdownMenu>
@@ -374,7 +373,6 @@ export function Filters({
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-
         {/* Companhia */}
         {showCompany && (
           <DropdownMenu>
@@ -404,7 +402,6 @@ export function Filters({
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-
         {/* Status */}
         {showStatus && (
           <DropdownMenu>
@@ -442,9 +439,7 @@ export function Filters({
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-
         {/* Somente atrasadas (apenas OS / Planejamento) */}
-
         {showDelayed && (
           <Button
             type="button"
@@ -464,7 +459,7 @@ export function Filters({
             {isDelayedFilter ? "Somente atrasadas" : "Incluir atrasadas"}
           </Button>
         )}
-
+        {children}
         {/* Data */}
         {showDate && (
           <div className="w-full md:w-auto">
