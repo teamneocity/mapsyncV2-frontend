@@ -11,18 +11,7 @@ import { api } from "@/services/api";
 
 import Airplane from "@/assets/icons/Airplane.svg?react";
 
-import {
-  Bar,
-  BarChart,
-  XAxis,
-  YAxis,
-  Cell,
-  PieChart,
-  Pie,
-  Sector,
-  Label,
-  ResponsiveContainer,
-} from "recharts";
+import { PieChart, Pie, Sector, Label, ResponsiveContainer } from "recharts";
 
 import {
   ChartContainer,
@@ -151,18 +140,6 @@ export default function PilotsDashboard() {
     setSelectedPilotTotal(p?.count ?? 0);
   }, [selectedPilotId, pilotTotals]);
 
-  const barChartData = useMemo(() => {
-    if (!pilotTotals.length) return [];
-    const sorted = [...pilotTotals].sort((a, b) => b.count - a.count);
-
-    return sorted.map((p) => ({
-      pilotId: p.id,
-      label: nameToInitials(p.name),
-      occurrences: p.count,
-      isSelected: p.id === selectedPilotId,
-    }));
-  }, [pilotTotals, selectedPilotId]);
-
   // cores do gráfico de pizza
   const PIE_COLORS = ["#003DF6", "#4B84FF", "#00A3FF", "#0094C6", "#006C8E"];
 
@@ -218,144 +195,89 @@ export default function PilotsDashboard() {
 
         <div className="grid grid-cols-12 gap-4">
           {/* cards dos pilotos */}
-          <div className="col-span-12 xl:col-span-3">
-            <div className="p-3 flex flex-col items-center justify-center h-auto xl:h-[calc(100vh-200px)]">
-              <div className="flex-1 min-h-0 w-full flex flex-col items-center justify-center pr-1 overflow-visible xl:overflow-y-auto">
+
+          <div className="col-span-12 xl:col-span-6">
+            <div className="p-3 flex flex-col h-auto xl:h-[calc(100vh-200px)]">
+              {/* scroll */}
+              <div className="flex-1 min-h-0 w-full pr-1 overflow-y-auto">
                 {loadingRank && (
                   <div className="text-gray-500 text-sm">Carregando…</div>
                 )}
                 {errRank && (
                   <div className="text-red-600 text-sm">{String(errRank)}</div>
                 )}
-                {!loadingRank &&
-                  !errRank &&
-                  pilotTotals.map((p) => {
-                    const isActive = p.id === selectedPilotId;
-                    return (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => handleSelectPilot(p)}
-                        className={`w-full rounded-2xl shadow p-5 flex flex-col transition mb-3 last:mb-0
-                    overflow-hidden
-                    sm:max-w-[420px] md:max-w-[480px] xl:max-w-[520px] min-h-[120px]
-                    ${
-                      isActive
-                        ? "bg-gray-200 text-black border-2 border-gray-400"
-                        : "bg-white hover:bg-gray-50 text-gray-800"
-                    }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-[18px] line-clamp-1">
-                            {p.name}
-                          </span>
-                        </div>
 
-                        <div className="mt-4 flex items-center gap-3">
-                          <span className="text-3xl font-bold">{p.count}</span>
+                {!loadingRank && !errRank && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {pilotTotals.map((p) => {
+                      const isActive = p.id === selectedPilotId;
 
-                          {p.pct != null && (
-                            <span
-                              className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
-                                p.isNeg
-                                  ? "bg-red-100 text-red-600"
-                                  : "bg-green-100 text-green-600"
-                              }`}
-                            >
-                              {p.isNeg ? "↓" : "↑"}
-                              {Math.abs(p.pct)}%
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => handleSelectPilot(p)}
+                          className={`w-full rounded-2xl shadow flex flex-col transition
+                  overflow-hidden
+                  p-3 md:p-4
+                  min-h-[96px] md:min-h-[110px]
+                  ${
+                    isActive
+                      ? "bg-gray-200 text-black border-2 border-gray-400"
+                      : "bg-white hover:bg-gray-50 text-gray-800"
+                  }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-[16px] md:text-[18px] line-clamp-1">
+                              {p.name}
                             </span>
-                          )}
-                        </div>
+                          </div>
 
-                        <div className="mt-4 border-t border-gray-200/50" />
+                          <div className="mt-3 md:mt-4 flex items-center gap-3">
+                            <span className="text-2xl md:text-3xl font-bold">
+                              {p.count}
+                            </span>
 
-                        <div className="mt-3 flex items-center justify-between gap-2 min-w-0">
-                          <span className="text-sm text-left text-gray-600 flex-1 min-w-0 truncate">
-                            Ocorrências
-                          </span>
-                          <span
-                            className={`${
-                              isActive ? "text-gray-200" : "text-gray-400"
-                            } flex-none`}
-                          >
-                            →
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
-              </div>
-            </div>
-          </div>
+                            {p.pct != null && (
+                              <span
+                                className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
+                                  p.isNeg
+                                    ? "bg-red-100 text-red-600"
+                                    : "bg-green-100 text-green-600"
+                                }`}
+                              >
+                                {p.isNeg ? "↓" : "↑"}
+                                {Math.abs(p.pct)}%
+                              </span>
+                            )}
+                          </div>
 
-          {/* Gráfico de barra */}
-          <div className="col-span-12 md:col-span-6 xl:col-span-5">
-            <div className="rounded-2xl bg-white shadow p-3 flex flex-col h-auto min-h-[320px] md:min-h-[360px] xl:h-[calc(100vh-200px)]">
-              <div className="flex items-center gap-2 mb-2">
-                <Airplane className="w-5 h-5 text-gray-700" />
-                <h3 className="text-base font-semibold">
-                  Ocorrências dinâmica por piloto
-                </h3>
-              </div>
+                          <div className="mt-3 md:mt-4 border-t border-gray-200/50" />
 
-              <div className="flex-1 min-h-0">
-                {!pilotTotals.length ? (
-                  <div className="w-full h-full flex items-center justify-center text-gray-500">
-                    Sem dados
+                          {/* Caso precise some */}
+                          <div className="mt-2 md:mt-3 flex items-center justify-between gap-2 min-w-0 [@media(max-height:820px)]:hidden">
+                            <span className="text-sm text-left text-gray-600 flex-1 min-w-0 truncate">
+                              Ocorrências
+                            </span>
+                            <span
+                              className={`${
+                                isActive ? "text-gray-200" : "text-gray-400"
+                              } flex-none`}
+                            >
+                              →
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
-                ) : (
-                  <ChartContainer
-                    config={chartConfig}
-                    className="w-full h-full"
-                  >
-                    <BarChart
-                      accessibilityLayer
-                      data={barChartData}
-                      layout="vertical"
-                      margin={{
-                        left: -20,
-                      }}
-                    >
-                      <XAxis type="number" dataKey="occurrences" hide />
-                      <YAxis
-                        dataKey="label"
-                        type="category"
-                        tickLine={false}
-                        tickMargin={10}
-                        axisLine={false}
-                      />
-                      <ChartTooltip
-                        cursor={false}
-                        content={<ChartTooltipContent hideLabel />}
-                      />
-                      <Bar
-                        dataKey="occurrences"
-                        radius={5}
-                        onClick={(_, index) => {
-                          const item = barChartData[index];
-                          if (item) {
-                            setSelectedPilotId(item.pilotId);
-                            setSelectedPilotTotal(item.occurrences);
-                          }
-                        }}
-                      >
-                        {barChartData.map((entry) => (
-                          <Cell
-                            key={entry.pilotId}
-                            fill={entry.isSelected ? "#001A80" : "#003DF6"}
-                          />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ChartContainer>
                 )}
               </div>
             </div>
           </div>
 
           {/* Gráfico de pizza + total */}
-          <div className="col-span-12 md:col-span-6 xl:col-span-4">
+          <div className="col-span-12 xl:col-span-6">
             <div className="rounded-2xl bg-white shadow p-3 flex flex-col h-auto min-h-[320px] md:min-h-[360px] xl:h-[calc(100vh-200px)]">
               {/* bloco do gráfico de pizza */}
               <div className="flex-1 min-h-[180px] flex flex-col">
